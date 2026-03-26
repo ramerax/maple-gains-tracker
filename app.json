@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "MapleGains",
+    "slug": "maple-gains-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.maplegains.tracker"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0D0D1A"
+      },
+      "package": "com.maplegains.tracker"
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-font"
+    ]
+  }
+}
