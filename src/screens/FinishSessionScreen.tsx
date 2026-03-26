@@ -78,14 +78,7 @@ export default function FinishSessionScreen({ navigation }: Props) {
         return;
       }
       setOpen(s);
-      // Pre-fill end values with start values as default
-      setLvEnd(String(s.lvStart));
-      setExpEnd(String(s.expStart));
-      setFragsEnd(String(s.fragsStart));
-      setNodesEnd(String(s.nodesStart));
-      setMesosEnd(String(s.mesosStart));
-      setCommonEnd(String(s.commonFamiliarsStart));
-      setRareEnd(String(s.rareFamiliarsStart));
+      // Leave end fields empty — placeholders show start values as reference
     });
   }, []);
 
@@ -97,16 +90,16 @@ export default function FinishSessionScreen({ navigation }: Props) {
   const expGained = open
     ? calculateExpGained(open.lvStart, open.expStart, lvEndN, expEndN)
     : 0;
-  const fragsGained = pi(fragsEnd) - (open?.fragsStart ?? 0);
-  const nodesGained = pi(nodesEnd) - (open?.nodesStart ?? 0);
-  const mesosGained = (Number(mesosEnd) || 0) - (open?.mesosStart ?? 0);
-  const commonGained = pi(commonEnd) - (open?.commonFamiliarsStart ?? 0);
-  const rareGained = pi(rareEnd) - (open?.rareFamiliarsStart ?? 0);
+  const fragsGained  = fragsEnd  ? pi(fragsEnd)  - (open?.fragsStart  ?? 0) : 0;
+  const nodesGained  = nodesEnd  ? pi(nodesEnd)  - (open?.nodesStart  ?? 0) : 0;
+  const mesosGained  = mesosEnd  ? (Number(mesosEnd) || 0) - (open?.mesosStart  ?? 0) : 0;
+  const commonGained = commonEnd ? pi(commonEnd) - (open?.commonFamiliarsStart ?? 0) : 0;
+  const rareGained   = rareEnd   ? pi(rareEnd)   - (open?.rareFamiliarsStart  ?? 0) : 0;
 
   const handleSave = useCallback(async () => {
     if (!open) return;
-    if (!lvEnd || !expEnd) {
-      Alert.alert('Datos incompletos', 'Ingresa al menos el nivel y % de EXP final.');
+    if (!expEnd) {
+      Alert.alert('Datos incompletos', 'Ingresa el % de EXP al finalizar la sesión.');
       return;
     }
     const lvS = open.lvStart;
@@ -131,19 +124,19 @@ export default function FinishSessionScreen({ navigation }: Props) {
       expEnd: expEndN,
       expGainedActual: expGained,
       fragsStart: open.fragsStart,
-      fragsEnd: pi(fragsEnd),
+      fragsEnd: fragsEnd ? pi(fragsEnd) : open.fragsStart,
       fragsGained,
       nodesStart: open.nodesStart,
-      nodesEnd: pi(nodesEnd),
+      nodesEnd: nodesEnd ? pi(nodesEnd) : open.nodesStart,
       nodesGained,
       mesosStart: open.mesosStart,
-      mesosEnd: Number(mesosEnd) || 0,
+      mesosEnd: mesosEnd ? (Number(mesosEnd) || 0) : open.mesosStart,
       mesosGained,
       commonFamiliarsStart: open.commonFamiliarsStart,
-      commonFamiliarsEnd: pi(commonEnd),
+      commonFamiliarsEnd: commonEnd ? pi(commonEnd) : open.commonFamiliarsStart,
       commonFamiliarsGained: commonGained,
       rareFamiliarsStart: open.rareFamiliarsStart,
-      rareFamiliarsEnd: pi(rareEnd),
+      rareFamiliarsEnd: rareEnd ? pi(rareEnd) : open.rareFamiliarsStart,
       rareFamiliarsGained: rareGained,
       notes: open.notes,
     };

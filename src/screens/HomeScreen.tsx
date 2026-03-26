@@ -20,43 +20,46 @@ import { useProfile } from '../context/ProfileContext';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-function StatPill({ label, value, color, sub }: {
-  label: string; value: string; color: string; sub?: string;
+function StatPill({ label, value, color, sub, subColor }: {
+  label: string; value: string; color: string; sub?: string; subColor?: string;
 }) {
   return (
     <View style={[styles.pill, { borderColor: color + '30' }]}>
       <Text style={[styles.pillValue, { color }]}>{value}</Text>
       <Text style={styles.pillLabel}>{label}</Text>
-      {sub ? <Text style={styles.pillSub}>{sub}</Text> : null}
+      {sub ? <Text style={[styles.pillSub, subColor ? { color: subColor } : null]}>{sub}</Text> : null}
     </View>
   );
 }
 
 function SessionCard({ session, onPress }: { session: Session; onPress: () => void }) {
+  const levelsGained = session.lvEnd - session.lvStart;
+  const pctGained = levelsGained * 100 + (session.expEnd - session.expStart);
   return (
     <TouchableOpacity style={styles.sessionCard} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.sessionCardLeft}>
         <Text style={styles.sessionCardLevel}>
-          Lv {session.lvStart} → {session.lvEnd}
+          Lv {session.lvStart}{levelsGained > 0 ? ` → ${session.lvEnd}` : ''}
         </Text>
         <Text style={styles.sessionCardExp}>
           {formatPercent(session.expStart)}% → {formatPercent(session.expEnd)}%
         </Text>
         <Text style={[styles.sessionCardEXP, { color: COLORS.exp }]}>
           +{formatExp(session.expGainedActual)} EXP
+          <Text style={styles.sessionCardPct}>  (+{formatPercent(pctGained)}%)</Text>
         </Text>
       </View>
       <View style={styles.sessionCardRight}>
-        <Text style={styles.sessionCardMini}>
-          Frags <Text style={{ color: COLORS.frags }}>+{session.fragsGained}</Text>
-        </Text>
-        <Text style={styles.sessionCardMini}>
-          Nodos <Text style={{ color: COLORS.nodes }}>+{session.nodesGained}</Text>
-        </Text>
-        <Text style={styles.sessionCardMini}>
-          Mesos <Text style={{ color: COLORS.mesos }}>+{formatExp(session.mesosGained)}</Text>
-        </Text>
-        <Ionicons name="chevron-forward" size={14} color={COLORS.textMuted} style={{ marginTop: 6 }} />
+        <Text style={styles.sessionCardMini}>Frags <Text style={{ color: COLORS.frags }}>+{formatNumber(session.fragsGained)}</Text></Text>
+        <Text style={styles.sessionCardMini}>Nodos <Text style={{ color: COLORS.nodes }}>+{formatNumber(session.nodesGained)}</Text></Text>
+        <Text style={styles.sessionCardMini}>Mesos <Text style={{ color: COLORS.mesos }}>+{formatExp(session.mesosGained)}</Text></Text>
+        {session.commonFamiliarsGained > 0 && (
+          <Text style={styles.sessionCardMini}>Fam.C <Text style={{ color: COLORS.common }}>+{session.commonFamiliarsGained}</Text></Text>
+        )}
+        {session.rareFamiliarsGained > 0 && (
+          <Text style={styles.sessionCardMini}>Fam.R <Text style={{ color: COLORS.rare }}>+{session.rareFamiliarsGained}</Text></Text>
+        )}
+        <Ionicons name="chevron-forward" size={14} color={COLORS.textMuted} style={{ marginTop: 4 }} />
       </View>
     </TouchableOpacity>
   );
@@ -178,11 +181,20 @@ export default function HomeScreen() {
               </View>
 
               {/* Stat pills row 1 */}
-              <View style={styles.pillRow}>
-                <StatPill label="EXP" value={formatExp(stats.totalExpGained)} color={COLORS.exp} />
-                <StatPill label="Fragmentos" value={`+${formatNumber(stats.totalFragsGained)}`} color={COLORS.frags} />
-                <StatPill label="Nodos" value={`+${formatNumber(stats.totalNodesGained)}`} color={COLORS.nodes} />
-              </View>
+              {(() => {
+                const levelsUp = stats.lvEnd - stats.lvStart;
+                const pctGained = levelsUp * 100 + (stats.expEnd - stats.expStart);
+                const expSub = levelsUp > 0
+                  ? `+${levelsUp} lv · +${formatPercent(stats.expEnd)}%`
+                  : `+${formatPercent(pctGained)}%`;
+                return (
+                  <View style={styles.pillRow}>
+                    <StatPill label="EXP" value={formatExp(stats.totalExpGained)} color={COLORS.exp} sub={expSub} subColor={COLORS.exp} />
+                    <StatPill label="Fragmentos" value={`+${formatNumber(stats.totalFragsGained)}`} color={COLORS.frags} />
+                    <StatPill label="Nodos" value={`+${formatNumber(stats.totalNodesGained)}`} color={COLORS.nodes} />
+                  </View>
+                );
+              })()}
 
               {/* Stat pills row 2 */}
               <View style={styles.pillRow}>
@@ -367,7 +379,7 @@ const styles = StyleSheet.create({
   },
   pillValue: { fontSize: FONTS.md, fontWeight: '700' },
   pillLabel: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginTop: 2, textAlign: 'center' },
-  pillSub: { color: COLORS.textMuted, fontSize: FONTS.xs },
+  pillSub: { fontSize: FONTS.xs, fontWeight: '600', marginTop: 1 },
 
   empty: { alignItems: 'center', paddingVertical: SPACING.xl },
   emptyEmoji: { fontSize: 44, marginBottom: SPACING.md },
@@ -380,6 +392,7 @@ const styles = StyleSheet.create({
   sessionCardLevel: { color: COLORS.text, fontSize: FONTS.lg, fontWeight: '700' },
   sessionCardExp: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginTop: 1 },
   sessionCardEXP: { fontSize: FONTS.sm, fontWeight: '600', marginTop: 2 },
+  sessionCardPct: { color: COLORS.textMuted, fontSize: FONTS.xs, fontWeight: '400' },
   sessionCardRight: { alignItems: 'flex-end', marginLeft: SPACING.md },
   sessionCardMini: { color: COLORS.textSecondary, fontSize: FONTS.sm },
 
