@@ -8,6 +8,7 @@ import { RootStackParamList, Session, OpenSession } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
 import { calculateExpGained } from '../utils/expCalculator';
 import { addSession, getOpenSession, deleteOpenSession, generateId } from '../utils/storage';
+import { useProfile } from '../context/ProfileContext';
 import { formatExp, formatNumber, formatPercent } from '../utils/formatters';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FinishSession'>;
@@ -59,6 +60,7 @@ function StartRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function FinishSessionScreen({ navigation }: Props) {
+  const { activeProfileId } = useProfile();
   const [open, setOpen] = useState<OpenSession | null>(null);
 
   const [lvEnd, setLvEnd] = useState('');
@@ -70,7 +72,7 @@ export default function FinishSessionScreen({ navigation }: Props) {
   const [rareEnd, setRareEnd] = useState('');
 
   useEffect(() => {
-    getOpenSession().then((s) => {
+    getOpenSession(activeProfileId ?? undefined).then((s) => {
       if (!s) {
         Alert.alert('Sin sesión activa', 'No hay ninguna sesión en progreso.', [
           { text: 'OK', onPress: () => navigation.goBack() },
@@ -142,7 +144,7 @@ export default function FinishSessionScreen({ navigation }: Props) {
     };
 
     await addSession(session);
-    await deleteOpenSession();
+    await deleteOpenSession(open.profileId);
     navigation.goBack();
   }, [
     open, lvEnd, expEnd, fragsEnd, nodesEnd, mesosEnd,

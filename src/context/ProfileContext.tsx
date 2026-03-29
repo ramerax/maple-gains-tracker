@@ -2,11 +2,12 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Profile } from '../types';
 import {
   getProfiles,
-  saveProfiles,
+  addProfile,
   getActiveProfileId,
   setActiveProfileId,
   generateId,
 } from '../utils/storage';
+import { runMigrationIfNeeded } from '../utils/migration';
 
 interface ProfileContextValue {
   profiles: Profile[];
@@ -25,6 +26,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [activeProfileId, setActiveProfileIdState] = useState<string | null>(null);
 
   const refreshProfiles = useCallback(async () => {
+    // Always run migration first — prevents race condition with profile creation
+    await runMigrationIfNeeded();
     let loaded = await getProfiles();
     let activeId = await getActiveProfileId();
 
@@ -36,7 +39,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         color: DEFAULT_PROFILE_COLOR,
         createdAt: Date.now(),
       };
-      await saveProfiles([defaultProfile]);
+      await addProfile(defaultProfile);
       await setActiveProfileId(defaultProfile.id);
       loaded = [defaultProfile];
       activeId = defaultProfile.id;

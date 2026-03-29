@@ -1,59 +1,174 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../lib/supabase';
 import { Session, PeriodStats, Profile, OpenSession } from '../types';
 
-const SESSIONS_KEY = '@maple_sessions';
-const PROFILES_KEY = '@maple_profiles';
-const ACTIVE_PROFILE_KEY = '@maple_active_profile';
+// ── Mappers ────────────────────────────────────────────────────────────────────
 
-async function loadAll(): Promise<Session[]> {
-  try {
-    const raw = await AsyncStorage.getItem(SESSIONS_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as Session[];
-  } catch {
-    return [];
-  }
+function rowToSession(row: any): Session {
+  return {
+    id: row.id,
+    date: row.date,
+    createdAt: row.created_at,
+    profileId: row.profile_id ?? undefined,
+    lvStart: row.lv_start,
+    expStart: row.exp_start,
+    lvEnd: row.lv_end,
+    expEnd: row.exp_end,
+    expGainedActual: row.exp_gained_actual,
+    fragsStart: row.frags_start,
+    fragsEnd: row.frags_end,
+    fragsGained: row.frags_gained,
+    nodesStart: row.nodes_start,
+    nodesEnd: row.nodes_end,
+    nodesGained: row.nodes_gained,
+    mesosStart: row.mesos_start,
+    mesosEnd: row.mesos_end,
+    mesosGained: row.mesos_gained,
+    commonFamiliarsStart: row.common_familiars_start,
+    commonFamiliarsEnd: row.common_familiars_end,
+    commonFamiliarsGained: row.common_familiars_gained,
+    rareFamiliarsStart: row.rare_familiars_start,
+    rareFamiliarsEnd: row.rare_familiars_end,
+    rareFamiliarsGained: row.rare_familiars_gained,
+    notes: row.notes ?? undefined,
+  };
 }
 
-async function saveAll(sessions: Session[]): Promise<void> {
-  await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+function sessionToRow(session: Session): Record<string, unknown> {
+  return {
+    id: session.id,
+    profile_id: session.profileId ?? null,
+    date: session.date,
+    created_at: session.createdAt,
+    lv_start: session.lvStart,
+    exp_start: session.expStart,
+    lv_end: session.lvEnd,
+    exp_end: session.expEnd,
+    exp_gained_actual: session.expGainedActual,
+    frags_start: session.fragsStart,
+    frags_end: session.fragsEnd,
+    frags_gained: session.fragsGained,
+    nodes_start: session.nodesStart,
+    nodes_end: session.nodesEnd,
+    nodes_gained: session.nodesGained,
+    mesos_start: session.mesosStart,
+    mesos_end: session.mesosEnd,
+    mesos_gained: session.mesosGained,
+    common_familiars_start: session.commonFamiliarsStart,
+    common_familiars_end: session.commonFamiliarsEnd,
+    common_familiars_gained: session.commonFamiliarsGained,
+    rare_familiars_start: session.rareFamiliarsStart,
+    rare_familiars_end: session.rareFamiliarsEnd,
+    rare_familiars_gained: session.rareFamiliarsGained,
+    notes: session.notes ?? null,
+  };
 }
+
+function rowToProfile(row: any): Profile {
+  return {
+    id: row.id,
+    name: row.name,
+    gameClass: row.game_class ?? undefined,
+    server: row.server ?? undefined,
+    color: row.color,
+    createdAt: row.created_at,
+  };
+}
+
+function profileToRow(profile: Profile): Record<string, unknown> {
+  return {
+    id: profile.id,
+    name: profile.name,
+    game_class: profile.gameClass ?? null,
+    server: profile.server ?? null,
+    color: profile.color,
+    created_at: profile.createdAt,
+  };
+}
+
+function rowToOpenSession(row: any): OpenSession {
+  return {
+    id: row.id,
+    date: row.date,
+    startedAt: row.started_at,
+    profileId: row.profile_id,
+    lvStart: row.lv_start,
+    expStart: row.exp_start,
+    fragsStart: row.frags_start,
+    nodesStart: row.nodes_start,
+    mesosStart: row.mesos_start,
+    commonFamiliarsStart: row.common_familiars_start,
+    rareFamiliarsStart: row.rare_familiars_start,
+    notes: row.notes ?? undefined,
+  };
+}
+
+function openSessionToRow(session: OpenSession): Record<string, unknown> {
+  return {
+    id: session.id,
+    profile_id: session.profileId,
+    date: session.date,
+    started_at: session.startedAt,
+    lv_start: session.lvStart,
+    exp_start: session.expStart,
+    frags_start: session.fragsStart,
+    nodes_start: session.nodesStart,
+    mesos_start: session.mesosStart,
+    common_familiars_start: session.commonFamiliarsStart,
+    rare_familiars_start: session.rareFamiliarsStart,
+    notes: session.notes ?? null,
+  };
+}
+
+// ── Session CRUD ───────────────────────────────────────────────────────────────
 
 export async function getAllSessions(): Promise<Session[]> {
-  const sessions = await loadAll();
-  return sessions.sort((a, b) => b.createdAt - a.createdAt);
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) { console.error('getAllSessions:', error.message); return []; }
+  return (data ?? []).map(rowToSession);
 }
 
 export async function getSessionById(id: string): Promise<Session | null> {
-  const sessions = await loadAll();
-  return sessions.find((s) => s.id === id) ?? null;
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error) { console.error('getSessionById:', error.message); return null; }
+  return data ? rowToSession(data) : null;
 }
 
 export async function addSession(session: Session): Promise<void> {
-  const sessions = await loadAll();
-  sessions.push(session);
-  await saveAll(sessions);
+  const { error } = await supabase.from('sessions').insert(sessionToRow(session));
+  if (error) console.error('addSession:', error.message);
 }
 
 export async function updateSession(updated: Session): Promise<void> {
-  const sessions = await loadAll();
-  const idx = sessions.findIndex((s) => s.id === updated.id);
-  if (idx !== -1) {
-    sessions[idx] = updated;
-    await saveAll(sessions);
-  }
+  const { error } = await supabase
+    .from('sessions')
+    .update(sessionToRow(updated))
+    .eq('id', updated.id);
+  if (error) console.error('updateSession:', error.message);
 }
 
 export async function deleteSession(id: string): Promise<void> {
-  const sessions = await loadAll();
-  await saveAll(sessions.filter((s) => s.id !== id));
+  const { error } = await supabase.from('sessions').delete().eq('id', id);
+  if (error) console.error('deleteSession:', error.message);
 }
 
 export async function getSessionsByDate(date: string, profileId?: string): Promise<Session[]> {
-  const sessions = await loadAll();
-  return sessions
-    .filter((s) => s.date === date && (profileId == null || s.profileId === profileId))
-    .sort((a, b) => a.createdAt - b.createdAt);
+  let query = supabase
+    .from('sessions')
+    .select('*')
+    .eq('date', date)
+    .order('created_at', { ascending: true });
+  if (profileId) query = query.eq('profile_id', profileId);
+  const { data, error } = await query;
+  if (error) { console.error('getSessionsByDate:', error.message); return []; }
+  return (data ?? []).map(rowToSession);
 }
 
 export async function getSessionsByDateRange(
@@ -61,16 +176,20 @@ export async function getSessionsByDateRange(
   endDate: string,
   profileId?: string
 ): Promise<Session[]> {
-  const sessions = await loadAll();
-  return sessions
-    .filter(
-      (s) =>
-        s.date >= startDate &&
-        s.date <= endDate &&
-        (profileId == null || s.profileId === profileId)
-    )
-    .sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt);
+  let query = supabase
+    .from('sessions')
+    .select('*')
+    .gte('date', startDate)
+    .lte('date', endDate)
+    .order('date', { ascending: true })
+    .order('created_at', { ascending: true });
+  if (profileId) query = query.eq('profile_id', profileId);
+  const { data, error } = await query;
+  if (error) { console.error('getSessionsByDateRange:', error.message); return []; }
+  return (data ?? []).map(rowToSession);
 }
+
+// ── Aggregate (pure function, unchanged) ──────────────────────────────────────
 
 export function aggregateStats(sessions: Session[]): PeriodStats | null {
   if (sessions.length === 0) return null;
@@ -98,72 +217,81 @@ export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-// ── Profile storage ────────────────────────────────────────────────────────────
+// ── Profile CRUD ───────────────────────────────────────────────────────────────
 
 export async function getProfiles(): Promise<Profile[]> {
-  try {
-    const raw = await AsyncStorage.getItem(PROFILES_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as Profile[];
-  } catch {
-    return [];
-  }
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: true });
+  if (error) { console.error('getProfiles:', error.message); return []; }
+  return (data ?? []).map(rowToProfile);
 }
 
+/** @deprecated Use addProfile / updateProfile individually */
 export async function saveProfiles(profiles: Profile[]): Promise<void> {
-  await AsyncStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+  for (const p of profiles) {
+    const { error } = await supabase.from('profiles').upsert(profileToRow(p));
+    if (error) console.error('saveProfiles upsert:', error.message);
+  }
 }
 
 export async function addProfile(profile: Profile): Promise<void> {
-  const profiles = await getProfiles();
-  profiles.push(profile);
-  await saveProfiles(profiles);
+  const { error } = await supabase.from('profiles').insert(profileToRow(profile));
+  if (error) console.error('addProfile:', error.message);
 }
 
 export async function updateProfile(profile: Profile): Promise<void> {
-  const profiles = await getProfiles();
-  const idx = profiles.findIndex((p) => p.id === profile.id);
-  if (idx !== -1) {
-    profiles[idx] = profile;
-    await saveProfiles(profiles);
-  }
+  const { error } = await supabase
+    .from('profiles')
+    .update(profileToRow(profile))
+    .eq('id', profile.id);
+  if (error) console.error('updateProfile:', error.message);
 }
 
 export async function deleteProfile(id: string): Promise<void> {
-  const profiles = await getProfiles();
-  await saveProfiles(profiles.filter((p) => p.id !== id));
+  const { error } = await supabase.from('profiles').delete().eq('id', id);
+  if (error) console.error('deleteProfile:', error.message);
 }
 
+// ── Active Profile (stays local — device preference) ──────────────────────────
+
+const ACTIVE_PROFILE_KEY = '@maple_active_profile';
+
 export async function getActiveProfileId(): Promise<string | null> {
-  try {
-    return await AsyncStorage.getItem(ACTIVE_PROFILE_KEY);
-  } catch {
-    return null;
-  }
+  try { return await AsyncStorage.getItem(ACTIVE_PROFILE_KEY); }
+  catch { return null; }
 }
 
 export async function setActiveProfileId(id: string): Promise<void> {
   await AsyncStorage.setItem(ACTIVE_PROFILE_KEY, id);
 }
 
-// ── Open Session (sesión en progreso) ──────────────────────────────────────────
+// ── Open Session ───────────────────────────────────────────────────────────────
 
-const OPEN_SESSION_KEY = '@maple_open_session';
-
-export async function getOpenSession(): Promise<OpenSession | null> {
-  try {
-    const raw = await AsyncStorage.getItem(OPEN_SESSION_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as OpenSession;
-  } catch {
-    return null;
-  }
+export async function getOpenSession(profileId?: string): Promise<OpenSession | null> {
+  let query = supabase.from('open_sessions').select('*');
+  if (profileId) query = query.eq('profile_id', profileId);
+  const { data, error } = await query.limit(1);
+  if (error) { console.error('getOpenSession:', error.message); return null; }
+  return data && data.length > 0 ? rowToOpenSession(data[0]) : null;
 }
 
 export async function saveOpenSession(session: OpenSession): Promise<void> {
-  await AsyncStorage.setItem(OPEN_SESSION_KEY, JSON.stringify(session));
+  // Upsert: delete existing for this profile then insert fresh
+  await supabase.from('open_sessions').delete().eq('profile_id', session.profileId);
+  const { error } = await supabase.from('open_sessions').insert(openSessionToRow(session));
+  if (error) console.error('saveOpenSession:', error.message);
 }
 
-export async function deleteOpenSession(): Promise<void> {
-  await AsyncStorage.removeItem(OPEN_SESSION_KEY);
+export async function deleteOpenSession(profileId?: string): Promise<void> {
+  let query = supabase.from('open_sessions').delete();
+  if (profileId) {
+    const { error } = await query.eq('profile_id', profileId);
+    if (error) console.error('deleteOpenSession:', error.message);
+  } else {
+    // Delete all (fallback)
+    const { error } = await query.gte('started_at', 0);
+    if (error) console.error('deleteOpenSession:', error.message);
+  }
 }

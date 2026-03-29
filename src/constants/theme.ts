@@ -24,13 +24,13 @@ export const COLORS = {
   border: '#1C1C1C',
   inputBg: '#080808',
 
-  // Stat accent colors — orange family for cohesion
-  exp: '#FF8C00',    // main orange
-  frags: '#FFB347',  // peach/amber
-  nodes: '#FF6000',  // deep orange
-  mesos: '#FFD700',  // gold
-  common: '#FFC170', // light amber
-  rare: '#E0E0E0',   // near-white (raros = especiales)
+  // Stat accent colors
+  exp: '#4ADE80',    // green
+  frags: '#A78BFA',  // purple/violet
+  nodes: '#BAE6FD',  // ice blue / blue-white
+  mesos: '#FCD34D',  // amber yellow
+  common: '#D1D5DB', // grayish white
+  rare: '#38BDF8',   // sky blue
 };
 
 export const FONTS = {

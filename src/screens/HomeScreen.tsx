@@ -14,20 +14,37 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Session, PeriodStats, OpenSession } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
-import { getSessionsByDate, aggregateStats, getOpenSession, deleteOpenSession } from '../utils/storage';
+import { getSessionsByDate, getAllSessions, aggregateStats, getOpenSession, deleteOpenSession } from '../utils/storage';
 import { getTodayString, formatDateLong, formatExp, formatNumber, formatPercent } from '../utils/formatters';
 import { useProfile } from '../context/ProfileContext';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-function StatPill({ label, value, color, sub, subColor }: {
-  label: string; value: string; color: string; sub?: string; subColor?: string;
+function StatPill({ label, value, color, sub, total }: {
+  label: string; value: string; color: string; sub?: string; total?: string;
 }) {
   return (
-    <View style={[styles.pill, { borderColor: color + '30' }]}>
-      <Text style={[styles.pillValue, { color }]}>{value}</Text>
-      <Text style={styles.pillLabel}>{label}</Text>
-      {sub ? <Text style={[styles.pillSub, subColor ? { color: subColor } : null]}>{sub}</Text> : null}
+    <View style={styles.pill}>
+      {/* Header */}
+      <Text style={styles.pillHeader}>{label}</Text>
+
+      {/* Main content */}
+      <View style={styles.pillMiddle}>
+        <View style={styles.pillBody}>
+          <Text style={[styles.pillValue, { color }]}>{value}</Text>
+          {sub ? <Text style={[styles.pillSub, { color }]}>{sub}</Text> : null}
+        </View>
+      </View>
+
+      {/* Total footer */}
+      {total ? (
+        <View style={styles.pillFooter}>
+          <View style={styles.pillDivider} />
+          <Text style={styles.pillTotal}>{total}</Text>
+        </View>
+      ) : (
+        <View style={styles.pillFooterEmpty} />
+      )}
     </View>
   );
 }
@@ -71,22 +88,23 @@ export default function HomeScreen() {
   const today = getTodayString();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [stats, setStats] = useState<PeriodStats | null>(null);
+  const [allTimeStats, setAllTimeStats] = useState<PeriodStats | null>(null);
   const [openSession, setOpenSession] = useState<OpenSession | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const [s, open] = await Promise.all([
+    const [s, allSessions, open] = await Promise.all([
       getSessionsByDate(today, activeProfileId ?? undefined),
-      getOpenSession(),
+      getAllSessions(),
+      getOpenSession(activeProfileId ?? undefined),
     ]);
-    // Only show open session if it belongs to the active profile
-    setOpenSession(
-      open && (activeProfileId == null || open.profileId === activeProfileId)
-        ? open
-        : null
-    );
+    const profileSessions = activeProfileId
+      ? allSessions.filter((r) => r.profileId === activeProfileId)
+      : allSessions;
+    setOpenSession(open ?? null);
     setSessions(s);
     setStats(aggregateStats(s));
+    setAllTimeStats(aggregateStats(profileSessions));
   }, [today, activeProfileId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -107,7 +125,7 @@ export default function HomeScreen() {
           text: 'Sí, cancelar',
           style: 'destructive',
           onPress: async () => {
-            await deleteOpenSession();
+            await deleteOpenSession(activeProfileId ?? undefined);
             setOpenSession(null);
           },
         },
@@ -171,15 +189,6 @@ export default function HomeScreen() {
 
           {stats ? (
             <>
-              {/* Level track */}
-              <View style={styles.levelTrack}>
-                <Ionicons name="trending-up" size={16} color={COLORS.primary} />
-                <Text style={styles.levelTrackText}>
-                  {'  '}Lv {stats.lvStart} ({formatPercent(stats.expStart)}%){'  →  '}
-                  Lv {stats.lvEnd} ({formatPercent(stats.expEnd)}%)
-                </Text>
-              </View>
-
               {/* Stat pills row 1 */}
               {(() => {
                 const levelsUp = stats.lvEnd - stats.lvStart;
@@ -189,18 +198,36 @@ export default function HomeScreen() {
                   : `+${formatPercent(pctGained)}%`;
                 return (
                   <View style={styles.pillRow}>
-                    <StatPill label="EXP" value={formatExp(stats.totalExpGained)} color={COLORS.exp} sub={expSub} subColor={COLORS.exp} />
-                    <StatPill label="Fragmentos" value={`+${formatNumber(stats.totalFragsGained)}`} color={COLORS.frags} />
-                    <StatPill label="Nodos" value={`+${formatNumber(stats.totalNodesGained)}`} color={COLORS.nodes} />
+                    <StatPill
+                      label="EXP" value={expSub} color={COLORS.exp}
+                      total={allTimeStats ? `Tot: ${formatExp(allTimeStats.totalExpGained)}` : undefined}
+                    />
+                    <StatPill
+                      label="Fragmentos" value={`+${formatNumber(stats.totalFragsGained)}`} color={COLORS.frags}
+                      total={allTimeStats ? `Tot: ${formatNumber(allTimeStats.totalFragsGained)}` : undefined}
+                    />
+                    <StatPill
+                      label="Nodos" value={`+${formatNumber(stats.totalNodesGained)}`} color={COLORS.nodes}
+                      total={allTimeStats ? `Tot: ${formatNumber(allTimeStats.totalNodesGained)}` : undefined}
+                    />
                   </View>
                 );
               })()}
 
               {/* Stat pills row 2 */}
               <View style={styles.pillRow}>
-                <StatPill label="Mesos" value={`+${formatExp(stats.totalMesosGained)}`} color={COLORS.mesos} />
-                <StatPill label="Fam. Comunes" value={`+${stats.totalCommonFamiliarsGained}`} color={COLORS.common} />
-                <StatPill label="Fam. Raros" value={`+${stats.totalRareFamiliarsGained}`} color={COLORS.rare} />
+                <StatPill
+                  label="Mesos" value={`+${formatExp(stats.totalMesosGained)}`} color={COLORS.mesos}
+                  total={allTimeStats ? `Tot: ${formatExp(allTimeStats.totalMesosGained)}` : undefined}
+                />
+                <StatPill
+                  label="Fam. Comunes" value={`+${stats.totalCommonFamiliarsGained}`} color={COLORS.common}
+                  total={allTimeStats ? `Tot: ${allTimeStats.totalCommonFamiliarsGained}` : undefined}
+                />
+                <StatPill
+                  label="Fam. Raros" value={`+${stats.totalRareFamiliarsGained}`} color={COLORS.rare}
+                  total={allTimeStats ? `Tot: ${allTimeStats.totalRareFamiliarsGained}` : undefined}
+                />
               </View>
             </>
           ) : (
@@ -373,13 +400,39 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.md,
-    padding: SPACING.sm,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.sm,
+    paddingHorizontal: SPACING.xs,
     alignItems: 'center',
     borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    minHeight: 96,
   },
-  pillValue: { fontSize: FONTS.md, fontWeight: '700' },
-  pillLabel: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginTop: 2, textAlign: 'center' },
-  pillSub: { fontSize: FONTS.xs, fontWeight: '600', marginTop: 1 },
+  pillHeader: {
+    color: COLORS.textSecondary,
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: SPACING.sm,
+  },
+  pillMiddle: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  pillBody: {
+    alignItems: 'center',
+  },
+  pillValue: { fontSize: FONTS.lg, fontWeight: '800', textAlign: 'center' },
+  pillSub: { fontSize: FONTS.xs, fontWeight: '600', marginTop: 2, textAlign: 'center', opacity: 0.85 },
+  pillSubSpacer: { height: 0 },
+  pillFooter: { alignItems: 'center', width: '100%', paddingTop: SPACING.xs },
+  pillFooterEmpty: { height: SPACING.sm },
+  pillDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.08)', width: '75%', marginBottom: SPACING.xs },
+  pillTotal: { color: COLORS.textSecondary, fontSize: FONTS.xs, textAlign: 'center', fontWeight: '500' },
 
   empty: { alignItems: 'center', paddingVertical: SPACING.xl },
   emptyEmoji: { fontSize: 44, marginBottom: SPACING.md },
@@ -392,7 +445,7 @@ const styles = StyleSheet.create({
   sessionCardLevel: { color: COLORS.text, fontSize: FONTS.lg, fontWeight: '700' },
   sessionCardExp: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginTop: 1 },
   sessionCardEXP: { fontSize: FONTS.sm, fontWeight: '600', marginTop: 2 },
-  sessionCardPct: { color: COLORS.textMuted, fontSize: FONTS.xs, fontWeight: '400' },
+  sessionCardPct: { color: COLORS.textSecondary, fontSize: FONTS.sm, fontWeight: '500' },
   sessionCardRight: { alignItems: 'flex-end', marginLeft: SPACING.md },
   sessionCardMini: { color: COLORS.textSecondary, fontSize: FONTS.sm },
 
