@@ -17,6 +17,7 @@ import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
 import { getSessionsByDate, getAllSessions, aggregateStats, getOpenSession, deleteOpenSession } from '../utils/storage';
 import { getTodayString, formatDateLong, formatExp, formatNumber, formatPercent } from '../utils/formatters';
 import { useProfile } from '../context/ProfileContext';
+import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -85,6 +86,7 @@ function SessionCard({ session, onPress }: { session: Session; onPress: () => vo
 export default function HomeScreen() {
   const navigation = useNavigation<Nav>();
   const { activeProfile, activeProfileId } = useProfile();
+  const isDesktop = useIsDesktopWeb();
   const today = getTodayString();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [stats, setStats] = useState<PeriodStats | null>(null);
@@ -137,44 +139,53 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, isDesktop && styles.contentDesktop]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />
         }
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.headerTitle}>🍁 MapleGains</Text>
-            <Text style={styles.headerDate}>{formatDateLong(today)}</Text>
-            {activeProfile && (
-              <Text style={styles.headerProfile} numberOfLines={1}>
-                {activeProfile.name}
-                {activeProfile.gameClass ? ` · ${activeProfile.gameClass}` : ''}
-              </Text>
-            )}
-          </View>
-          <TouchableOpacity
-            style={styles.profileBtn}
-            onPress={() => navigation.navigate('Profiles')}
-            activeOpacity={0.85}
-          >
-            {activeProfile ? (
-              <View
-                style={[
-                  styles.profileAvatar,
-                  { backgroundColor: activeProfile.color + '30', borderColor: activeProfile.color },
-                ]}
-              >
-                <Text style={[styles.profileAvatarLetter, { color: activeProfile.color }]}>
-                  {activeProfile.name.charAt(0).toUpperCase()}
+        {/* Header — hidden on desktop (sidebar handles logo/profile) */}
+        {!isDesktop && (
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.headerTitle}>🍁 MapleGains</Text>
+              <Text style={styles.headerDate}>{formatDateLong(today)}</Text>
+              {activeProfile && (
+                <Text style={styles.headerProfile} numberOfLines={1}>
+                  {activeProfile.name}
+                  {activeProfile.gameClass ? ` · ${activeProfile.gameClass}` : ''}
                 </Text>
-              </View>
-            ) : (
-              <Ionicons name="person-circle-outline" size={32} color={COLORS.primary} />
-            )}
-          </TouchableOpacity>
-        </View>
+              )}
+            </View>
+            <TouchableOpacity
+              style={styles.profileBtn}
+              onPress={() => navigation.navigate('Profiles')}
+              activeOpacity={0.85}
+            >
+              {activeProfile ? (
+                <View
+                  style={[
+                    styles.profileAvatar,
+                    { backgroundColor: activeProfile.color + '30', borderColor: activeProfile.color },
+                  ]}
+                >
+                  <Text style={[styles.profileAvatarLetter, { color: activeProfile.color }]}>
+                    {activeProfile.name.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+              ) : (
+                <Ionicons name="person-circle-outline" size={32} color={COLORS.primary} />
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Desktop date header */}
+        {isDesktop && (
+          <View style={styles.desktopDateHeader}>
+            <Text style={styles.headerDate}>{formatDateLong(today)}</Text>
+          </View>
+        )}
 
         {/* Today summary card */}
         <View style={styles.card}>
@@ -313,6 +324,8 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { flex: 1 },
   content: { padding: SPACING.lg, paddingBottom: 32 },
+  contentDesktop: { maxWidth: 860, width: '100%', alignSelf: 'center' as const },
+  desktopDateHeader: { marginBottom: SPACING.xl },
 
   header: {
     flexDirection: 'row',
