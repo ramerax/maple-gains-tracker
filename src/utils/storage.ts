@@ -214,7 +214,13 @@ export function aggregateStats(sessions: Session[]): PeriodStats | null {
 }
 
 export function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // Fallback: timestamp + cryptographically strong random bytes
+  const arr = new Uint32Array(3);
+  crypto.getRandomValues(arr);
+  return `${Date.now()}-${arr[0].toString(36)}${arr[1].toString(36)}${arr[2].toString(36)}`;
 }
 
 // ── Profile CRUD ───────────────────────────────────────────────────────────────

@@ -106,6 +106,10 @@ export default function AddSessionScreen({ route, navigation }: Props) {
   const rareGained = pi(rareEnd) - pi(rareStart);
 
   const handleSave = useCallback(async () => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      Alert.alert('Fecha inválida', 'El formato debe ser YYYY-MM-DD.');
+      return;
+    }
     if (!lvStart || !expStart || !lvEnd || !expEnd) {
       Alert.alert('Datos incompletos', 'Ingresa nivel y % de EXP de inicio y fin.');
       return;
@@ -317,6 +321,7 @@ export default function AddSessionScreen({ route, navigation }: Props) {
             placeholderTextColor={COLORS.textMuted}
             multiline
             numberOfLines={3}
+            maxLength={500}
           />
         </View>
 
