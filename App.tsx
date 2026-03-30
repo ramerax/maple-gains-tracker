@@ -10,6 +10,8 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { COLORS, FONTS } from './src/constants/theme';
 import { RootStackParamList, TabParamList } from './src/types';
 import { ProfileProvider } from './src/context/ProfileContext';
+import { useIsDesktopWeb } from './src/hooks/useIsDesktopWeb';
+import WebLayout from './src/components/WebLayout';
 
 import HomeScreen from './src/screens/HomeScreen';
 import AddSessionScreen from './src/screens/AddSessionScreen';
@@ -54,7 +56,14 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, Error
 
 // ── Tabs ───────────────────────────────────────────────────────────────────────
 function Tabs() {
+  const isDesktopWeb = useIsDesktopWeb();
   const insets = useSafeAreaInsets();
+
+  // Desktop web: sidebar layout instead of bottom tabs
+  if (isDesktopWeb) {
+    return <WebLayout />;
+  }
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -109,63 +118,74 @@ function Tabs() {
 }
 
 // ── Root ───────────────────────────────────────────────────────────────────────
-export default function App() {
+function AppContent() {
   const isWeb = Platform.OS === 'web';
+  const isDesktopWeb = useIsDesktopWeb();
+
+  // Desktop web: full viewport, no centering — WebLayout handles its own structure
+  // Mobile web (<768px): centered 480px container (mobile-in-browser look)
+  // Native: plain flex: 1
+  const outerStyle = isWeb && !isDesktopWeb
+    ? { flex: 1, backgroundColor: '#050505', alignItems: 'center' as const }
+    : { flex: 1 };
+  const innerStyle = isWeb && !isDesktopWeb
+    ? { flex: 1, width: '100%' as const, maxWidth: 480, backgroundColor: COLORS.bg, overflow: 'hidden' as const }
+    : { flex: 1 };
+
+  return (
+    <View style={outerStyle}>
+      <View style={innerStyle}>
+        <NavigationContainer>
+          <StatusBar style="light" />
+          <Stack.Navigator
+            screenOptions={{
+              ...NAV_HEADER,
+              contentStyle: { backgroundColor: COLORS.bg },
+            }}
+          >
+            <Stack.Screen
+              name="MainTabs"
+              component={Tabs}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="AddSession"
+              component={AddSessionScreen}
+              options={{ title: 'Nueva Sesión', presentation: 'modal' }}
+            />
+            <Stack.Screen
+              name="SessionDetail"
+              component={SessionDetailScreen}
+              options={{ title: 'Detalle' }}
+            />
+            <Stack.Screen
+              name="Profiles"
+              component={ProfilesScreen}
+              options={{ title: 'Perfiles' }}
+            />
+            <Stack.Screen
+              name="StartSession"
+              component={StartSessionScreen}
+              options={{ title: 'Iniciar Sesión', presentation: 'modal' }}
+            />
+            <Stack.Screen
+              name="FinishSession"
+              component={FinishSessionScreen}
+              options={{ title: 'Finalizar Sesión', presentation: 'modal' }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </View>
+    </View>
+  );
+}
+
+export default function App() {
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
         <ProfileProvider>
-          {/* Web: fondo oscuro a pantalla completa, app centrada con maxWidth */}
-          <View style={isWeb
-            ? { flex: 1, backgroundColor: '#050505', alignItems: 'center', justifyContent: 'center' }
-            : { flex: 1 }
-          }>
-            <View style={isWeb
-              ? { flex: 1, width: '100%', maxWidth: 480, backgroundColor: COLORS.bg, overflow: 'hidden' }
-              : { flex: 1 }
-            }>
-          <NavigationContainer>
-            <StatusBar style="light" />
-            <Stack.Navigator
-              screenOptions={{
-                ...NAV_HEADER,
-                contentStyle: { backgroundColor: COLORS.bg },
-              }}
-            >
-              <Stack.Screen
-                name="MainTabs"
-                component={Tabs}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="AddSession"
-                component={AddSessionScreen}
-                options={{ title: 'Nueva Sesión', presentation: 'modal' }}
-              />
-              <Stack.Screen
-                name="SessionDetail"
-                component={SessionDetailScreen}
-                options={{ title: 'Detalle' }}
-              />
-              <Stack.Screen
-                name="Profiles"
-                component={ProfilesScreen}
-                options={{ title: 'Perfiles' }}
-              />
-              <Stack.Screen
-                name="StartSession"
-                component={StartSessionScreen}
-                options={{ title: 'Iniciar Sesión', presentation: 'modal' }}
-              />
-              <Stack.Screen
-                name="FinishSession"
-                component={FinishSessionScreen}
-                options={{ title: 'Finalizar Sesión', presentation: 'modal' }}
-              />
-            </Stack.Navigator>
-          </NavigationContainer>
-            </View>
-          </View>
+          <AppContent />
         </ProfileProvider>
       </SafeAreaProvider>
     </ErrorBoundary>

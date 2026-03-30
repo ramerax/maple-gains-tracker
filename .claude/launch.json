@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Expo Dev Server (QR / Expo Go)",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "npm run start"],
+      "port": 8081
+    },
+    {
+      "name": "Expo Web (browser)",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "set BROWSER=chrome && npx expo start --web --clear"],
+      "port": 8081
+    },
+    {
+      "name": "Expo Android",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "npm run android"],
+      "port": 8081
+    },
+    {
+      "name": "Expo iOS",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "npm run ios"],
+      "port": 8081
+    }
+  ]
+}
