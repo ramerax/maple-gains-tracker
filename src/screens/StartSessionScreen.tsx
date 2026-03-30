@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TextInput,
   TouchableOpacity, Alert, KeyboardAvoidingView, Platform,
@@ -6,7 +6,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, OpenSession } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
-import { saveOpenSession, generateId } from '../utils/storage';
+import { saveOpenSession, generateId, getOpenSession } from '../utils/storage';
 import { getTodayString, formatDateShort } from '../utils/formatters';
 import { useProfile } from '../context/ProfileContext';
 
@@ -40,10 +40,12 @@ function SectionHeader({ color, title }: { color: string; title: string }) {
   );
 }
 
-export default function StartSessionScreen({ navigation }: Props) {
+export default function StartSessionScreen({ navigation, route }: Props) {
+  const editing = route.params?.editing ?? false;
   const { activeProfile } = useProfile();
 
-  const [date] = useState(getTodayString());
+  const [existingSession, setExistingSession] = useState<OpenSession | null>(null);
+  const [date, setDate] = useState(getTodayString());
   const [lvStart, setLvStart] = useState('');
   const [expStart, setExpStart] = useState('');
   const [fragsStart, setFragsStart] = useState('');
@@ -53,19 +55,38 @@ export default function StartSessionScreen({ navigation }: Props) {
   const [rareStart, setRareStart] = useState('');
   const [notes, setNotes] = useState('');
 
+  // In edit mode, load the existing open session and pre-fill fields
+  useEffect(() => {
+    if (!editing) return;
+    getOpenSession(activeProfile?.id).then((open) => {
+      if (!open) return;
+      setExistingSession(open);
+      setDate(open.date);
+      setLvStart(String(open.lvStart));
+      setExpStart(String(open.expStart));
+      setFragsStart(open.fragsStart > 0 ? String(open.fragsStart) : '');
+      setNodesStart(open.nodesStart > 0 ? String(open.nodesStart) : '');
+      setMesosStart(open.mesosStart > 0 ? String(open.mesosStart) : '');
+      setCommonStart(open.commonFamiliarsStart > 0 ? String(open.commonFamiliarsStart) : '');
+      setRareStart(open.rareFamiliarsStart > 0 ? String(open.rareFamiliarsStart) : '');
+      setNotes(open.notes ?? '');
+    });
+  }, [editing, activeProfile?.id]);
+
   const pi = (v: string) => parseInt(v) || 0;
   const pf = (v: string) => parseFloat(v.replace(',', '.')) || 0;
 
-  const handleStart = useCallback(async () => {
+  const handleSave = useCallback(async () => {
     if (!lvStart || !expStart) {
       Alert.alert('Datos incompletos', 'Ingresa al menos el nivel y % de EXP inicial.');
       return;
     }
 
     const open: OpenSession = {
-      id: generateId(),
+      // Preserve id/startedAt when editing, generate new ones when creating
+      id: existingSession?.id ?? generateId(),
+      startedAt: existingSession?.startedAt ?? Date.now(),
       date,
-      startedAt: Date.now(),
       profileId: activeProfile?.id ?? 'default',
       lvStart: pi(lvStart),
       expStart: pf(expStart),
@@ -82,6 +103,7 @@ export default function StartSessionScreen({ navigation }: Props) {
   }, [
     date, lvStart, expStart, fragsStart, nodesStart,
     mesosStart, commonStart, rareStart, notes, activeProfile,
+    existingSession,
   ]);
 
   return (
@@ -154,9 +176,11 @@ export default function StartSessionScreen({ navigation }: Props) {
           />
         </View>
 
-        {/* Start button */}
-        <TouchableOpacity style={styles.startButton} onPress={handleStart} activeOpacity={0.85}>
-          <Text style={styles.startButtonText}>⚡  Iniciar Sesión</Text>
+        {/* Action button */}
+        <TouchableOpacity style={styles.startButton} onPress={handleSave} activeOpacity={0.85}>
+          <Text style={styles.startButtonText}>
+            {editing ? '💾  Guardar Cambios' : '⚡  Iniciar Sesión'}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

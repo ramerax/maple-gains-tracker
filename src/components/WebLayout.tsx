@@ -54,9 +54,10 @@ export default function WebLayout() {
           {TABS.map((tab) => (
             <Pressable
               key={tab.id}
-              style={({ hovered }: { hovered?: boolean }) => [
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              style={(state: any) => [
                 styles.navItem,
-                hovered && styles.navItemHovered,
+                state.hovered && styles.navItemHovered,
                 activeTab === tab.id && styles.navItemActive,
               ]}
               onPress={() => setActiveTab(tab.id)}
@@ -79,7 +80,8 @@ export default function WebLayout() {
 
         {/* Profile footer */}
         <Pressable
-          style={({ hovered }: { hovered?: boolean }) => [styles.profileFooter, hovered && styles.navItemHovered]}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          style={(state: any) => [styles.profileFooter, state.hovered && styles.navItemHovered]}
           onPress={() => navigation.navigate('Profiles')}
         >
           {activeProfile ? (

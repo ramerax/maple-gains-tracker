@@ -82,7 +82,7 @@ export type RootStackParamList = {
   AddSession: { sessionId?: string } | undefined;
   SessionDetail: { sessionId: string };
   Profiles: undefined;
-  StartSession: undefined;
+  StartSession: { editing?: boolean } | undefined;
   FinishSession: undefined;
 };
 

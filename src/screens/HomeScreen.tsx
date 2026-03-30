@@ -259,12 +259,22 @@ export default function HomeScreen() {
         {openSession && (
           <View style={styles.openSessionCard}>
             <View style={styles.openSessionPulse} />
-            <View style={styles.openSessionInfo}>
+            <TouchableOpacity
+              style={styles.openSessionInfo}
+              onPress={() => navigation.navigate('StartSession', { editing: true })}
+              activeOpacity={0.7}
+            >
               <Text style={styles.openSessionTitle}>⚡ Sesión en Progreso</Text>
               <Text style={styles.openSessionSub}>
                 Lv {openSession.lvStart}  ({formatPercent(openSession.expStart)}%)  ·  {formatNumber(openSession.fragsStart)} frags  ·  {formatExp(openSession.mesosStart)} mesos
               </Text>
-            </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.editBtn}
+              onPress={() => navigation.navigate('StartSession', { editing: true })}
+            >
+              <Ionicons name="pencil-outline" size={16} color={COLORS.primary} />
+            </TouchableOpacity>
             <TouchableOpacity
               style={styles.cancelBtn}
               onPress={handleCancelOpenSession}
@@ -469,6 +479,7 @@ const styles = StyleSheet.create({
   openSessionInfo: { flex: 1 },
   openSessionTitle: { color: COLORS.primary, fontSize: FONTS.md, fontWeight: '700' },
   openSessionSub: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginTop: 3 },
+  editBtn: { padding: SPACING.sm },
   cancelBtn: { padding: SPACING.sm },
 
   addSessionBtn: {
