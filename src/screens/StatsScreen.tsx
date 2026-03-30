@@ -88,8 +88,16 @@ function PeriodCard({ title, sessions, color }: {
   if (sessions.length === 0) {
     return (
       <View style={[styles.periodCard, { borderLeftColor: color }]}>
-        <Text style={styles.periodTitle}>{title}</Text>
-        <Text style={styles.noData}>Sin sesiones</Text>
+        <View style={styles.periodTitleRow}>
+          <Text style={styles.periodTitle}>{title}</Text>
+          <Text style={styles.periodSessions}>0 sesiones</Text>
+        </View>
+        <SumRow label="EXP ganada"    value="—"  color={COLORS.textMuted} />
+        <SumRow label="Fragmentos"    value="—"  color={COLORS.textMuted} />
+        <SumRow label="Nodos"         value="—"  color={COLORS.textMuted} />
+        <SumRow label="Mesos"         value="—"  color={COLORS.textMuted} />
+        <SumRow label="Fam. Comunes"  value="—"  color={COLORS.textMuted} />
+        <SumRow label="Fam. Raros"    value="—"  color={COLORS.textMuted} />
       </View>
     );
   }
@@ -331,7 +339,7 @@ const styles = StyleSheet.create({
   chartBars: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    height: 120,
+    height: 180,
     gap: SPACING.sm,
   },
   chartCol: {

@@ -51,27 +51,32 @@ export default function WebLayout() {
 
         {/* Nav items */}
         <View style={styles.navList}>
-          {TABS.map((tab) => (
-            <Pressable
-              key={tab.id}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              style={(state: any) => [
-                styles.navItem,
-                state.hovered && styles.navItemHovered,
-                activeTab === tab.id && styles.navItemActive,
-              ]}
-              onPress={() => setActiveTab(tab.id)}
-            >
-              <Ionicons
-                name={activeTab === tab.id ? tab.activeIcon : tab.icon}
-                size={19}
-                color={activeTab === tab.id ? COLORS.primary : COLORS.textSecondary}
-              />
-              <Text style={[styles.navLabel, activeTab === tab.id && styles.navLabelActive]}>
-                {tab.label}
-              </Text>
-            </Pressable>
-          ))}
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <Pressable
+                key={tab.id}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                style={(state: any) => [
+                  styles.navItem,
+                  state.hovered && !isActive && styles.navItemHovered,
+                  isActive && styles.navItemActive,
+                ]}
+                onPress={() => setActiveTab(tab.id)}
+              >
+                {/* Active left-border accent */}
+                <View style={[styles.navAccent, isActive && styles.navAccentActive]} />
+                <Ionicons
+                  name={isActive ? tab.activeIcon : tab.icon}
+                  size={18}
+                  color={isActive ? COLORS.primary : COLORS.textSecondary}
+                />
+                <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
+                  {tab.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         <View style={{ flex: 1 }} />
@@ -116,7 +121,7 @@ export default function WebLayout() {
   );
 }
 
-const SIDEBAR_WIDTH = 210;
+const SIDEBAR_WIDTH = 220;
 
 const styles = StyleSheet.create({
   root: {
@@ -142,18 +147,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     marginBottom: SPACING.lg,
   },
-  logoLeaf: { fontSize: 28 },
+  logoLeaf: { fontSize: 30 },
   logoTitle: {
     color: COLORS.text,
-    fontSize: FONTS.lg,
+    fontSize: FONTS.xl,
     fontWeight: '800',
-    letterSpacing: -0.3,
+    letterSpacing: -0.5,
   },
   logoSub: {
     color: COLORS.primary,
     fontSize: FONTS.xs,
     fontWeight: '600',
-    marginTop: 1,
+    marginTop: 2,
+    opacity: 0.9,
   },
 
   divider: {
@@ -164,30 +170,38 @@ const styles = StyleSheet.create({
   },
 
   navList: {
-    gap: SPACING.xs,
-    paddingHorizontal: SPACING.sm,
+    gap: 2,
+    paddingHorizontal: SPACING.xs,
   },
   navItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    paddingVertical: SPACING.sm + 2,
-    paddingHorizontal: SPACING.md,
+    paddingVertical: 10,
+    paddingHorizontal: SPACING.sm,
     borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: 'transparent',
+    overflow: 'hidden',
+  },
+  navAccent: {
+    width: 3,
+    height: 18,
+    borderRadius: 2,
+    backgroundColor: 'transparent',
+  },
+  navAccentActive: {
+    backgroundColor: COLORS.primary,
   },
   navItemHovered: {
     backgroundColor: COLORS.card,
   },
   navItemActive: {
     backgroundColor: COLORS.primaryDim,
-    borderColor: COLORS.primaryBorder,
   },
   navLabel: {
     color: COLORS.textSecondary,
     fontSize: FONTS.md,
     fontWeight: '500',
+    flex: 1,
   },
   navLabelActive: {
     color: COLORS.primary,
@@ -204,12 +218,13 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.card,
   },
   avatar: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
@@ -220,9 +235,9 @@ const styles = StyleSheet.create({
   },
   profileName: {
     flex: 1,
-    color: COLORS.textSecondary,
+    color: COLORS.text,
     fontSize: FONTS.sm,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 
   // ── Content ────────────────────────────────────────────────────
