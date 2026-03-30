@@ -44,7 +44,7 @@ export default function SessionDetailScreen({ route, navigation }: Props) {
     const s = await getSessionById(sessionId);
     setSession(s);
     if (s) navigation.setOptions({ title: `Sesión — ${s.date}` });
-  }, [sessionId]);
+  }, [sessionId, navigation]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
@@ -61,7 +61,7 @@ export default function SessionDetailScreen({ route, navigation }: Props) {
   if (!session) {
     return (
       <View style={styles.center}>
-        <Text style={{ color: COLORS.textMuted }}>Cargando...</Text>
+        <Text style={{ color: COLORS.textSecondary, fontSize: FONTS.md }}>Cargando...</Text>
       </View>
     );
   }
@@ -179,13 +179,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  sectionTitle: { fontSize: FONTS.md, fontWeight: '700', marginBottom: SPACING.md },
+  sectionTitle: { fontSize: FONTS.lg, fontWeight: '700', marginBottom: SPACING.md },
 
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 6,
+    paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },

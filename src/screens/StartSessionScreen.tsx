@@ -86,7 +86,7 @@ export default function StartSessionScreen({ navigation }: Props) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: COLORS.bg }}
+      style={styles.keyboardView}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
@@ -164,6 +164,7 @@ export default function StartSessionScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  keyboardView: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { flex: 1 },
   scrollContent: { paddingTop: 8, paddingBottom: 48 },
 
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  dateBannerLabel: { color: COLORS.textMuted, fontSize: FONTS.sm },
+  dateBannerLabel: { color: COLORS.textSecondary, fontSize: FONTS.sm },
   dateBannerValue: { color: COLORS.primary, fontSize: FONTS.md, fontWeight: '700' },
 
   sectionHeader: {
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.lg,
     backgroundColor: COLORS.surface,
-    marginTop: SPACING.md,
+    marginTop: SPACING.lg,
   },
   sectionHeaderText: { color: COLORS.text, fontSize: FONTS.md, fontWeight: '700' },
 
@@ -218,9 +219,12 @@ const styles = StyleSheet.create({
     margin: SPACING.lg,
     marginTop: SPACING.xl,
     backgroundColor: COLORS.primary,
-    padding: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
     borderRadius: RADIUS.lg,
     alignItems: 'center',
+    minHeight: 52,
+    justifyContent: 'center',
   },
   startButtonText: { color: '#000', fontSize: FONTS.xl, fontWeight: '800' },
 });

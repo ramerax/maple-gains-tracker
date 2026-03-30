@@ -131,7 +131,7 @@ export default function HomeScreen() {
         },
       ]
     );
-  }, []);
+  }, [activeProfileId]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -144,7 +144,7 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View style={{ flex: 1 }}>
+          <View style={styles.headerLeft}>
             <Text style={styles.headerTitle}>🍁 MapleGains</Text>
             <Text style={styles.headerDate}>{formatDateLong(today)}</Text>
             {activeProfile && (
@@ -310,6 +310,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.xl,
   },
+  headerLeft: { flex: 1 },
   headerTitle: {
     color: COLORS.primary,
     fontSize: FONTS.title,
@@ -405,7 +406,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xs,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.22)',
+    borderColor: COLORS.border,
     minHeight: 96,
   },
   pillHeader: {
@@ -428,7 +429,6 @@ const styles = StyleSheet.create({
   },
   pillValue: { fontSize: FONTS.lg, fontWeight: '800', textAlign: 'center' },
   pillSub: { fontSize: FONTS.xs, fontWeight: '600', marginTop: 2, textAlign: 'center', opacity: 0.85 },
-  pillSubSpacer: { height: 0 },
   pillFooter: { alignItems: 'center', width: '100%', paddingTop: SPACING.xs },
   pillFooterEmpty: { height: SPACING.sm },
   pillDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.08)', width: '75%', marginBottom: SPACING.xs },
@@ -437,14 +437,14 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', paddingVertical: SPACING.xl },
   emptyEmoji: { fontSize: 44, marginBottom: SPACING.md },
   emptyText: { color: COLORS.text, fontSize: FONTS.lg, fontWeight: '600' },
-  emptySubText: { color: COLORS.textMuted, fontSize: FONTS.sm, textAlign: 'center', marginTop: 6, lineHeight: 20 },
+  emptySubText: { color: COLORS.textSecondary, fontSize: FONTS.sm, textAlign: 'center', marginTop: 6, lineHeight: 20 },
 
   divider: { height: 1, backgroundColor: COLORS.border, marginVertical: SPACING.xs },
   sessionCard: { paddingVertical: SPACING.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   sessionCardLeft: { flex: 1 },
   sessionCardLevel: { color: COLORS.text, fontSize: FONTS.lg, fontWeight: '700' },
   sessionCardExp: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginTop: 1 },
-  sessionCardEXP: { fontSize: FONTS.sm, fontWeight: '600', marginTop: 2 },
+  sessionCardEXP: { fontSize: FONTS.md, fontWeight: '700', marginTop: 3 },
   sessionCardPct: { color: COLORS.textSecondary, fontSize: FONTS.sm, fontWeight: '500' },
   sessionCardRight: { alignItems: 'flex-end', marginLeft: SPACING.md },
   sessionCardMini: { color: COLORS.textSecondary, fontSize: FONTS.sm },
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: COLORS.primary + '40',
+    borderColor: COLORS.primaryBorder,
     gap: SPACING.sm,
   },
   openSessionPulse: {
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
   openSessionInfo: { flex: 1 },
   openSessionTitle: { color: COLORS.primary, fontSize: FONTS.md, fontWeight: '700' },
   openSessionSub: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginTop: 3 },
-  cancelBtn: { padding: SPACING.xs },
+  cancelBtn: { padding: SPACING.sm },
 
   addSessionBtn: {
     flexDirection: 'row',
@@ -477,11 +477,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: COLORS.card,
     borderRadius: RADIUS.lg,
-    padding: SPACING.md,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.md,
     gap: SPACING.sm,
     borderWidth: 1,
     borderColor: COLORS.primaryBorder,
     marginTop: SPACING.xs,
+    minHeight: 52,
   },
   addSessionBtnText: { color: COLORS.primary, fontSize: FONTS.md, fontWeight: '600' },
   finishBtn: {

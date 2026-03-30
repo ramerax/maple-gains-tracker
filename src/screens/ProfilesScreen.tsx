@@ -297,7 +297,7 @@ export default function ProfilesScreen() {
                   color={form.color}
                   size={48}
                 />
-                <View style={{ marginLeft: SPACING.md }}>
+                <View style={styles.previewDetails}>
                   <Text style={[styles.previewName, { color: form.color }]}>
                     {form.name.trim() || 'Nombre del personaje'}
                   </Text>
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
 
   listContent: { padding: SPACING.lg, paddingBottom: 100 },
   listHeader: {
-    color: COLORS.textMuted,
+    color: COLORS.textSecondary,
     fontSize: FONTS.xs,
     fontWeight: '700',
     letterSpacing: 1,
@@ -380,13 +380,16 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryDim,
     borderRadius: RADIUS.sm,
     paddingHorizontal: SPACING.sm,
-    paddingVertical: 5,
+    paddingVertical: SPACING.xs,
     borderWidth: 1,
     borderColor: COLORS.primaryBorder,
+    minHeight: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   activateBtnText: { color: COLORS.primary, fontSize: FONTS.xs, fontWeight: '700' },
   iconBtn: {
-    padding: SPACING.xs,
+    padding: SPACING.sm,
   },
 
   fab: {
@@ -429,7 +432,7 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
   },
   modalTitle: { color: COLORS.text, fontSize: FONTS.xl, fontWeight: '700' },
-  modalClose: { padding: SPACING.xs },
+  modalClose: { padding: SPACING.sm },
   modalBody: { padding: SPACING.lg, paddingBottom: SPACING.xxl },
 
   fieldLabel: {
@@ -445,16 +448,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     color: COLORS.text,
-    fontSize: FONTS.md,
+    fontSize: FONTS.lg,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },
 
   colorRow: { flexDirection: 'row', gap: SPACING.sm, marginTop: 4 },
   colorSwatch: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -473,6 +476,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
+  previewDetails: { marginLeft: SPACING.md },
   previewName: { fontSize: FONTS.lg, fontWeight: '700' },
   previewSub: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginTop: 2 },
 
