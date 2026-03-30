@@ -13,6 +13,7 @@ import {
   formatMonthDisplay, formatExp, formatNumber, formatPercent, getWeekRange, getMonthRange, addDays,
 } from '../utils/formatters';
 import { useProfile } from '../context/ProfileContext';
+import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Mode = 'day' | 'week' | 'month';
@@ -73,6 +74,7 @@ function SessionItem({ session, onPress }: { session: Session; onPress: () => vo
 export default function HistoryScreen() {
   const navigation = useNavigation<Nav>();
   const { activeProfileId } = useProfile();
+  const isDesktop = useIsDesktopWeb();
   const [mode, setMode] = useState<Mode>('day');
   const [cursor, setCursor] = useState(getTodayString());
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -121,7 +123,7 @@ export default function HistoryScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
       {/* Mode selector */}
       <View style={styles.modeBar}>
         {(['day', 'week', 'month'] as Mode[]).map((m) => (
@@ -186,6 +188,7 @@ export default function HistoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
+  containerDesktop: { maxWidth: 900, width: '100%', alignSelf: 'center' as const },
 
   modeBar: {
     flexDirection: 'row',
