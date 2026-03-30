@@ -14,6 +14,45 @@ import {
 import { useProfile } from '../context/ProfileContext';
 import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
 
+function ExpBarChart({ sessions }: { sessions: Session[] }) {
+  if (sessions.length === 0) return null;
+
+  // Aggregate EXP by date, pick top 7 most recent
+  const byDate: Record<string, number> = {};
+  for (const s of sessions) {
+    byDate[s.date] = (byDate[s.date] ?? 0) + s.expGainedActual;
+  }
+  const sorted = Object.entries(byDate)
+    .sort((a, b) => b[0].localeCompare(a[0])) // most recent first
+    .slice(0, 7)
+    .reverse(); // oldest → newest for left-to-right display
+
+  if (sorted.length === 0) return null;
+
+  const maxVal = Math.max(...sorted.map(([, v]) => v));
+
+  return (
+    <View style={styles.chartCard}>
+      <Text style={styles.chartTitle}>📈 EXP por día (últimos 7)</Text>
+      <View style={styles.chartBars}>
+        {sorted.map(([date, val]) => {
+          const pct = maxVal > 0 ? val / maxVal : 0;
+          const label = date.slice(5); // "MM-DD"
+          return (
+            <View key={date} style={styles.chartCol}>
+              <Text style={styles.chartBarLabel}>{formatExp(val)}</Text>
+              <View style={styles.chartBarTrack}>
+                <View style={[styles.chartBarFill, { height: `${Math.max(pct * 100, 4)}%` as unknown as number }]} />
+              </View>
+              <Text style={styles.chartDateLabel}>{label}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 function SumRow({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <View style={styles.sumRow}>
@@ -166,6 +205,8 @@ export default function StatsScreen() {
 
       {allSessions.length > 0 && (
         <>
+          <ExpBarChart sessions={allSessions} />
+
           <Text style={styles.sectionTitle}>🏆 Mejores Días</Text>
           <View style={styles.bestGrid}>
             <BestDay sessions={allSessions} label="Más EXP"   color={COLORS.exp}   getValue={(s) => s.expGainedActual} format={formatExp} />
@@ -269,4 +310,63 @@ const styles = StyleSheet.create({
   bestDayValue: { fontSize: FONTS.xl, fontWeight: '800' },
   bestDayLabel: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginTop: 2 },
   bestDayDate: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginTop: 2 },
+
+  // Bar chart
+  chartCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.lg,
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  chartTitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sm,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: SPACING.lg,
+  },
+  chartBars: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    height: 120,
+    gap: SPACING.sm,
+  },
+  chartCol: {
+    flex: 1,
+    alignItems: 'center',
+    height: '100%',
+    justifyContent: 'flex-end',
+  },
+  chartBarLabel: {
+    color: COLORS.exp,
+    fontSize: 9,
+    fontWeight: '700',
+    marginBottom: 3,
+    textAlign: 'center',
+  },
+  chartBarTrack: {
+    width: '70%',
+    height: '80%',
+    backgroundColor: COLORS.surface,
+    borderRadius: 4,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  chartBarFill: {
+    width: '100%',
+    backgroundColor: COLORS.exp,
+    borderRadius: 3,
+    opacity: 0.85,
+  },
+  chartDateLabel: {
+    color: COLORS.textMuted,
+    fontSize: 9,
+    marginTop: 4,
+    textAlign: 'center',
+  },
 });

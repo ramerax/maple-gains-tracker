@@ -14,8 +14,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Session, PeriodStats, OpenSession } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
-import { getSessionsByDate, getAllSessions, aggregateStats, getOpenSession, deleteOpenSession } from '../utils/storage';
-import { getTodayString, formatDateLong, formatExp, formatNumber, formatPercent } from '../utils/formatters';
+import { getSessionsByDate, getAllSessions, getSessionsByDateRange, aggregateStats, getOpenSession, deleteOpenSession } from '../utils/storage';
+import { getTodayString, formatDateLong, formatExp, formatNumber, formatPercent, getWeekRange } from '../utils/formatters';
 import { useProfile } from '../context/ProfileContext';
 import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
 
@@ -91,14 +91,17 @@ export default function HomeScreen() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [stats, setStats] = useState<PeriodStats | null>(null);
   const [allTimeStats, setAllTimeStats] = useState<PeriodStats | null>(null);
+  const [weekStats, setWeekStats] = useState<PeriodStats | null>(null);
   const [openSession, setOpenSession] = useState<OpenSession | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const [s, allSessions, open] = await Promise.all([
+    const { start: wS, end: wE } = getWeekRange(today);
+    const [s, allSessions, open, weekSessions] = await Promise.all([
       getSessionsByDate(today, activeProfileId ?? undefined),
       getAllSessions(),
       getOpenSession(activeProfileId ?? undefined),
+      getSessionsByDateRange(wS, wE, activeProfileId ?? undefined),
     ]);
     const profileSessions = activeProfileId
       ? allSessions.filter((r) => r.profileId === activeProfileId)
@@ -107,6 +110,7 @@ export default function HomeScreen() {
     setSessions(s);
     setStats(aggregateStats(s));
     setAllTimeStats(aggregateStats(profileSessions));
+    setWeekStats(aggregateStats(weekSessions));
   }, [today, activeProfileId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -315,6 +319,43 @@ export default function HomeScreen() {
             <Text style={styles.addSessionBtnText}>Nueva Sesión</Text>
           </TouchableOpacity>
         )}
+
+        {/* Weekly summary — desktop only, always shown */}
+        {weekStats ? (
+          <View style={styles.weekCard}>
+            <View style={styles.weekCardHeader}>
+              <Ionicons name="calendar-outline" size={14} color={COLORS.primary} />
+              <Text style={styles.weekCardTitle}>Esta Semana</Text>
+              <Text style={styles.weekCardBadge}>{weekStats.sessionCount} sesión{weekStats.sessionCount !== 1 ? 'es' : ''}</Text>
+            </View>
+            <View style={styles.weekChipRow}>
+              <View style={styles.weekChip}>
+                <Text style={[styles.weekChipValue, { color: COLORS.exp }]}>{formatExp(weekStats.totalExpGained)}</Text>
+                <Text style={styles.weekChipLabel}>EXP</Text>
+              </View>
+              <View style={styles.weekChip}>
+                <Text style={[styles.weekChipValue, { color: COLORS.frags }]}>+{formatNumber(weekStats.totalFragsGained)}</Text>
+                <Text style={styles.weekChipLabel}>Frags</Text>
+              </View>
+              <View style={styles.weekChip}>
+                <Text style={[styles.weekChipValue, { color: COLORS.nodes }]}>+{formatNumber(weekStats.totalNodesGained)}</Text>
+                <Text style={styles.weekChipLabel}>Nodos</Text>
+              </View>
+              <View style={styles.weekChip}>
+                <Text style={[styles.weekChipValue, { color: COLORS.mesos }]}>{formatExp(weekStats.totalMesosGained)}</Text>
+                <Text style={styles.weekChipLabel}>Mesos</Text>
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.weekCard}>
+            <View style={styles.weekCardHeader}>
+              <Ionicons name="calendar-outline" size={14} color={COLORS.primary} />
+              <Text style={styles.weekCardTitle}>Esta Semana</Text>
+            </View>
+            <Text style={styles.weekEmpty}>Sin sesiones esta semana</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -515,4 +556,49 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
   },
   finishBtnText: { color: '#000', fontSize: FONTS.md, fontWeight: '700' },
+
+  weekCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.lg,
+    marginTop: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  weekCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    marginBottom: SPACING.md,
+  },
+  weekCardTitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sm,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    flex: 1,
+  },
+  weekCardBadge: {
+    color: COLORS.primary,
+    fontSize: FONTS.xs,
+    fontWeight: '600',
+  },
+  weekChipRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  weekChip: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.xs,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  weekChipValue: { fontSize: FONTS.md, fontWeight: '800' },
+  weekChipLabel: { color: COLORS.textMuted, fontSize: FONTS.xs, marginTop: 2 },
+  weekEmpty: { color: COLORS.textMuted, fontSize: FONTS.sm },
 });
