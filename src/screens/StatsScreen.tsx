@@ -106,6 +106,12 @@ export default function StatsScreen() {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
+
   const today = getTodayString();
   const { start: wS, end: wE } = getWeekRange(today);
   const { start: mS, end: mE } = getMonthRange(today);
@@ -118,7 +124,7 @@ export default function StatsScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} tintColor={COLORS.primary} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
     >
       <View style={styles.pageHeader}>
         <Text style={styles.pageTitle}>📊 Estadísticas</Text>
@@ -141,15 +147,27 @@ export default function StatsScreen() {
           </View>
 
           {/* All time totals */}
-          <Text style={styles.sectionTitle}>∑ Totales Históricos</Text>
-          <View style={[styles.periodCard, { borderLeftColor: COLORS.primary }]}>
-            <SumRow label="EXP total"    value={formatExp(allSessions.reduce((s, r) => s + r.expGainedActual, 0))}      color={COLORS.exp} />
-            <SumRow label="Fragmentos"   value={`+${formatNumber(allSessions.reduce((s, r) => s + r.fragsGained, 0))}`} color={COLORS.frags} />
-            <SumRow label="Nodos"        value={`+${formatNumber(allSessions.reduce((s, r) => s + r.nodesGained, 0))}`} color={COLORS.nodes} />
-            <SumRow label="Mesos"        value={`+${formatExp(allSessions.reduce((s, r) => s + r.mesosGained, 0))}`}    color={COLORS.mesos} />
-            <SumRow label="Fam. Comunes" value={`+${allSessions.reduce((s, r) => s + r.commonFamiliarsGained, 0)}`}     color={COLORS.common} />
-            <SumRow label="Fam. Raros"   value={`+${allSessions.reduce((s, r) => s + r.rareFamiliarsGained, 0)}`}       color={COLORS.rare} />
-          </View>
+          {(() => {
+            const totalExp    = allSessions.reduce((s, r) => s + r.expGainedActual, 0);
+            const totalFrags  = allSessions.reduce((s, r) => s + r.fragsGained, 0);
+            const totalNodes  = allSessions.reduce((s, r) => s + r.nodesGained, 0);
+            const totalMesos  = allSessions.reduce((s, r) => s + r.mesosGained, 0);
+            const totalCommon = allSessions.reduce((s, r) => s + r.commonFamiliarsGained, 0);
+            const totalRare   = allSessions.reduce((s, r) => s + r.rareFamiliarsGained, 0);
+            return (
+              <>
+                <Text style={styles.sectionTitle}>∑ Totales Históricos</Text>
+                <View style={[styles.periodCard, { borderLeftColor: COLORS.primary }]}>
+                  <SumRow label="EXP total"    value={formatExp(totalExp)}             color={COLORS.exp} />
+                  <SumRow label="Fragmentos"   value={`+${formatNumber(totalFrags)}`}  color={COLORS.frags} />
+                  <SumRow label="Nodos"        value={`+${formatNumber(totalNodes)}`}  color={COLORS.nodes} />
+                  <SumRow label="Mesos"        value={`+${formatExp(totalMesos)}`}     color={COLORS.mesos} />
+                  <SumRow label="Fam. Comunes" value={`+${totalCommon}`}               color={COLORS.common} />
+                  <SumRow label="Fam. Raros"   value={`+${totalRare}`}                 color={COLORS.rare} />
+                </View>
+              </>
+            );
+          })()}
         </>
       )}
     </ScrollView>
@@ -162,7 +180,7 @@ const styles = StyleSheet.create({
 
   pageHeader: { marginBottom: SPACING.xl },
   pageTitle: { color: COLORS.text, fontSize: FONTS.xxl, fontWeight: '800' },
-  pageSubtitle: { color: COLORS.textMuted, fontSize: FONTS.sm, marginTop: 4 },
+  pageSubtitle: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginTop: 4 },
 
   sectionTitle: {
     color: COLORS.textSecondary,
@@ -190,8 +208,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   periodTitle: { color: COLORS.text, fontSize: FONTS.lg, fontWeight: '700' },
-  periodSessions: { color: COLORS.textMuted, fontSize: FONTS.xs },
-  noData: { color: COLORS.textMuted, fontSize: FONTS.md },
+  periodSessions: { color: COLORS.textSecondary, fontSize: FONTS.xs },
+  noData: { color: COLORS.textSecondary, fontSize: FONTS.md },
 
   levelTrack: {
     flexDirection: 'row',
@@ -208,7 +226,7 @@ const styles = StyleSheet.create({
   sumRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
@@ -227,5 +245,5 @@ const styles = StyleSheet.create({
   },
   bestDayValue: { fontSize: FONTS.xl, fontWeight: '800' },
   bestDayLabel: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginTop: 2 },
-  bestDayDate: { color: COLORS.textMuted, fontSize: FONTS.xs, marginTop: 2 },
+  bestDayDate: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginTop: 2 },
 });

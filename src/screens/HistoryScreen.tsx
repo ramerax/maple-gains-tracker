@@ -197,7 +197,8 @@ const styles = StyleSheet.create({
   },
   modeBtn: {
     flex: 1, padding: SPACING.sm, borderRadius: RADIUS.sm,
-    alignItems: 'center', borderWidth: 1, borderColor: 'transparent',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'transparent', minHeight: 40,
   },
   modeBtnActive: { backgroundColor: COLORS.primaryDim, borderColor: COLORS.primaryBorder },
   modeBtnText: { color: COLORS.textSecondary, fontSize: FONTS.md, fontWeight: '600' },
@@ -212,9 +213,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  navArrow: { padding: SPACING.xs },
+  navArrow: { padding: SPACING.sm },
   periodLabel: {
-    flex: 1, color: COLORS.text, fontSize: FONTS.md, fontWeight: '600',
+    flex: 1, color: COLORS.text, fontSize: FONTS.lg, fontWeight: '700',
     textAlign: 'center', textTransform: 'capitalize', paddingHorizontal: SPACING.sm,
   },
 
@@ -241,15 +242,15 @@ const styles = StyleSheet.create({
     padding: SPACING.sm, alignItems: 'center', borderWidth: 1,
   },
   chipValue: { fontSize: FONTS.md, fontWeight: '700' },
-  chipLabel: { color: COLORS.textMuted, fontSize: FONTS.xs, marginTop: 2 },
+  chipLabel: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginTop: 2 },
 
   noData: {
     alignItems: 'center', padding: SPACING.xxl,
     backgroundColor: COLORS.card,
     borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
-  noDataEmoji: { fontSize: 30, marginBottom: SPACING.sm },
-  noDataText: { color: COLORS.textMuted, fontSize: FONTS.md },
+  noDataEmoji: { fontSize: 36, marginBottom: SPACING.sm },
+  noDataText: { color: COLORS.textSecondary, fontSize: FONTS.md },
 
   list: { padding: SPACING.md, paddingBottom: 100 },
   separator: { height: 1, backgroundColor: COLORS.border },
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
   },
   sessionLeft: { flex: 1 },
-  sessionDate: { color: COLORS.textMuted, fontSize: FONTS.xs },
+  sessionDate: { color: COLORS.textSecondary, fontSize: FONTS.xs },
   sessionLevel: { color: COLORS.text, fontSize: FONTS.md, fontWeight: '600', marginTop: 2 },
   sessionRight: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   sessionExp: { fontSize: FONTS.md, fontWeight: '700' },

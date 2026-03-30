@@ -47,7 +47,8 @@ export default function AddSessionScreen({ route, navigation }: Props) {
   const editId = route.params?.sessionId;
   const isEdit = Boolean(editId);
 
-  const [date, setDate] = useState(getTodayString());
+  const today = getTodayString();
+  const [date, setDate] = useState(today);
   const [lvStart, setLvStart] = useState('');
   const [expStart, setExpStart] = useState('');
   const [lvEnd, setLvEnd] = useState('');
@@ -181,7 +182,7 @@ export default function AddSessionScreen({ route, navigation }: Props) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: COLORS.bg }}
+      style={styles.keyboardView}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
@@ -195,10 +196,10 @@ export default function AddSessionScreen({ route, navigation }: Props) {
         <View style={styles.section}>
           <View style={styles.dateRow}>
             <TouchableOpacity
-              style={[styles.dateBtn, date === getTodayString() && styles.dateBtnActive]}
-              onPress={() => setDate(getTodayString())}
+              style={[styles.dateBtn, date === today && styles.dateBtnActive]}
+              onPress={() => setDate(today)}
             >
-              <Text style={[styles.dateBtnText, date === getTodayString() && styles.dateBtnTextActive]}>Hoy</Text>
+              <Text style={[styles.dateBtnText, date === today && styles.dateBtnTextActive]}>Hoy</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.inputGroup}>
@@ -345,6 +346,7 @@ function SectionHeader({ color, title }: { color: string; title: string }) {
 }
 
 const styles = StyleSheet.create({
+  keyboardView: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { flex: 1 },
   scrollContent: { paddingBottom: 48 },
 
@@ -353,7 +355,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.lg,
     backgroundColor: COLORS.surface,
-    marginTop: SPACING.md,
+    marginTop: SPACING.lg,
   },
   sectionHeaderText: { color: COLORS.text, fontSize: FONTS.md, fontWeight: '700' },
 
@@ -380,7 +382,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },
-  inputHint: { color: COLORS.textMuted, fontSize: FONTS.xs, marginTop: 4 },
+  inputHint: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginTop: 4 },
   notesInput: { minHeight: 80, textAlignVertical: 'top', paddingTop: SPACING.sm },
 
   calcRow: {
@@ -411,7 +413,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: COLORS.inputBg,
+    minHeight: 44,
   },
   dateBtnActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   dateBtnText: { color: COLORS.textSecondary, fontSize: FONTS.md, fontWeight: '600' },
@@ -421,12 +425,15 @@ const styles = StyleSheet.create({
     margin: SPACING.lg,
     marginTop: SPACING.xl,
     backgroundColor: COLORS.primary,
-    padding: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
     borderRadius: RADIUS.lg,
     alignItems: 'center',
+    minHeight: 52,
+    justifyContent: 'center',
   },
   saveButtonText: { color: '#000', fontSize: FONTS.xl, fontWeight: '800' },
 
-  headerSaveBtn: { marginRight: 4 },
+  headerSaveBtn: { marginRight: 4, padding: SPACING.sm },
   headerSaveBtnText: { color: COLORS.primary, fontSize: FONTS.lg, fontWeight: '700' },
 });

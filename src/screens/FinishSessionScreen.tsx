@@ -82,7 +82,7 @@ export default function FinishSessionScreen({ navigation }: Props) {
       setOpen(s);
       // Leave end fields empty — placeholders show start values as reference
     });
-  }, []);
+  }, [activeProfileId, navigation]);
 
   const pi = (v: string) => parseInt(v) || 0;
   const pf = (v: string) => parseFloat(v.replace(',', '.')) || 0;
@@ -155,14 +155,14 @@ export default function FinishSessionScreen({ navigation }: Props) {
   if (!open) {
     return (
       <View style={styles.loading}>
-        <Text style={{ color: COLORS.textMuted }}>Cargando sesión...</Text>
+        <Text style={styles.loadingText}>Cargando sesión...</Text>
       </View>
     );
   }
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: COLORS.bg }}
+      style={styles.keyboardView}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
@@ -253,6 +253,8 @@ export default function FinishSessionScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.bg },
+  loadingText: { color: COLORS.textSecondary, fontSize: FONTS.md },
+  keyboardView: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { flex: 1 },
   scrollContent: { paddingBottom: 48 },
 
@@ -280,7 +282,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  startRowLabel: { color: COLORS.textMuted, fontSize: FONTS.sm },
+  startRowLabel: { color: COLORS.textSecondary, fontSize: FONTS.sm },
   startRowValue: { color: COLORS.textSecondary, fontSize: FONTS.sm, fontWeight: '600' },
 
   sectionHeader: {
@@ -288,7 +290,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.lg,
     backgroundColor: COLORS.surface,
-    marginTop: SPACING.md,
+    marginTop: SPACING.lg,
   },
   sectionHeaderText: { color: COLORS.text, fontSize: FONTS.md, fontWeight: '700' },
 
@@ -325,16 +327,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
   },
-  gainBadgeLabel: { color: COLORS.textMuted, fontSize: FONTS.xs, marginBottom: 2 },
+  gainBadgeLabel: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginBottom: 2 },
   gainBadgeValue: { fontSize: FONTS.lg, fontWeight: '800' },
 
   saveButton: {
     margin: SPACING.lg,
     marginTop: SPACING.xl,
     backgroundColor: COLORS.primary,
-    padding: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
     borderRadius: RADIUS.lg,
     alignItems: 'center',
+    minHeight: 52,
+    justifyContent: 'center',
   },
   saveButtonText: { color: '#000', fontSize: FONTS.xl, fontWeight: '800' },
 });

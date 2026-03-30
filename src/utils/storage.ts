@@ -4,7 +4,10 @@ import { Session, PeriodStats, Profile, OpenSession } from '../types';
 
 // ── Mappers ────────────────────────────────────────────────────────────────────
 
-function rowToSession(row: any): Session {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DbRow = Record<string, any>;
+
+function rowToSession(row: DbRow): Session {
   return {
     id: row.id,
     date: row.date,
@@ -64,7 +67,7 @@ function sessionToRow(session: Session): Record<string, unknown> {
   };
 }
 
-function rowToProfile(row: any): Profile {
+function rowToProfile(row: DbRow): Profile {
   return {
     id: row.id,
     name: row.name,
@@ -86,7 +89,7 @@ function profileToRow(profile: Profile): Record<string, unknown> {
   };
 }
 
-function rowToOpenSession(row: any): OpenSession {
+function rowToOpenSession(row: DbRow): OpenSession {
   return {
     id: row.id,
     date: row.date,
