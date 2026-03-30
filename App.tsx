@@ -166,7 +166,12 @@ function AppContent() {
             <Stack.Screen
               name="StartSession"
               component={StartSessionScreen}
-              options={{ title: 'Iniciar Sesión', presentation: 'modal' }}
+              options={({ route }) => ({
+                title: (route.params as { editing?: boolean })?.editing
+                  ? 'Editar Sesión'
+                  : 'Iniciar Sesión',
+                presentation: 'modal',
+              })}
             />
             <Stack.Screen
               name="FinishSession"
