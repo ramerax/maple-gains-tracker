@@ -187,7 +187,8 @@ export default function HomeScreen() {
         {/* Desktop date header */}
         {isDesktop && (
           <View style={styles.desktopDateHeader}>
-            <Text style={styles.headerDate}>{formatDateLong(today)}</Text>
+            <Text style={styles.desktopDateText}>{formatDateLong(today)}</Text>
+            <View style={styles.desktopDateAccent} />
           </View>
         )}
 
@@ -352,8 +353,21 @@ export default function HomeScreen() {
             <View style={styles.weekCardHeader}>
               <Ionicons name="calendar-outline" size={14} color={COLORS.primary} />
               <Text style={styles.weekCardTitle}>Esta Semana</Text>
+              <Text style={styles.weekCardBadge}>0 sesiones</Text>
             </View>
-            <Text style={styles.weekEmpty}>Sin sesiones esta semana</Text>
+            <View style={styles.weekChipRow}>
+              {[
+                { label: 'EXP', color: COLORS.exp },
+                { label: 'Frags', color: COLORS.frags },
+                { label: 'Nodos', color: COLORS.nodes },
+                { label: 'Mesos', color: COLORS.mesos },
+              ].map(({ label, color }) => (
+                <View key={label} style={styles.weekChip}>
+                  <Text style={[styles.weekChipValue, { color, opacity: 0.4 }]}>—</Text>
+                  <Text style={styles.weekChipLabel}>{label}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         )}
       </ScrollView>
@@ -366,7 +380,25 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { padding: SPACING.lg, paddingBottom: 32 },
   contentDesktop: { maxWidth: 860, width: '100%', alignSelf: 'center' as const },
-  desktopDateHeader: { marginBottom: SPACING.xl },
+  desktopDateHeader: {
+    marginBottom: SPACING.xl,
+    paddingBottom: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  desktopDateText: {
+    color: COLORS.text,
+    fontSize: FONTS.xxl,
+    fontWeight: '700',
+    textTransform: 'capitalize',
+  },
+  desktopDateAccent: {
+    width: 32,
+    height: 3,
+    backgroundColor: COLORS.primary,
+    borderRadius: 2,
+    marginTop: SPACING.sm,
+  },
 
   header: {
     flexDirection: 'row',

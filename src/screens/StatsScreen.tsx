@@ -88,8 +88,16 @@ function PeriodCard({ title, sessions, color }: {
   if (sessions.length === 0) {
     return (
       <View style={[styles.periodCard, { borderLeftColor: color }]}>
-        <Text style={styles.periodTitle}>{title}</Text>
-        <Text style={styles.noData}>Sin sesiones</Text>
+        <View style={styles.periodTitleRow}>
+          <Text style={styles.periodTitle}>{title}</Text>
+          <Text style={styles.periodSessions}>0 sesiones</Text>
+        </View>
+        <SumRow label="EXP ganada"    value="—"  color={COLORS.textMuted} />
+        <SumRow label="Fragmentos"    value="—"  color={COLORS.textMuted} />
+        <SumRow label="Nodos"         value="—"  color={COLORS.textMuted} />
+        <SumRow label="Mesos"         value="—"  color={COLORS.textMuted} />
+        <SumRow label="Fam. Comunes"  value="—"  color={COLORS.textMuted} />
+        <SumRow label="Fam. Raros"    value="—"  color={COLORS.textMuted} />
       </View>
     );
   }
@@ -179,27 +187,14 @@ export default function StatsScreen() {
         <Text style={styles.pageSubtitle}>{allSessions.length} sesiones en total</Text>
       </View>
 
-      {/* Period cards — 2-col grid on desktop */}
+      {/* Period cards — 2-col grid on desktop, each col has exactly 2 cards */}
       <View style={[styles.periodGrid, isDesktop && styles.periodGridDesktop]}>
         <View style={isDesktop ? styles.periodCol : undefined}>
           <PeriodCard title="☀️  Hoy"         sessions={todaySessions} color={COLORS.primary} />
           <PeriodCard title="📅  Esta Semana" sessions={weekSessions}   color={COLORS.frags} />
         </View>
         <View style={isDesktop ? styles.periodCol : undefined}>
-          <PeriodCard title="🗓️  Este Mes"   sessions={monthSessions}  color={COLORS.exp} />
-          {allSessions.length > 0 && (
-            <>
-              <Text style={styles.sectionTitle}>∑ Totales Históricos</Text>
-              <View style={[styles.periodCard, { borderLeftColor: COLORS.primary }]}>
-                <SumRow label="EXP total"    value={formatExp(totalExp)}             color={COLORS.exp} />
-                <SumRow label="Fragmentos"   value={`+${formatNumber(totalFrags)}`}  color={COLORS.frags} />
-                <SumRow label="Nodos"        value={`+${formatNumber(totalNodes)}`}  color={COLORS.nodes} />
-                <SumRow label="Mesos"        value={`+${formatExp(totalMesos)}`}     color={COLORS.mesos} />
-                <SumRow label="Fam. Comunes" value={`+${totalCommon}`}               color={COLORS.common} />
-                <SumRow label="Fam. Raros"   value={`+${totalRare}`}                 color={COLORS.rare} />
-              </View>
-            </>
-          )}
+          <PeriodCard title="🗓️  Este Mes"    sessions={monthSessions}  color={COLORS.exp} />
         </View>
       </View>
 
@@ -215,19 +210,15 @@ export default function StatsScreen() {
             <BestDay sessions={allSessions} label="Más Mesos" color={COLORS.mesos} getValue={(s) => s.mesosGained}     format={formatExp} />
           </View>
 
-          {!isDesktop && (
-            <>
-              <Text style={styles.sectionTitle}>∑ Totales Históricos</Text>
-              <View style={[styles.periodCard, { borderLeftColor: COLORS.primary }]}>
-                <SumRow label="EXP total"    value={formatExp(totalExp)}             color={COLORS.exp} />
-                <SumRow label="Fragmentos"   value={`+${formatNumber(totalFrags)}`}  color={COLORS.frags} />
-                <SumRow label="Nodos"        value={`+${formatNumber(totalNodes)}`}  color={COLORS.nodes} />
-                <SumRow label="Mesos"        value={`+${formatExp(totalMesos)}`}     color={COLORS.mesos} />
-                <SumRow label="Fam. Comunes" value={`+${totalCommon}`}               color={COLORS.common} />
-                <SumRow label="Fam. Raros"   value={`+${totalRare}`}                 color={COLORS.rare} />
-              </View>
-            </>
-          )}
+          <Text style={styles.sectionTitle}>∑ Totales Históricos</Text>
+          <View style={[styles.periodCard, { borderLeftColor: COLORS.primary }]}>
+            <SumRow label="EXP total"    value={formatExp(totalExp)}             color={COLORS.exp} />
+            <SumRow label="Fragmentos"   value={`+${formatNumber(totalFrags)}`}  color={COLORS.frags} />
+            <SumRow label="Nodos"        value={`+${formatNumber(totalNodes)}`}  color={COLORS.nodes} />
+            <SumRow label="Mesos"        value={`+${formatExp(totalMesos)}`}     color={COLORS.mesos} />
+            <SumRow label="Fam. Comunes" value={`+${totalCommon}`}               color={COLORS.common} />
+            <SumRow label="Fam. Raros"   value={`+${totalRare}`}                 color={COLORS.rare} />
+          </View>
         </>
       )}
     </ScrollView>
@@ -331,7 +322,7 @@ const styles = StyleSheet.create({
   chartBars: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    height: 120,
+    height: 180,
     gap: SPACING.sm,
   },
   chartCol: {
