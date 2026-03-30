@@ -83,24 +83,34 @@ export function formatDateMedium(dateStr: string): string {
 }
 
 /**
- * Returns today's date as YYYY-MM-DD
+ * Returns today's date as YYYY-MM-DD based on UTC
  */
 export function getTodayString(): string {
   const now = new Date();
-  return toDateString(now);
+  return toUTCDateString(now);
 }
 
 /**
- * Returns yesterday's date as YYYY-MM-DD
+ * Returns yesterday's date as YYYY-MM-DD based on UTC
  */
 export function getYesterdayString(): string {
   const now = new Date();
-  now.setDate(now.getDate() - 1);
-  return toDateString(now);
+  now.setUTCDate(now.getUTCDate() - 1);
+  return toUTCDateString(now);
 }
 
 /**
- * Converts a Date object to YYYY-MM-DD string
+ * Converts a UTC Date object to YYYY-MM-DD string using UTC fields
+ */
+export function toUTCDateString(date: Date): string {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(date.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Converts a Date object to YYYY-MM-DD string (local time — for date arithmetic only)
  */
 export function toDateString(date: Date): string {
   const y = date.getFullYear();
