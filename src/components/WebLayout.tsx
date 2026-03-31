@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   navAccent: {
-    width: 3,
+    width: 4,
     height: 18,
     borderRadius: 2,
     backgroundColor: 'transparent',
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
   navItemHovered: {
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.cardHighlight,
   },
   navItemActive: {
     backgroundColor: COLORS.primaryDim,

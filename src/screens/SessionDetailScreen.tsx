@@ -125,7 +125,7 @@ export default function SessionDetailScreen({ route, navigation }: Props) {
 
       {/* Notes */}
       {session.notes ? (
-        <Section title="📝  Notas" color={COLORS.textMuted}>
+        <Section title="📝  Notas" color={COLORS.textSecondary}>
           <Text style={styles.notesText}>{session.notes}</Text>
         </Section>
       ) : null}
@@ -198,10 +198,11 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: SPACING.md, marginTop: SPACING.sm },
   actionBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    padding: SPACING.md, borderRadius: RADIUS.lg, gap: SPACING.sm, borderWidth: 1,
+    paddingVertical: SPACING.md, paddingHorizontal: SPACING.md,
+    borderRadius: RADIUS.lg, gap: SPACING.sm, borderWidth: 1, minHeight: 52,
   },
   editBtn: { backgroundColor: COLORS.primaryDim, borderColor: COLORS.primaryBorder },
   editBtnText: { color: COLORS.primary, fontSize: FONTS.lg, fontWeight: '700' },
-  deleteBtn: { backgroundColor: COLORS.error + '18', borderColor: COLORS.error + '40' },
+  deleteBtn: { backgroundColor: COLORS.error + '22', borderColor: COLORS.error + '60' },
   deleteBtnText: { color: COLORS.error, fontSize: FONTS.lg, fontWeight: '700' },
 });

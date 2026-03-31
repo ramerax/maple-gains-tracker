@@ -47,7 +47,7 @@ function StatsBar({ stats }: { stats: PeriodStats }) {
 
 function Chip({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <View style={[styles.chip, { borderColor: color + '30' }]}>
+    <View style={[styles.chip, { borderColor: color + '50' }]}>
       <Text style={[styles.chipValue, { color }]}>{value}</Text>
       <Text style={styles.chipLabel}>{label}</Text>
     </View>

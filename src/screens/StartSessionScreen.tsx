@@ -163,7 +163,7 @@ export default function StartSessionScreen({ navigation, route }: Props) {
         </View>
 
         {/* Notas */}
-        <SectionHeader color={COLORS.textMuted} title="📝  Notas (opcional)" />
+        <SectionHeader color={COLORS.textSecondary} title="📝  Notas (opcional)" />
         <View style={styles.section}>
           <TextInput
             style={[styles.input, styles.notesInput]}

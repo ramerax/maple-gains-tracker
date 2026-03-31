@@ -14,15 +14,15 @@ export const COLORS = {
   // Text
   text: '#FFFFFF',
   textSecondary: '#999999',
-  textMuted: '#444444',
+  textMuted: '#555555',
 
   // Status
   success: '#4CAF50',
   error: '#FF4444',
 
   // Borders & inputs
-  border: '#1C1C1C',
-  inputBg: '#080808',
+  border: '#222222',
+  inputBg: '#181818',
 
   // Stat accent colors
   exp: '#4ADE80',    // green
