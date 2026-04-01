@@ -11,6 +11,12 @@ import {
   getTodayString, getWeekRange, getMonthRange,
   formatExp, formatNumber, formatPercent, formatDateMedium,
 } from '../utils/formatters';
+
+const MONTHS_SHORT = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+function fmtChartDate(dateStr: string) {
+  const [, mm, dd] = dateStr.split('-');
+  return `${parseInt(dd, 10)} ${MONTHS_SHORT[parseInt(mm, 10) - 1]}`;
+}
 import { useProfile } from '../context/ProfileContext';
 import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
 
@@ -37,7 +43,7 @@ function ExpBarChart({ sessions }: { sessions: Session[] }) {
       <View style={styles.chartBars}>
         {sorted.map(([date, val]) => {
           const pct = maxVal > 0 ? val / maxVal : 0;
-          const label = date.slice(5); // "MM-DD"
+          const label = fmtChartDate(date);
           return (
             <View key={date} style={styles.chartCol}>
               <Text style={styles.chartBarLabel}>{formatExp(val)}</Text>
@@ -129,11 +135,11 @@ function PeriodCard({ title, sessions, color }: {
       </View>
 
       <SumRow label="EXP ganada"    value={formatExp(totalExp)}             color={COLORS.exp} />
-      <SumRow label="Fragmentos"    value={`+${formatNumber(totalFrags)}`}  color={COLORS.frags} />
-      <SumRow label="Nodos"         value={`+${formatNumber(totalNodes)}`}  color={COLORS.nodes} />
-      <SumRow label="Mesos"         value={`+${formatExp(totalMesos)}`}     color={COLORS.mesos} />
-      <SumRow label="Fam. Comunes"  value={`+${totalCommon}`}               color={COLORS.common} />
-      <SumRow label="Fam. Raros"    value={`+${totalRare}`}                 color={COLORS.rare} />
+      <SumRow label="Fragmentos"    value={formatNumber(totalFrags)}  color={COLORS.frags} />
+      <SumRow label="Nodos"         value={formatNumber(totalNodes)}  color={COLORS.nodes} />
+      <SumRow label="Mesos"         value={formatExp(totalMesos)}     color={COLORS.mesos} />
+      <SumRow label="Fam. Comunes"  value={String(totalCommon)}       color={COLORS.common} />
+      <SumRow label="Fam. Raros"    value={String(totalRare)}         color={COLORS.rare} />
     </View>
   );
 }
@@ -184,7 +190,7 @@ export default function StatsScreen() {
     >
       <View style={styles.pageHeader}>
         <Text style={styles.pageTitle}>📊 Estadísticas</Text>
-        <Text style={styles.pageSubtitle}>{allSessions.length} sesiones en total</Text>
+        <Text style={styles.pageSubtitle}>{allSessions.length} {allSessions.length === 1 ? 'sesión' : 'sesiones'} en total</Text>
       </View>
 
       {/* Period cards — 2-col grid on desktop, each col has exactly 2 cards */}
@@ -205,19 +211,19 @@ export default function StatsScreen() {
           <Text style={styles.sectionTitle}>🏆 Mejores Días</Text>
           <View style={styles.bestGrid}>
             <BestDay sessions={allSessions} label="Más EXP"   color={COLORS.exp}   getValue={(s) => s.expGainedActual} format={formatExp} />
-            <BestDay sessions={allSessions} label="Más Frags" color={COLORS.frags} getValue={(s) => s.fragsGained}     format={(n) => `+${formatNumber(n)}`} />
-            <BestDay sessions={allSessions} label="Más Nodos" color={COLORS.nodes} getValue={(s) => s.nodesGained}     format={(n) => `+${formatNumber(n)}`} />
+            <BestDay sessions={allSessions} label="Más Frags" color={COLORS.frags} getValue={(s) => s.fragsGained}     format={formatNumber} />
+            <BestDay sessions={allSessions} label="Más Nodos" color={COLORS.nodes} getValue={(s) => s.nodesGained}     format={formatNumber} />
             <BestDay sessions={allSessions} label="Más Mesos" color={COLORS.mesos} getValue={(s) => s.mesosGained}     format={formatExp} />
           </View>
 
           <Text style={styles.sectionTitle}>∑ Totales Históricos</Text>
           <View style={[styles.periodCard, { borderLeftColor: COLORS.primary }]}>
-            <SumRow label="EXP total"    value={formatExp(totalExp)}             color={COLORS.exp} />
-            <SumRow label="Fragmentos"   value={`+${formatNumber(totalFrags)}`}  color={COLORS.frags} />
-            <SumRow label="Nodos"        value={`+${formatNumber(totalNodes)}`}  color={COLORS.nodes} />
-            <SumRow label="Mesos"        value={`+${formatExp(totalMesos)}`}     color={COLORS.mesos} />
-            <SumRow label="Fam. Comunes" value={`+${totalCommon}`}               color={COLORS.common} />
-            <SumRow label="Fam. Raros"   value={`+${totalRare}`}                 color={COLORS.rare} />
+            <SumRow label="EXP total"    value={formatExp(totalExp)}         color={COLORS.exp} />
+            <SumRow label="Fragmentos"   value={formatNumber(totalFrags)}    color={COLORS.frags} />
+            <SumRow label="Nodos"        value={formatNumber(totalNodes)}    color={COLORS.nodes} />
+            <SumRow label="Mesos"        value={formatExp(totalMesos)}       color={COLORS.mesos} />
+            <SumRow label="Fam. Comunes" value={String(totalCommon)}         color={COLORS.common} />
+            <SumRow label="Fam. Raros"   value={String(totalRare)}           color={COLORS.rare} />
           </View>
         </>
       )}

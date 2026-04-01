@@ -32,14 +32,14 @@ function StatsBar({ stats }: { stats: PeriodStats }) {
       {/* Row 1 */}
       <View style={styles.chipRow}>
         <Chip label="EXP"    value={formatExp(stats.totalExpGained)}              color={COLORS.exp} />
-        <Chip label="Frags"  value={`+${formatNumber(stats.totalFragsGained)}`}   color={COLORS.frags} />
-        <Chip label="Nodos"  value={`+${formatNumber(stats.totalNodesGained)}`}   color={COLORS.nodes} />
+        <Chip label="Frags"  value={formatNumber(stats.totalFragsGained)}   color={COLORS.frags} />
+        <Chip label="Nodos"  value={formatNumber(stats.totalNodesGained)}   color={COLORS.nodes} />
       </View>
       {/* Row 2 */}
       <View style={styles.chipRow}>
-        <Chip label="Mesos"    value={`+${formatExp(stats.totalMesosGained)}`}                    color={COLORS.mesos} />
-        <Chip label="Fam. C"   value={`+${stats.totalCommonFamiliarsGained}`}  color={COLORS.common} />
-        <Chip label="Fam. R"   value={`+${stats.totalRareFamiliarsGained}`}    color={COLORS.rare} />
+        <Chip label="Mesos"    value={formatExp(stats.totalMesosGained)}                    color={COLORS.mesos} />
+        <Chip label="Fam. C"   value={String(stats.totalCommonFamiliarsGained)}  color={COLORS.common} />
+        <Chip label="Fam. R"   value={String(stats.totalRareFamiliarsGained)}    color={COLORS.rare} />
       </View>
     </View>
   );
@@ -64,7 +64,7 @@ function SessionItem({ session, onPress }: { session: Session; onPress: () => vo
         </Text>
       </View>
       <View style={styles.sessionRight}>
-        <Text style={[styles.sessionExp, { color: COLORS.exp }]}>+{formatExp(session.expGainedActual)}</Text>
+        <Text style={[styles.sessionExp, { color: COLORS.exp }]}>{formatExp(session.expGainedActual)}</Text>
         <Ionicons name="chevron-forward" size={14} color={COLORS.textMuted} />
       </View>
     </TouchableOpacity>
@@ -194,11 +194,11 @@ export default function HistoryScreen() {
                     <Text style={styles.sideStatLabel}>EXP</Text>
                   </View>
                   <View style={[styles.sideStat, { borderColor: COLORS.frags + '40' }]}>
-                    <Text style={[styles.sideStatValue, { color: COLORS.frags }]}>+{formatNumber(stats.totalFragsGained)}</Text>
+                    <Text style={[styles.sideStatValue, { color: COLORS.frags }]}>{formatNumber(stats.totalFragsGained)}</Text>
                     <Text style={styles.sideStatLabel}>Frags</Text>
                   </View>
                   <View style={[styles.sideStat, { borderColor: COLORS.nodes + '40' }]}>
-                    <Text style={[styles.sideStatValue, { color: COLORS.nodes }]}>+{formatNumber(stats.totalNodesGained)}</Text>
+                    <Text style={[styles.sideStatValue, { color: COLORS.nodes }]}>{formatNumber(stats.totalNodesGained)}</Text>
                     <Text style={styles.sideStatLabel}>Nodos</Text>
                   </View>
                   <View style={[styles.sideStat, { borderColor: COLORS.mesos + '40' }]}>
@@ -206,11 +206,11 @@ export default function HistoryScreen() {
                     <Text style={styles.sideStatLabel}>Mesos</Text>
                   </View>
                   <View style={[styles.sideStat, { borderColor: COLORS.common + '40' }]}>
-                    <Text style={[styles.sideStatValue, { color: COLORS.common }]}>+{stats.totalCommonFamiliarsGained}</Text>
+                    <Text style={[styles.sideStatValue, { color: COLORS.common }]}>{stats.totalCommonFamiliarsGained}</Text>
                     <Text style={styles.sideStatLabel}>Fam. C</Text>
                   </View>
                   <View style={[styles.sideStat, { borderColor: COLORS.rare + '40' }]}>
-                    <Text style={[styles.sideStatValue, { color: COLORS.rare }]}>+{stats.totalRareFamiliarsGained}</Text>
+                    <Text style={[styles.sideStatValue, { color: COLORS.rare }]}>{stats.totalRareFamiliarsGained}</Text>
                     <Text style={styles.sideStatLabel}>Fam. R</Text>
                   </View>
                 </View>
