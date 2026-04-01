@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "UI Concepts Static Server",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "py -3 -m http.server 8090 --directory ."],
+      "port": 8090
+    },
+    {
       "name": "Expo Dev Server (QR / Expo Go)",
       "runtimeExecutable": "cmd",
       "runtimeArgs": ["/c", "npm run start"],

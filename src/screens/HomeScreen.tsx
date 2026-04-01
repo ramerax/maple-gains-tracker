@@ -15,9 +15,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Session, PeriodStats, OpenSession } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
 import { getSessionsByDate, getAllSessions, getSessionsByDateRange, aggregateStats, getOpenSession, deleteOpenSession } from '../utils/storage';
-import { getTodayString, formatDateLong, formatExp, formatNumber, formatPercent, getWeekRange } from '../utils/formatters';
+import { getTodayString, formatDateLong, formatExp, formatNumber, formatPercent, getWeekRange, getMonthRange } from '../utils/formatters';
 import { useProfile } from '../context/ProfileContext';
 import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
+import HomeScreenDesktop from './HomeScreenDesktop';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -92,25 +93,31 @@ export default function HomeScreen() {
   const [stats, setStats] = useState<PeriodStats | null>(null);
   const [allTimeStats, setAllTimeStats] = useState<PeriodStats | null>(null);
   const [weekStats, setWeekStats] = useState<PeriodStats | null>(null);
+  const [monthStats, setMonthStats] = useState<PeriodStats | null>(null);
+  const [allSessions, setAllSessions] = useState<Session[]>([]);
   const [openSession, setOpenSession] = useState<OpenSession | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     const { start: wS, end: wE } = getWeekRange(today);
-    const [s, allSessions, open, weekSessions] = await Promise.all([
+    const { start: mS, end: mE } = getMonthRange(today);
+    const [s, all, open, weekSessions, monthSessions] = await Promise.all([
       getSessionsByDate(today, activeProfileId ?? undefined),
       getAllSessions(),
       getOpenSession(activeProfileId ?? undefined),
       getSessionsByDateRange(wS, wE, activeProfileId ?? undefined),
+      getSessionsByDateRange(mS, mE, activeProfileId ?? undefined),
     ]);
     const profileSessions = activeProfileId
-      ? allSessions.filter((r) => r.profileId === activeProfileId)
-      : allSessions;
+      ? all.filter((r) => r.profileId === activeProfileId)
+      : all;
     setOpenSession(open ?? null);
     setSessions(s);
     setStats(aggregateStats(s));
     setAllTimeStats(aggregateStats(profileSessions));
     setWeekStats(aggregateStats(weekSessions));
+    setMonthStats(aggregateStats(monthSessions));
+    setAllSessions(profileSessions);
   }, [today, activeProfileId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -138,6 +145,38 @@ export default function HomeScreen() {
       ]
     );
   }, [activeProfileId]);
+
+  // Derive current level/xp from the most recent session
+  const latestSession = allSessions.length > 0
+    ? allSessions.reduce((a, b) => (b.createdAt > a.createdAt ? b : a))
+    : null;
+  const profileLevel = latestSession?.lvEnd ?? (activeProfile ? 1 : 1);
+  const profileXpPct = latestSession?.expEnd ?? 0;
+
+  // Recent 5 sessions sorted descending
+  const recentSessions = [...allSessions]
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 5);
+
+  if (isDesktop) {
+    return (
+      <HomeScreenDesktop
+        profileName={activeProfile?.name ?? 'Personaje'}
+        profileClass={activeProfile?.gameClass ?? ''}
+        profileLevel={profileLevel}
+        profileXpPct={profileXpPct}
+        weekStats={weekStats}
+        monthStats={monthStats}
+        allTimeStats={allTimeStats}
+        allSessions={allSessions}
+        recentSessions={recentSessions}
+        openSession={openSession}
+        onFinishSession={() => navigation.navigate('FinishSession')}
+        onCancelSession={handleCancelOpenSession}
+        onNewSession={() => navigation.navigate('StartSession')}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
