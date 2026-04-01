@@ -75,17 +75,14 @@ function Tile({ label, value, color, sub }: { label: string; value: string; colo
   );
 }
 
-function ResRow({ label, week, month, total, color }: {
-  label: string; week: string; month: string; total?: string; color: string;
+function ResRow({ label, week, month, color }: {
+  label: string; week: string; month: string; color: string;
 }) {
   return (
     <View style={styles.resRow}>
       <Text style={styles.resRowLabel}>{label}</Text>
       <Text style={[styles.resRowVal, { color }]}>{week}</Text>
       <Text style={[styles.resRowVal, { color }]}>{month}</Text>
-      <Text style={[styles.resRowVal, { color: total ? WC.expDim : WC.textMuted }]}>
-        {total ?? '—'}
-      </Text>
     </View>
   );
 }
@@ -150,7 +147,6 @@ interface Props {
   profileXpPct: number;
   weekStats: PeriodStats | null;
   monthStats: PeriodStats | null;
-  allTimeStats: PeriodStats | null;
   allSessions: Session[];
   recentSessions: Session[];
   openSession: OpenSession | null;
@@ -166,7 +162,6 @@ export default function HomeScreenDesktop({
   profileXpPct,
   weekStats,
   monthStats,
-  allTimeStats,
   allSessions,
   recentSessions,
   openSession,
@@ -178,7 +173,6 @@ export default function HomeScreenDesktop({
 
   const w = weekStats;
   const m = monthStats;
-  const at = allTimeStats;
 
   return (
     <View style={[styles.root, openSession ? styles.rootWithPill : null]}>
@@ -303,20 +297,17 @@ export default function HomeScreenDesktop({
               <Text style={[styles.resTableHdrCell, { flex: 2, textAlign: 'left' }]}> </Text>
               <Text style={styles.resTableHdrCell}>Semana</Text>
               <Text style={styles.resTableHdrCell}>Mes</Text>
-              <Text style={styles.resTableHdrCell}>Total</Text>
             </View>
 
             <ResRow
               label="EXP" color={WC.exp}
               week={w ? formatExp(w.totalExpGained) : '—'}
               month={m ? formatExp(m.totalExpGained) : '—'}
-              total={at ? formatExp(at.totalExpGained) : undefined}
             />
             <ResRow
               label="Mesos" color={WC.mesos}
               week={w ? formatExp(w.totalMesosGained) : '—'}
               month={m ? formatExp(m.totalMesosGained) : '—'}
-              total={at ? formatExp(at.totalMesosGained) : undefined}
             />
 
             <View style={styles.resTableSep} />
@@ -325,25 +316,21 @@ export default function HomeScreenDesktop({
               label="Fragmentos" color={WC.frags}
               week={w ? formatNumber(w.totalFragsGained) : '—'}
               month={m ? formatNumber(m.totalFragsGained) : '—'}
-              total={at ? formatNumber(at.totalFragsGained) : undefined}
             />
             <ResRow
               label="Nodos" color={WC.nodes}
               week={w ? formatNumber(w.totalNodesGained) : '—'}
               month={m ? formatNumber(m.totalNodesGained) : '—'}
-              total={at ? formatNumber(at.totalNodesGained) : undefined}
             />
             <ResRow
               label="Fam. Comunes" color={WC.common}
               week={w ? String(w.totalCommonFamiliarsGained) : '—'}
               month={m ? String(m.totalCommonFamiliarsGained) : '—'}
-              total={at ? String(at.totalCommonFamiliarsGained) : undefined}
             />
             <ResRow
               label="Fam. Raros" color={WC.rare}
               week={w ? String(w.totalRareFamiliarsGained) : '—'}
               month={m ? String(m.totalRareFamiliarsGained) : '—'}
-              total={at ? String(at.totalRareFamiliarsGained) : undefined}
             />
           </View>
 
