@@ -18,10 +18,32 @@ import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Mode = 'day' | 'week' | 'month';
 
+// Glass Cosmos palette (same as HomeScreenDesktop)
+const WC = {
+  bg: '#040215',
+  panelBg: 'rgba(255,255,255,0.05)',
+  panelBorder: 'rgba(255,255,255,0.08)',
+  panelBgStrong: 'rgba(255,255,255,0.07)',
+  primary: '#C49FFF',
+  primaryDim: 'rgba(180,127,255,0.15)',
+  primaryBorder: 'rgba(180,127,255,0.28)',
+  text: '#FFFFFF',
+  textDim: 'rgba(255,255,255,0.75)',
+  textMuted: 'rgba(255,255,255,0.28)',
+  sep: 'rgba(255,255,255,0.06)',
+  exp: '#4ADE80', mesos: '#FCD34D', frags: '#818CF8',
+  nodes: '#BAE6FD', common: '#CBD5E1', rare: '#60A5FA',
+};
+
+const MONTHS_SHORT = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+function fmtDate(dateStr: string) {
+  const [, mm, dd] = dateStr.split('-');
+  return `${parseInt(dd, 10)} ${MONTHS_SHORT[parseInt(mm, 10) - 1]}`;
+}
+
 function StatsBar({ stats }: { stats: PeriodStats }) {
   return (
     <View style={styles.statsBar}>
-      {/* Level track */}
       <View style={styles.levelTrack}>
         <Ionicons name="trending-up" size={13} color={COLORS.primary} />
         <Text style={styles.levelTrackText}>
@@ -29,17 +51,15 @@ function StatsBar({ stats }: { stats: PeriodStats }) {
           Lv {stats.lvEnd} ({formatPercent(stats.expEnd)}%)
         </Text>
       </View>
-      {/* Row 1 */}
       <View style={styles.chipRow}>
-        <Chip label="EXP"    value={formatExp(stats.totalExpGained)}              color={COLORS.exp} />
-        <Chip label="Frags"  value={formatNumber(stats.totalFragsGained)}   color={COLORS.frags} />
-        <Chip label="Nodos"  value={formatNumber(stats.totalNodesGained)}   color={COLORS.nodes} />
+        <Chip label="EXP"    value={formatExp(stats.totalExpGained)}           color={COLORS.exp} />
+        <Chip label="Frags"  value={formatNumber(stats.totalFragsGained)}      color={COLORS.frags} />
+        <Chip label="Nodos"  value={formatNumber(stats.totalNodesGained)}      color={COLORS.nodes} />
       </View>
-      {/* Row 2 */}
       <View style={styles.chipRow}>
-        <Chip label="Mesos"    value={formatExp(stats.totalMesosGained)}                    color={COLORS.mesos} />
-        <Chip label="Fam. C"   value={String(stats.totalCommonFamiliarsGained)}  color={COLORS.common} />
-        <Chip label="Fam. R"   value={String(stats.totalRareFamiliarsGained)}    color={COLORS.rare} />
+        <Chip label="Mesos"  value={formatExp(stats.totalMesosGained)}         color={COLORS.mesos} />
+        <Chip label="Fam. C" value={String(stats.totalCommonFamiliarsGained)}  color={COLORS.common} />
+        <Chip label="Fam. R" value={String(stats.totalRareFamiliarsGained)}    color={COLORS.rare} />
       </View>
     </View>
   );
@@ -54,18 +74,28 @@ function Chip({ label, value, color }: { label: string; value: string; color: st
   );
 }
 
-function SessionItem({ session, onPress }: { session: Session; onPress: () => void }) {
+function SessionItem({ session, onPress, desktop }: { session: Session; onPress: () => void; desktop?: boolean }) {
+  const [, mm, dd] = session.date.split('-');
+  const dateStr = desktop
+    ? `${parseInt(dd, 10)} ${MONTHS_SHORT[parseInt(mm, 10) - 1]}`
+    : formatDateMedium(session.date);
   return (
-    <TouchableOpacity style={styles.sessionItem} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={desktop ? dStyles.sessItem : styles.sessionItem}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       <View style={styles.sessionLeft}>
-        <Text style={styles.sessionDate}>{formatDateMedium(session.date)}</Text>
-        <Text style={styles.sessionLevel}>
+        <Text style={desktop ? dStyles.sessDate : styles.sessionDate}>{dateStr}</Text>
+        <Text style={desktop ? dStyles.sessLevel : styles.sessionLevel}>
           Lv {session.lvStart} ({formatPercent(session.expStart)}%) → Lv {session.lvEnd} ({formatPercent(session.expEnd)}%)
         </Text>
       </View>
       <View style={styles.sessionRight}>
-        <Text style={[styles.sessionExp, { color: COLORS.exp }]}>{formatExp(session.expGainedActual)}</Text>
-        <Ionicons name="chevron-forward" size={14} color={COLORS.textMuted} />
+        <Text style={[desktop ? dStyles.sessExp : styles.sessionExp, { color: desktop ? WC.exp : COLORS.exp }]}>
+          {formatExp(session.expGainedActual)}
+        </Text>
+        <Ionicons name="chevron-forward" size={14} color={desktop ? WC.textMuted : COLORS.textMuted} />
       </View>
     </TouchableOpacity>
   );
@@ -122,10 +152,114 @@ export default function HistoryScreen() {
     return getRange(next).start > getTodayString();
   };
 
+  if (isDesktop) {
+    return (
+      <View style={dStyles.root}>
+        {/* Mode selector */}
+        <View style={dStyles.modeBar}>
+          {(['day', 'week', 'month'] as Mode[]).map((m) => (
+            <TouchableOpacity
+              key={m}
+              style={[dStyles.modeBtn, mode === m && dStyles.modeBtnActive]}
+              onPress={() => { setMode(m); setCursor(getTodayString()); }}
+            >
+              <Text style={[dStyles.modeBtnText, mode === m && dStyles.modeBtnTextActive]}>
+                {m === 'day' ? 'Día' : m === 'week' ? 'Semana' : 'Mes'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Period nav */}
+        <View style={dStyles.periodNav}>
+          <TouchableOpacity onPress={() => navigate(-1)} style={dStyles.navArrow}>
+            <Ionicons name="chevron-back" size={18} color={WC.primary} />
+          </TouchableOpacity>
+          <Text style={dStyles.periodLabel} numberOfLines={1}>{getPeriodLabel()}</Text>
+          <TouchableOpacity onPress={() => navigate(1)} style={dStyles.navArrow} disabled={isFuture()}>
+            <Ionicons name="chevron-forward" size={18} color={isFuture() ? WC.textMuted : WC.primary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Body: list left + stats right */}
+        <View style={dStyles.body}>
+          <View style={dStyles.listCol}>
+            {sessions.length === 0 ? (
+              <View style={dStyles.empty}>
+                <Text style={dStyles.emptyEmoji}>📭</Text>
+                <Text style={dStyles.emptyText}>Sin sesiones en este período</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={sessions}
+                keyExtractor={(s) => s.id}
+                renderItem={({ item }) => (
+                  <SessionItem
+                    session={item}
+                    desktop
+                    onPress={() => navigation.navigate('SessionDetail', { sessionId: item.id })}
+                  />
+                )}
+                contentContainerStyle={{ padding: 12, paddingBottom: 40 }}
+                ItemSeparatorComponent={() => <View style={dStyles.sep} />}
+              />
+            )}
+          </View>
+
+          {/* Stats panel */}
+          <View style={dStyles.statsCol}>
+            <View style={dStyles.panel}>
+              <Text style={dStyles.panelHdr}>RESUMEN DEL PERÍODO</Text>
+              {stats ? (
+                <>
+                  <View style={dStyles.levelRow}>
+                    <Ionicons name="trending-up" size={12} color={WC.primary} />
+                    <Text style={dStyles.levelText}>
+                      {' '}Lv {stats.lvStart} ({formatPercent(stats.expStart)}%) → Lv {stats.lvEnd} ({formatPercent(stats.expEnd)}%)
+                    </Text>
+                  </View>
+                  <View style={dStyles.statGrid}>
+                    {[
+                      { label: 'EXP',    value: formatExp(stats.totalExpGained),           color: WC.exp },
+                      { label: 'Frags',  value: formatNumber(stats.totalFragsGained),       color: WC.frags },
+                      { label: 'Nodos',  value: formatNumber(stats.totalNodesGained),       color: WC.nodes },
+                      { label: 'Mesos',  value: formatExp(stats.totalMesosGained),          color: WC.mesos },
+                      { label: 'Fam.C',  value: String(stats.totalCommonFamiliarsGained),   color: WC.common },
+                      { label: 'Fam.R',  value: String(stats.totalRareFamiliarsGained),     color: WC.rare },
+                    ].map(({ label, value, color }) => (
+                      <View key={label} style={dStyles.statCell}>
+                        <Text style={[dStyles.statVal, { color }]}>{value}</Text>
+                        <Text style={dStyles.statLabel}>{label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  <Text style={dStyles.sessionCount}>
+                    {stats.sessionCount} {stats.sessionCount === 1 ? 'sesión' : 'sesiones'} en este período
+                  </Text>
+                </>
+              ) : (
+                <Text style={dStyles.emptyText}>Sin datos para mostrar</Text>
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* FAB */}
+        <TouchableOpacity
+          style={dStyles.fab}
+          onPress={() => navigation.navigate('StartSession')}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="add" size={26} color="#000" />
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // ── Mobile layout ────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
-      {/* Mode selector */}
-      <View style={[styles.modeBar, isDesktop && styles.modeBarDesktop]}>
+      <View style={styles.modeBar}>
         {(['day', 'week', 'month'] as Mode[]).map((m) => (
           <TouchableOpacity
             key={m}
@@ -139,8 +273,7 @@ export default function HistoryScreen() {
         ))}
       </View>
 
-      {/* Period navigation */}
-      <View style={[styles.periodNav, isDesktop && styles.periodNavDesktop]}>
+      <View style={styles.periodNav}>
         <TouchableOpacity onPress={() => navigate(-1)} style={styles.navArrow}>
           <Ionicons name="chevron-back" size={20} color={COLORS.primary} />
         </TouchableOpacity>
@@ -150,109 +283,28 @@ export default function HistoryScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Desktop: two-column layout (list left, stats panel right) */}
-      {isDesktop ? (
-        <View style={styles.desktopBody}>
-          {/* Left: session list */}
-          <View style={styles.desktopLeft}>
-            {sessions.length === 0 ? (
-              <View style={styles.noData}>
-                <Text style={styles.noDataEmoji}>📭</Text>
-                <Text style={styles.noDataText}>Sin sesiones en este período</Text>
-              </View>
-            ) : (
-              <FlatList
-                data={sessions}
-                keyExtractor={(s) => s.id}
-                renderItem={({ item }) => (
-                  <SessionItem
-                    session={item}
-                    onPress={() => navigation.navigate('SessionDetail', { sessionId: item.id })}
-                  />
-                )}
-                contentContainerStyle={styles.list}
-                ItemSeparatorComponent={() => <View style={styles.separator} />}
-              />
-            )}
-          </View>
-
-          {/* Right: stats panel */}
-          <View style={styles.desktopRight}>
-            {stats ? (
-              <View style={styles.sidePanel}>
-                <Text style={styles.sidePanelTitle}>Resumen del período</Text>
-                <View style={styles.levelTrack}>
-                  <Ionicons name="trending-up" size={13} color={COLORS.primary} />
-                  <Text style={styles.levelTrackText}>
-                    {'  '}Lv {stats.lvStart} ({formatPercent(stats.expStart)}%){'  →  '}
-                    Lv {stats.lvEnd} ({formatPercent(stats.expEnd)}%)
-                  </Text>
-                </View>
-                <View style={styles.sidePanelGrid}>
-                  <View style={[styles.sideStat, { borderColor: COLORS.exp + '40' }]}>
-                    <Text style={[styles.sideStatValue, { color: COLORS.exp }]}>{formatExp(stats.totalExpGained)}</Text>
-                    <Text style={styles.sideStatLabel}>EXP</Text>
-                  </View>
-                  <View style={[styles.sideStat, { borderColor: COLORS.frags + '40' }]}>
-                    <Text style={[styles.sideStatValue, { color: COLORS.frags }]}>{formatNumber(stats.totalFragsGained)}</Text>
-                    <Text style={styles.sideStatLabel}>Frags</Text>
-                  </View>
-                  <View style={[styles.sideStat, { borderColor: COLORS.nodes + '40' }]}>
-                    <Text style={[styles.sideStatValue, { color: COLORS.nodes }]}>{formatNumber(stats.totalNodesGained)}</Text>
-                    <Text style={styles.sideStatLabel}>Nodos</Text>
-                  </View>
-                  <View style={[styles.sideStat, { borderColor: COLORS.mesos + '40' }]}>
-                    <Text style={[styles.sideStatValue, { color: COLORS.mesos }]}>{formatExp(stats.totalMesosGained)}</Text>
-                    <Text style={styles.sideStatLabel}>Mesos</Text>
-                  </View>
-                  <View style={[styles.sideStat, { borderColor: COLORS.common + '40' }]}>
-                    <Text style={[styles.sideStatValue, { color: COLORS.common }]}>{stats.totalCommonFamiliarsGained}</Text>
-                    <Text style={styles.sideStatLabel}>Fam. C</Text>
-                  </View>
-                  <View style={[styles.sideStat, { borderColor: COLORS.rare + '40' }]}>
-                    <Text style={[styles.sideStatValue, { color: COLORS.rare }]}>{stats.totalRareFamiliarsGained}</Text>
-                    <Text style={styles.sideStatLabel}>Fam. R</Text>
-                  </View>
-                </View>
-                <View style={styles.sidePanelFooter}>
-                  <Text style={styles.sidePanelSessions}>{stats.sessionCount} sesión{stats.sessionCount !== 1 ? 'es' : ''} en este período</Text>
-                </View>
-              </View>
-            ) : (
-              <View style={styles.sidePanel}>
-                <Text style={styles.sidePanelTitle}>Resumen del período</Text>
-                <Text style={styles.sidePanelEmpty}>Sin datos para mostrar</Text>
-              </View>
-            )}
-          </View>
-        </View>
+      {stats ? (
+        <StatsBar stats={stats} />
       ) : (
-        /* Mobile: original layout */
-        <>
-          {stats ? (
-            <StatsBar stats={stats} />
-          ) : (
-            <View style={styles.noData}>
-              <Text style={styles.noDataEmoji}>📭</Text>
-              <Text style={styles.noDataText}>Sin sesiones en este período</Text>
-            </View>
-          )}
-          <FlatList
-            data={sessions}
-            keyExtractor={(s) => s.id}
-            renderItem={({ item }) => (
-              <SessionItem
-                session={item}
-                onPress={() => navigation.navigate('SessionDetail', { sessionId: item.id })}
-              />
-            )}
-            contentContainerStyle={styles.list}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-          />
-        </>
+        <View style={styles.noData}>
+          <Text style={styles.noDataEmoji}>📭</Text>
+          <Text style={styles.noDataText}>Sin sesiones en este período</Text>
+        </View>
       )}
 
-      {/* FAB */}
+      <FlatList
+        data={sessions}
+        keyExtractor={(s) => s.id}
+        renderItem={({ item }) => (
+          <SessionItem
+            session={item}
+            onPress={() => navigation.navigate('SessionDetail', { sessionId: item.id })}
+          />
+        )}
+        contentContainerStyle={styles.list}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+      />
+
       <TouchableOpacity
         style={styles.fab}
         onPress={() => navigation.navigate('StartSession')}
@@ -264,6 +316,97 @@ export default function HistoryScreen() {
   );
 }
 
+// ── Desktop styles ──────────────────────────────────────────────────────
+const dStyles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: WC.bg, flexDirection: 'column' },
+
+  modeBar: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: WC.panelBorder,
+  },
+  modeBtn: {
+    paddingHorizontal: 20, paddingVertical: 7,
+    borderRadius: 50, borderWidth: 1, borderColor: 'transparent',
+  },
+  modeBtnActive: {
+    backgroundColor: WC.primaryDim, borderColor: WC.primaryBorder,
+  },
+  modeBtnText: { color: WC.textMuted, fontSize: 13, fontWeight: '600' },
+  modeBtnTextActive: { color: WC.primary },
+
+  periodNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: WC.panelBorder,
+  },
+  navArrow: { padding: 8 },
+  periodLabel: {
+    flex: 1, color: WC.text, fontSize: 15, fontWeight: '700',
+    textAlign: 'center', textTransform: 'capitalize',
+  },
+
+  body: { flex: 1, flexDirection: 'row' },
+  listCol: { flex: 1, borderRightWidth: 1, borderRightColor: WC.panelBorder },
+  statsCol: { width: 260, padding: 14 },
+
+  panel: {
+    backgroundColor: WC.panelBgStrong,
+    borderWidth: 1, borderColor: WC.panelBorder,
+    borderRadius: 14, padding: 16,
+  },
+  panelHdr: {
+    fontSize: 9, color: WC.textMuted, letterSpacing: 2, textTransform: 'uppercase',
+    fontWeight: '700', marginBottom: 12, borderBottomWidth: 1,
+    borderBottomColor: WC.sep, paddingBottom: 8,
+  },
+  levelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  levelText: { fontSize: 11, color: WC.textDim, flex: 1 },
+
+  statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  statCell: {
+    width: '47%', backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1, borderColor: WC.sep, borderRadius: 8, padding: 8,
+  },
+  statVal: { fontSize: 15, fontWeight: '900', letterSpacing: -0.5 },
+  statLabel: { fontSize: 9, color: WC.textMuted, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
+  sessionCount: {
+    marginTop: 12, fontSize: 10, color: WC.textMuted, textAlign: 'center',
+    paddingTop: 10, borderTopWidth: 1, borderTopColor: WC.sep,
+  },
+
+  sep: { height: 1, backgroundColor: WC.sep },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
+  emptyEmoji: { fontSize: 32, marginBottom: 8 },
+  emptyText: { color: WC.textMuted, fontSize: 13 },
+
+  sessItem: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingVertical: 12, paddingHorizontal: 16,
+    backgroundColor: 'rgba(255,255,255,0.02)',
+  },
+  sessDate: { fontSize: 13, color: WC.text, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  sessLevel: { fontSize: 10, color: WC.textMuted, marginTop: 3 },
+  sessExp: { fontSize: 16, fontWeight: '900', letterSpacing: -0.5, marginRight: 8 },
+
+  fab: {
+    position: 'absolute', right: 20, bottom: 20,
+    width: 50, height: 50, borderRadius: 25,
+    backgroundColor: WC.primary,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: WC.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4, shadowRadius: 10,
+  },
+});
+
+// ── Mobile styles ───────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
 
@@ -275,7 +418,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  modeBarDesktop: { paddingHorizontal: SPACING.xl },
   modeBtn: {
     flex: 1, padding: SPACING.sm, borderRadius: RADIUS.sm,
     alignItems: 'center', justifyContent: 'center',
@@ -294,7 +436,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  periodNavDesktop: { paddingHorizontal: SPACING.xl },
   navArrow: { padding: SPACING.sm },
   periodLabel: {
     flex: 1, color: COLORS.text, fontSize: FONTS.lg, fontWeight: '700',
@@ -359,44 +500,4 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35, shadowRadius: 10, elevation: 8,
   },
-
-  // Desktop two-column layout
-  desktopBody: { flex: 1, flexDirection: 'row' },
-  desktopLeft: { flex: 1, borderRightWidth: 1, borderRightColor: COLORS.border },
-  desktopRight: { width: 280, padding: SPACING.lg },
-
-  sidePanel: {
-    backgroundColor: COLORS.card,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  sidePanelTitle: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.xs,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: SPACING.md,
-  },
-  sidePanelGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-    marginTop: SPACING.md,
-  },
-  sideStat: {
-    width: '47%',
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md,
-    padding: SPACING.sm,
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  sideStatValue: { fontSize: FONTS.lg, fontWeight: '800' },
-  sideStatLabel: { color: COLORS.textMuted, fontSize: FONTS.xs, marginTop: 2 },
-  sidePanelFooter: { marginTop: SPACING.md, paddingTop: SPACING.md, borderTopWidth: 1, borderTopColor: COLORS.border },
-  sidePanelSessions: { color: COLORS.textSecondary, fontSize: FONTS.xs, textAlign: 'center' },
-  sidePanelEmpty: { color: COLORS.textMuted, fontSize: FONTS.sm },
 });

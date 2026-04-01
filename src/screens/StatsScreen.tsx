@@ -11,27 +11,45 @@ import {
   getTodayString, getWeekRange, getMonthRange,
   formatExp, formatNumber, formatPercent, formatDateMedium,
 } from '../utils/formatters';
+import { useProfile } from '../context/ProfileContext';
+import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
+
+// Glass Cosmos palette
+const WC = {
+  bg: '#040215',
+  panelBg: 'rgba(255,255,255,0.05)',
+  panelBorder: 'rgba(255,255,255,0.08)',
+  panelBgStrong: 'rgba(255,255,255,0.07)',
+  primary: '#C49FFF',
+  primaryDim: 'rgba(180,127,255,0.15)',
+  primaryBorder: 'rgba(180,127,255,0.28)',
+  text: '#FFFFFF',
+  textDim: 'rgba(255,255,255,0.75)',
+  textMuted: 'rgba(255,255,255,0.28)',
+  sep: 'rgba(255,255,255,0.06)',
+  exp: '#4ADE80', mesos: '#FCD34D', frags: '#818CF8',
+  nodes: '#BAE6FD', common: '#CBD5E1', rare: '#60A5FA',
+};
 
 const MONTHS_SHORT = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
 function fmtChartDate(dateStr: string) {
   const [, mm, dd] = dateStr.split('-');
   return `${parseInt(dd, 10)} ${MONTHS_SHORT[parseInt(mm, 10) - 1]}`;
 }
-import { useProfile } from '../context/ProfileContext';
-import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
+
+// ── Mobile sub-components ────────────────────────────────────────────────
 
 function ExpBarChart({ sessions }: { sessions: Session[] }) {
   if (sessions.length === 0) return null;
 
-  // Aggregate EXP by date, pick top 7 most recent
   const byDate: Record<string, number> = {};
   for (const s of sessions) {
     byDate[s.date] = (byDate[s.date] ?? 0) + s.expGainedActual;
   }
   const sorted = Object.entries(byDate)
-    .sort((a, b) => b[0].localeCompare(a[0])) // most recent first
+    .sort((a, b) => b[0].localeCompare(a[0]))
     .slice(0, 7)
-    .reverse(); // oldest → newest for left-to-right display
+    .reverse();
 
   if (sorted.length === 0) return null;
 
@@ -125,7 +143,6 @@ function PeriodCard({ title, sessions, color }: {
         <Text style={styles.periodTitle}>{title}</Text>
         <Text style={styles.periodSessions}>{sessions.length} sesión{sessions.length !== 1 ? 'es' : ''}</Text>
       </View>
-
       <View style={styles.levelTrack}>
         <Ionicons name="trending-up" size={13} color={COLORS.primary} />
         <Text style={styles.levelTrackText}>
@@ -133,7 +150,6 @@ function PeriodCard({ title, sessions, color }: {
           Lv {last.lvEnd} ({formatPercent(last.expEnd)}%)
         </Text>
       </View>
-
       <SumRow label="EXP ganada"    value={formatExp(totalExp)}             color={COLORS.exp} />
       <SumRow label="Fragmentos"    value={formatNumber(totalFrags)}  color={COLORS.frags} />
       <SumRow label="Nodos"         value={formatNumber(totalNodes)}  color={COLORS.nodes} />
@@ -143,6 +159,135 @@ function PeriodCard({ title, sessions, color }: {
     </View>
   );
 }
+
+// ── Desktop sub-components ───────────────────────────────────────────────
+
+function DeskStatRow({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <View style={dStyles.statRow}>
+      <Text style={dStyles.statRowLabel}>{label}</Text>
+      <Text style={[dStyles.statRowValue, { color }]}>{value}</Text>
+    </View>
+  );
+}
+
+function DeskPeriodPanel({ title, sessions, color, empty }: {
+  title: string; sessions: Session[]; color: string; empty?: boolean;
+}) {
+  const isEmpty = sessions.length === 0 || empty;
+
+  let first: Session | undefined, last: Session | undefined;
+  let totalExp = 0, totalFrags = 0, totalNodes = 0, totalMesos = 0, totalCommon = 0, totalRare = 0;
+
+  if (!isEmpty) {
+    const sorted = [...sessions].sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt);
+    first = sorted[0];
+    last = sorted[sorted.length - 1];
+    totalExp   = sessions.reduce((s, r) => s + r.expGainedActual, 0);
+    totalFrags = sessions.reduce((s, r) => s + r.fragsGained, 0);
+    totalNodes = sessions.reduce((s, r) => s + r.nodesGained, 0);
+    totalMesos = sessions.reduce((s, r) => s + r.mesosGained, 0);
+    totalCommon = sessions.reduce((s, r) => s + r.commonFamiliarsGained, 0);
+    totalRare  = sessions.reduce((s, r) => s + r.rareFamiliarsGained, 0);
+  }
+
+  return (
+    <View style={[dStyles.periodPanel, { borderTopColor: color }]}>
+      <View style={dStyles.periodPanelHdr}>
+        <Text style={dStyles.periodPanelTitle}>{title}</Text>
+        <Text style={[dStyles.periodPanelCount, { color }]}>
+          {isEmpty ? '0 sesiones' : `${sessions.length} ${sessions.length !== 1 ? 'sesiones' : 'sesión'}`}
+        </Text>
+      </View>
+
+      {!isEmpty && first && last && (
+        <View style={dStyles.levelBadge}>
+          <Ionicons name="trending-up" size={11} color={color} />
+          <Text style={dStyles.levelBadgeText}>
+            {' '}Lv {first.lvStart} ({formatPercent(first.expStart)}%) → Lv {last.lvEnd} ({formatPercent(last.expEnd)}%)
+          </Text>
+        </View>
+      )}
+
+      <DeskStatRow label="EXP"    value={isEmpty ? '—' : formatExp(totalExp)}         color={isEmpty ? WC.textMuted : WC.exp} />
+      <DeskStatRow label="Frags"  value={isEmpty ? '—' : formatNumber(totalFrags)}    color={isEmpty ? WC.textMuted : WC.frags} />
+      <DeskStatRow label="Nodos"  value={isEmpty ? '—' : formatNumber(totalNodes)}    color={isEmpty ? WC.textMuted : WC.nodes} />
+      <DeskStatRow label="Mesos"  value={isEmpty ? '—' : formatExp(totalMesos)}       color={isEmpty ? WC.textMuted : WC.mesos} />
+      <DeskStatRow label="Fam. C" value={isEmpty ? '—' : String(totalCommon)}         color={isEmpty ? WC.textMuted : WC.common} />
+      <DeskStatRow label="Fam. R" value={isEmpty ? '—' : String(totalRare)}           color={isEmpty ? WC.textMuted : WC.rare} />
+    </View>
+  );
+}
+
+function DeskBarChart({ sessions }: { sessions: Session[] }) {
+  if (sessions.length === 0) return null;
+
+  const byDate: Record<string, number> = {};
+  for (const s of sessions) {
+    byDate[s.date] = (byDate[s.date] ?? 0) + s.expGainedActual;
+  }
+  const sorted = Object.entries(byDate)
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .slice(0, 7)
+    .reverse();
+
+  if (sorted.length === 0) return null;
+  const maxVal = Math.max(...sorted.map(([, v]) => v));
+
+  return (
+    <View style={dStyles.chartCard}>
+      <Text style={dStyles.chartTitle}>EXP POR DÍA (ÚLTIMOS 7)</Text>
+      <View style={dStyles.chartBars}>
+        {sorted.map(([date, val]) => {
+          const pct = maxVal > 0 ? val / maxVal : 0;
+          return (
+            <View key={date} style={dStyles.chartCol}>
+              <Text style={dStyles.chartValLabel}>{formatExp(val)}</Text>
+              <View style={dStyles.chartBarTrack}>
+                <View style={[dStyles.chartBarFill, { height: `${Math.max(pct * 100, 4)}%` as unknown as number }]} />
+              </View>
+              <Text style={dStyles.chartDateLabel}>{fmtChartDate(date)}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function DeskBestDays({ sessions }: { sessions: Session[] }) {
+  if (sessions.length === 0) return null;
+
+  const bestOf = (getValue: (s: Session) => number) => {
+    const byDate: Record<string, number> = {};
+    for (const s of sessions) byDate[s.date] = (byDate[s.date] ?? 0) + getValue(s);
+    return Object.entries(byDate).sort((a, b) => b[1] - a[1])[0];
+  };
+
+  const bests = [
+    { label: 'Más EXP',   color: WC.exp,   entry: bestOf((s) => s.expGainedActual), fmt: formatExp },
+    { label: 'Más Frags', color: WC.frags,  entry: bestOf((s) => s.fragsGained),     fmt: formatNumber },
+    { label: 'Más Nodos', color: WC.nodes,  entry: bestOf((s) => s.nodesGained),     fmt: formatNumber },
+    { label: 'Más Mesos', color: WC.mesos,  entry: bestOf((s) => s.mesosGained),     fmt: formatExp },
+  ];
+
+  return (
+    <View style={dStyles.bestGrid}>
+      {bests.map(({ label, color, entry, fmt }) => {
+        if (!entry) return null;
+        return (
+          <View key={label} style={[dStyles.bestCell, { borderTopColor: color }]}>
+            <Text style={[dStyles.bestVal, { color }]}>{fmt(entry[1])}</Text>
+            <Text style={dStyles.bestLabel}>{label}</Text>
+            <Text style={dStyles.bestDate}>{fmtChartDate(entry[0])}</Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+// ── Main component ───────────────────────────────────────────────────────
 
 export default function StatsScreen() {
   const { activeProfileId } = useProfile();
@@ -182,10 +327,64 @@ export default function StatsScreen() {
   const totalCommon = allSessions.reduce((s, r) => s + r.commonFamiliarsGained, 0);
   const totalRare   = allSessions.reduce((s, r) => s + r.rareFamiliarsGained, 0);
 
+  // ── Desktop layout ───────────────────────────────────────────────────
+  if (isDesktop) {
+    return (
+      <ScrollView
+        style={dStyles.container}
+        contentContainerStyle={dStyles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={WC.primary} />}
+      >
+        {/* Header */}
+        <View style={dStyles.pageHeader}>
+          <Text style={dStyles.pageTitle}>Estadísticas</Text>
+          <Text style={dStyles.pageSubtitle}>
+            {allSessions.length} {allSessions.length === 1 ? 'sesión' : 'sesiones'} registradas
+          </Text>
+        </View>
+
+        {/* Period panels row */}
+        <View style={dStyles.periodRow}>
+          <DeskPeriodPanel title="☀️  Hoy"         sessions={todaySessions} color={WC.primary} />
+          <DeskPeriodPanel title="📅  Esta Semana" sessions={weekSessions}  color={WC.frags} />
+          <DeskPeriodPanel title="🗓️  Este Mes"    sessions={monthSessions} color={WC.exp} />
+        </View>
+
+        {allSessions.length > 0 && (
+          <>
+            {/* Bar chart */}
+            <DeskBarChart sessions={allSessions} />
+
+            {/* Best days + totals side by side */}
+            <View style={dStyles.bottomRow}>
+              <View style={dStyles.bestSection}>
+                <Text style={dStyles.sectionTitle}>MEJORES DÍAS</Text>
+                <DeskBestDays sessions={allSessions} />
+              </View>
+
+              <View style={dStyles.totalsSection}>
+                <Text style={dStyles.sectionTitle}>TOTALES HISTÓRICOS</Text>
+                <View style={dStyles.totalsPanel}>
+                  <DeskStatRow label="EXP total"    value={formatExp(totalExp)}      color={WC.exp} />
+                  <DeskStatRow label="Fragmentos"   value={formatNumber(totalFrags)} color={WC.frags} />
+                  <DeskStatRow label="Nodos"        value={formatNumber(totalNodes)} color={WC.nodes} />
+                  <DeskStatRow label="Mesos"        value={formatExp(totalMesos)}    color={WC.mesos} />
+                  <DeskStatRow label="Fam. Comunes" value={String(totalCommon)}      color={WC.common} />
+                  <DeskStatRow label="Fam. Raros"   value={String(totalRare)}        color={WC.rare} />
+                </View>
+              </View>
+            </View>
+          </>
+        )}
+      </ScrollView>
+    );
+  }
+
+  // ── Mobile layout ────────────────────────────────────────────────────
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={[styles.content, isDesktop && styles.contentDesktop]}
+      contentContainerStyle={[styles.content, styles.contentDesktop]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
     >
       <View style={styles.pageHeader}>
@@ -193,13 +392,12 @@ export default function StatsScreen() {
         <Text style={styles.pageSubtitle}>{allSessions.length} {allSessions.length === 1 ? 'sesión' : 'sesiones'} en total</Text>
       </View>
 
-      {/* Period cards — 2-col grid on desktop, each col has exactly 2 cards */}
-      <View style={[styles.periodGrid, isDesktop && styles.periodGridDesktop]}>
-        <View style={isDesktop ? styles.periodCol : undefined}>
+      <View style={styles.periodGrid}>
+        <View>
           <PeriodCard title="☀️  Hoy"         sessions={todaySessions} color={COLORS.primary} />
           <PeriodCard title="📅  Esta Semana" sessions={weekSessions}   color={COLORS.frags} />
         </View>
-        <View style={isDesktop ? styles.periodCol : undefined}>
+        <View>
           <PeriodCard title="🗓️  Este Mes"    sessions={monthSessions}  color={COLORS.exp} />
         </View>
       </View>
@@ -231,13 +429,106 @@ export default function StatsScreen() {
   );
 }
 
+// ── Desktop styles ───────────────────────────────────────────────────────
+const dStyles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: WC.bg },
+  content: { padding: 24, paddingBottom: 60, maxWidth: 1200, width: '100%', alignSelf: 'center' as const },
+
+  pageHeader: { marginBottom: 24 },
+  pageTitle: { color: WC.text, fontSize: 26, fontWeight: '800', letterSpacing: -0.5 },
+  pageSubtitle: { color: WC.textMuted, fontSize: 13, marginTop: 4 },
+
+  sectionTitle: {
+    color: WC.textMuted,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    marginBottom: 12,
+  },
+
+  // Period panels
+  periodRow: { flexDirection: 'row', gap: 12, marginBottom: 20 },
+  periodPanel: {
+    flex: 1,
+    backgroundColor: WC.panelBgStrong,
+    borderWidth: 1, borderColor: WC.panelBorder,
+    borderTopWidth: 2,
+    borderRadius: 14,
+    padding: 16,
+  },
+  periodPanelHdr: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  periodPanelTitle: { color: WC.text, fontSize: 14, fontWeight: '700' },
+  periodPanelCount: { fontSize: 11, fontWeight: '600' },
+  levelBadge: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 5,
+    marginBottom: 10, borderWidth: 1, borderColor: WC.sep,
+  },
+  levelBadgeText: { fontSize: 10, color: WC.textDim, flex: 1 },
+
+  statRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: WC.sep,
+  },
+  statRowLabel: { color: WC.textMuted, fontSize: 12 },
+  statRowValue: { fontSize: 12, fontWeight: '700' },
+
+  // Bar chart
+  chartCard: {
+    backgroundColor: WC.panelBgStrong,
+    borderWidth: 1, borderColor: WC.panelBorder,
+    borderRadius: 14, padding: 20, marginBottom: 20,
+  },
+  chartTitle: {
+    color: WC.textMuted, fontSize: 10, fontWeight: '700',
+    letterSpacing: 2, textTransform: 'uppercase', marginBottom: 16,
+  },
+  chartBars: { flexDirection: 'row', alignItems: 'flex-end', height: 160, gap: 8 },
+  chartCol: { flex: 1, alignItems: 'center', height: '100%', justifyContent: 'flex-end' },
+  chartValLabel: { color: WC.exp, fontSize: 9, fontWeight: '700', marginBottom: 3, textAlign: 'center' },
+  chartBarTrack: {
+    width: '70%', height: '80%',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 4, justifyContent: 'flex-end', overflow: 'hidden',
+    borderWidth: 1, borderColor: WC.panelBorder,
+  },
+  chartBarFill: { width: '100%', backgroundColor: WC.exp, borderRadius: 3, opacity: 0.85 },
+  chartDateLabel: { color: WC.textMuted, fontSize: 9, marginTop: 4, textAlign: 'center' },
+
+  // Bottom row
+  bottomRow: { flexDirection: 'row', gap: 16 },
+  bestSection: { flex: 1 },
+  totalsSection: { width: 280 },
+
+  // Best days grid
+  bestGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  bestCell: {
+    width: '47%',
+    backgroundColor: WC.panelBgStrong,
+    borderWidth: 1, borderColor: WC.panelBorder,
+    borderTopWidth: 2,
+    borderRadius: 10, padding: 14,
+  },
+  bestVal: { fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
+  bestLabel: { color: WC.textMuted, fontSize: 11, marginTop: 3 },
+  bestDate: { color: WC.textMuted, fontSize: 10, marginTop: 2 },
+
+  // Totals panel
+  totalsPanel: {
+    backgroundColor: WC.panelBgStrong,
+    borderWidth: 1, borderColor: WC.panelBorder,
+    borderRadius: 14, padding: 16,
+  },
+});
+
+// ── Mobile styles ────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
   content: { padding: SPACING.lg, paddingBottom: 40 },
   contentDesktop: { maxWidth: 1100, width: '100%', alignSelf: 'center' as const },
   periodGrid: {},
-  periodGridDesktop: { flexDirection: 'row', gap: SPACING.md, alignItems: 'flex-start' },
-  periodCol: { flex: 1 },
 
   pageHeader: { marginBottom: SPACING.xl },
   pageTitle: { color: COLORS.text, fontSize: FONTS.xxl, fontWeight: '800' },
@@ -270,7 +561,6 @@ const styles = StyleSheet.create({
   },
   periodTitle: { color: COLORS.text, fontSize: FONTS.lg, fontWeight: '700' },
   periodSessions: { color: COLORS.textSecondary, fontSize: FONTS.xs },
-  noData: { color: COLORS.textSecondary, fontSize: FONTS.md },
 
   levelTrack: {
     flexDirection: 'row',
@@ -308,7 +598,6 @@ const styles = StyleSheet.create({
   bestDayLabel: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginTop: 2 },
   bestDayDate: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginTop: 2 },
 
-  // Bar chart
   chartCard: {
     backgroundColor: COLORS.card,
     borderRadius: RADIUS.lg,
