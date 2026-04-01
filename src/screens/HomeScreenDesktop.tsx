@@ -2,14 +2,14 @@
  * HomeScreenDesktop — nueva UI dashboard para web desktop
  * Layout: panel izquierdo (ring + char + best day) + área derecha (6 tiles + tabla recursos + sesiones)
  */
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, Session, PeriodStats, OpenSession } from '../types';
-import { formatExp, formatNumber } from '../utils/formatters';
+import { formatExp, formatNumber, getTodayString, getWeekRange, getMonthRange } from '../utils/formatters';
 import XPRing from '../components/XPRing';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -75,17 +75,82 @@ function Tile({ label, value, color, sub }: { label: string; value: string; colo
   );
 }
 
-function ResRow({ label, week, month, total, color }: {
-  label: string; week: string; month: string; total?: string; color: string;
+// ── Tooltip for resource breakdown ────────────────────────────────────
+function ResourceTooltip({
+  sessions, color, getVal, fmtVal,
+}: {
+  sessions: Session[]; color: string;
+  getVal: (s: Session) => number;
+  fmtVal: (n: number) => string;
 }) {
+  const rows = sessions
+    .filter((s) => getVal(s) > 0)
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  if (rows.length === 0) return null;
+
+  return (
+    <View style={ttStyles.box}>
+      <View style={ttStyles.arrow} />
+      {rows.map((s) => {
+        const [, mm, dd] = s.date.split('-');
+        const d = `${parseInt(dd, 10)} ${MONTHS[parseInt(mm, 10) - 1]}`;
+        return (
+          <View key={s.id} style={ttStyles.row}>
+            <Text style={ttStyles.date}>{d}</Text>
+            <Text style={[ttStyles.val, { color }]}>{fmtVal(getVal(s))}</Text>
+          </View>
+        );
+      })}
+      <View style={ttStyles.totalRow}>
+        <Text style={ttStyles.totalLabel}>TOTAL</Text>
+        <Text style={[ttStyles.totalVal, { color }]}>
+          {fmtVal(rows.reduce((s, r) => s + getVal(r), 0))}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function ResRow({ label, week, month, total, color, weekSessions, monthSessions, allSessions: aS, getVal, fmtVal }: {
+  label: string; week: string; month: string; total?: string; color: string;
+  weekSessions: Session[]; monthSessions: Session[]; allSessions: Session[];
+  getVal: (s: Session) => number; fmtVal: (n: number) => string;
+}) {
+  const [hovered, setHovered] = useState<'week' | 'month' | 'total' | null>(null);
+
+  const cells: Array<{ key: 'week' | 'month' | 'total'; val: string | undefined; sessions: Session[] }> = [
+    { key: 'week',  val: week,  sessions: weekSessions },
+    { key: 'month', val: month, sessions: monthSessions },
+    { key: 'total', val: total, sessions: aS },
+  ];
+
   return (
     <View style={styles.resRow}>
       <Text style={styles.resRowLabel}>{label}</Text>
-      <Text style={[styles.resRowVal, { color }]}>{week}</Text>
-      <Text style={[styles.resRowVal, { color }]}>{month}</Text>
-      <Text style={[styles.resRowVal, { color: total ? WC.expDim : WC.textMuted }]}>
-        {total ?? '—'}
-      </Text>
+      {cells.map(({ key, val, sessions }) => (
+        <View
+          key={key}
+          style={styles.resRowValWrap}
+          {...{ onMouseEnter: () => setHovered(key), onMouseLeave: () => setHovered(null) } as any}
+        >
+          <Text style={[
+            styles.resRowVal,
+            { color: key === 'total' ? (total ? WC.expDim : WC.textMuted) : color },
+            val && val !== '—' ? styles.resRowValHoverable : null,
+          ]}>
+            {val ?? '—'}
+          </Text>
+          {hovered === key && val && val !== '—' && (
+            <ResourceTooltip
+              sessions={sessions}
+              color={color}
+              getVal={getVal}
+              fmtVal={fmtVal}
+            />
+          )}
+        </View>
+      ))}
     </View>
   );
 }
@@ -179,6 +244,13 @@ export default function HomeScreenDesktop({
   const w = weekStats;
   const m = monthStats;
   const at = allTimeStats;
+
+  // Sessions for tooltip breakdowns
+  const today = getTodayString();
+  const { start: wS, end: wE } = getWeekRange(today);
+  const { start: mS, end: mE } = getMonthRange(today);
+  const weekSessions  = allSessions.filter((s) => s.date >= wS && s.date <= wE);
+  const monthSessions = allSessions.filter((s) => s.date >= mS && s.date <= mE);
 
   return (
     <View style={[styles.root, openSession ? styles.rootWithPill : null]}>
@@ -311,12 +383,16 @@ export default function HomeScreenDesktop({
               week={w ? formatExp(w.totalExpGained) : '—'}
               month={m ? formatExp(m.totalExpGained) : '—'}
               total={at ? formatExp(at.totalExpGained) : undefined}
+              weekSessions={weekSessions} monthSessions={monthSessions} allSessions={allSessions}
+              getVal={(s) => s.expGainedActual} fmtVal={formatExp}
             />
             <ResRow
               label="Mesos" color={WC.mesos}
               week={w ? formatExp(w.totalMesosGained) : '—'}
               month={m ? formatExp(m.totalMesosGained) : '—'}
               total={at ? formatExp(at.totalMesosGained) : undefined}
+              weekSessions={weekSessions} monthSessions={monthSessions} allSessions={allSessions}
+              getVal={(s) => s.mesosGained} fmtVal={formatExp}
             />
 
             <View style={styles.resTableSep} />
@@ -326,24 +402,32 @@ export default function HomeScreenDesktop({
               week={w ? formatNumber(w.totalFragsGained) : '—'}
               month={m ? formatNumber(m.totalFragsGained) : '—'}
               total={at ? formatNumber(at.totalFragsGained) : undefined}
+              weekSessions={weekSessions} monthSessions={monthSessions} allSessions={allSessions}
+              getVal={(s) => s.fragsGained} fmtVal={formatNumber}
             />
             <ResRow
               label="Nodos" color={WC.nodes}
               week={w ? formatNumber(w.totalNodesGained) : '—'}
               month={m ? formatNumber(m.totalNodesGained) : '—'}
               total={at ? formatNumber(at.totalNodesGained) : undefined}
+              weekSessions={weekSessions} monthSessions={monthSessions} allSessions={allSessions}
+              getVal={(s) => s.nodesGained} fmtVal={formatNumber}
             />
             <ResRow
               label="Fam. Comunes" color={WC.common}
               week={w ? String(w.totalCommonFamiliarsGained) : '—'}
               month={m ? String(m.totalCommonFamiliarsGained) : '—'}
               total={at ? String(at.totalCommonFamiliarsGained) : undefined}
+              weekSessions={weekSessions} monthSessions={monthSessions} allSessions={allSessions}
+              getVal={(s) => s.commonFamiliarsGained} fmtVal={String}
             />
             <ResRow
               label="Fam. Raros" color={WC.rare}
               week={w ? String(w.totalRareFamiliarsGained) : '—'}
               month={m ? String(m.totalRareFamiliarsGained) : '—'}
               total={at ? String(at.totalRareFamiliarsGained) : undefined}
+              weekSessions={weekSessions} monthSessions={monthSessions} allSessions={allSessions}
+              getVal={(s) => s.rareFamiliarsGained} fmtVal={String}
             />
           </View>
 
@@ -496,7 +580,7 @@ const styles = StyleSheet.create({
 
   // Data columns
   dataCols: { flex: 1, flexDirection: 'row', gap: 8, minHeight: 0 },
-  dataCol: { flex: 1, overflow: 'hidden' },
+  dataCol: { flex: 1, overflow: 'visible' as any },
   dataColPanel: {
     backgroundColor: WC.panelBg, borderWidth: 1, borderColor: WC.panelBorder,
     borderRadius: 12, padding: 13,
@@ -513,7 +597,9 @@ const styles = StyleSheet.create({
   resTableHdrCell: { flex: 1, fontSize: 8, color: WC.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '700', textAlign: 'right' },
   resRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: WC.sep },
   resRowLabel: { flex: 2, fontSize: 10, color: 'rgba(255,255,255,0.82)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: '600' },
-  resRowVal: { flex: 1, fontSize: 14, fontWeight: '900', letterSpacing: -0.5, textAlign: 'right' },
+  resRowValWrap: { flex: 1, alignItems: 'flex-end', position: 'relative', zIndex: 10 },
+  resRowVal: { fontSize: 14, fontWeight: '900', letterSpacing: -0.5, textAlign: 'right' },
+  resRowValHoverable: { textDecorationLine: 'underline', textDecorationStyle: 'dotted', textDecorationColor: 'rgba(255,255,255,0.2)' } as any,
   resTableSep: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginVertical: 6 },
 
   // Session cards
@@ -560,4 +646,59 @@ const styles = StyleSheet.create({
     shadowColor: '#5A18CC', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.4, shadowRadius: 10,
   },
   pillFinishText: { fontSize: 12, color: '#fff', fontWeight: '800' },
+});
+
+// ── Tooltip styles ───────────────────────────────────────────────────────
+const ttStyles = StyleSheet.create({
+  box: {
+    position: 'absolute',
+    top: '100%' as unknown as number,
+    right: 0,
+    marginTop: 4,
+    backgroundColor: '#12082E',
+    borderWidth: 1,
+    borderColor: 'rgba(180,127,255,0.35)',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    minWidth: 160,
+    zIndex: 999,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+  },
+  arrow: {
+    position: 'absolute',
+    top: -5,
+    right: 12,
+    width: 8,
+    height: 8,
+    backgroundColor: '#12082E',
+    borderLeftWidth: 1,
+    borderTopWidth: 1,
+    borderColor: 'rgba(180,127,255,0.35)',
+    transform: [{ rotate: '45deg' }],
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 3,
+    gap: 16,
+  },
+  date: { fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
+  val: { fontSize: 12, fontWeight: '800', letterSpacing: -0.3 },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 5,
+    paddingTop: 5,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
+    gap: 16,
+  },
+  totalLabel: { fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: 1, textTransform: 'uppercase', fontWeight: '700' },
+  totalVal: { fontSize: 13, fontWeight: '900', letterSpacing: -0.5 },
 });
