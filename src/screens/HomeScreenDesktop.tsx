@@ -181,7 +181,7 @@ export default function HomeScreenDesktop({
   const at = allTimeStats;
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, openSession ? styles.rootWithPill : null]}>
       {/* ── LEFT PANEL ──────────────────────────────────────────── */}
       <View style={styles.leftPanel}>
         {/* XP Ring */}
@@ -246,12 +246,8 @@ export default function HomeScreenDesktop({
           </Text>
         </View>
 
-        {/* Action button */}
-        {openSession ? (
-          <TouchableOpacity style={styles.actionBtn} onPress={onFinishSession} activeOpacity={0.8}>
-            <Text style={styles.actionBtnText}>◎ Finalizar Sesión</Text>
-          </TouchableOpacity>
-        ) : (
+        {/* Action button — only show Nueva Sesión; when session open the pill handles it */}
+        {!openSession && (
           <TouchableOpacity style={[styles.actionBtn, styles.actionBtnNew]} onPress={onNewSession} activeOpacity={0.8}>
             <Text style={styles.actionBtnText}>▶ Nueva Sesión</Text>
           </TouchableOpacity>
@@ -405,6 +401,9 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 12,
     paddingBottom: 0,
+  },
+  rootWithPill: {
+    paddingBottom: 62,
   },
 
   // ─ Left panel ─
