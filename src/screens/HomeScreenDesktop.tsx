@@ -34,10 +34,10 @@ const WC = {
   expDim: '#86EFAC',
   mesos: '#FCD34D',
   mesosDim: '#FDE68A',
-  frags: '#A78BFA',
-  nodes: '#67E8F9',
-  common: '#38BDF8',
-  rare: '#F472B6',
+  frags: '#818CF8',
+  nodes: '#BAE6FD',
+  common: '#CBD5E1',
+  rare: '#60A5FA',
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────
@@ -90,9 +90,12 @@ function ResRow({ label, week, month, total, color }: {
   );
 }
 
+const MONTHS = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+
 function SessCard({ session }: { session: Session }) {
   const navigation = useNavigation<Nav>();
-  const dateLabel = session.date.slice(5).replace('-', ' ').replace(/^0/, '');
+  const [, mm, dd] = session.date.split('-');
+  const dateLabel = `${parseInt(dd, 10)} ${MONTHS[parseInt(mm, 10) - 1]}`;
   const lvStr = session.lvEnd > session.lvStart
     ? `LV ${session.lvStart} → ${session.lvEnd}`
     : `LV ${session.lvStart}`;
@@ -116,22 +119,22 @@ function SessCard({ session }: { session: Session }) {
         </View>
         <View style={styles.chip}>
           <Text style={styles.chipKey}>Frags</Text>
-          <Text style={[styles.chipVal, { color: WC.frags }]}>+{formatNumber(session.fragsGained)}</Text>
+          <Text style={[styles.chipVal, { color: WC.frags }]}>{formatNumber(session.fragsGained)}</Text>
         </View>
         <View style={styles.chip}>
           <Text style={styles.chipKey}>Nodos</Text>
-          <Text style={[styles.chipVal, { color: WC.nodes }]}>+{formatNumber(session.nodesGained)}</Text>
+          <Text style={[styles.chipVal, { color: WC.nodes }]}>{formatNumber(session.nodesGained)}</Text>
         </View>
         {session.commonFamiliarsGained > 0 && (
           <View style={styles.chip}>
             <Text style={styles.chipKey}>Fam.C</Text>
-            <Text style={[styles.chipVal, { color: WC.common }]}>+{session.commonFamiliarsGained}</Text>
+            <Text style={[styles.chipVal, { color: WC.common }]}>{session.commonFamiliarsGained}</Text>
           </View>
         )}
         {session.rareFamiliarsGained > 0 && (
           <View style={styles.chip}>
             <Text style={styles.chipKey}>Fam.R</Text>
-            <Text style={[styles.chipVal, { color: WC.rare }]}>+{session.rareFamiliarsGained}</Text>
+            <Text style={[styles.chipVal, { color: WC.rare }]}>{session.rareFamiliarsGained}</Text>
           </View>
         )}
       </View>
@@ -218,19 +221,19 @@ export default function HomeScreenDesktop({
             </View>
             <View style={styles.bdCell}>
               <Text style={styles.bdKey}>Frags</Text>
-              <Text style={[styles.bdVal, { color: WC.frags }]}>+{formatNumber(best.frags)}</Text>
+              <Text style={[styles.bdVal, { color: WC.frags }]}>{formatNumber(best.frags)}</Text>
             </View>
             <View style={styles.bdCell}>
               <Text style={styles.bdKey}>Nodos</Text>
-              <Text style={[styles.bdVal, { color: WC.nodes }]}>+{formatNumber(best.nodes)}</Text>
+              <Text style={[styles.bdVal, { color: WC.nodes }]}>{formatNumber(best.nodes)}</Text>
             </View>
             <View style={styles.bdCell}>
               <Text style={styles.bdKey}>Fam.C</Text>
-              <Text style={[styles.bdVal, { color: WC.common }]}>+{best.common}</Text>
+              <Text style={[styles.bdVal, { color: WC.common }]}>{best.common}</Text>
             </View>
             <View style={styles.bdCell}>
               <Text style={styles.bdKey}>Fam.R</Text>
-              <Text style={[styles.bdVal, { color: WC.rare }]}>+{best.rare}</Text>
+              <Text style={[styles.bdVal, { color: WC.rare }]}>{best.rare}</Text>
             </View>
           </View>
         </View>
@@ -263,32 +266,32 @@ export default function HomeScreenDesktop({
           <Tile
             label="EXP SEMANA" color={WC.exp}
             value={w ? formatExp(w.totalExpGained) : '—'}
-            sub={m ? `${formatExp(m.totalExpGained)} mes` : '—'}
+            sub={m ? `${formatExp(m.totalExpGained)} mes` : ''}
           />
           <Tile
             label="MESOS SEMANA" color={WC.mesos}
             value={w ? formatExp(w.totalMesosGained) : '—'}
-            sub={m ? `${formatExp(m.totalMesosGained)} mes` : '—'}
+            sub={m ? `${formatExp(m.totalMesosGained)} mes` : ''}
           />
           <Tile
             label="FRAGS SEMANA" color={WC.frags}
-            value={w ? `+${formatNumber(w.totalFragsGained)}` : '—'}
-            sub={m ? `+${formatNumber(m.totalFragsGained)} mes` : '—'}
+            value={w ? formatNumber(w.totalFragsGained) : '—'}
+            sub={m ? `${formatNumber(m.totalFragsGained)} mes` : ''}
           />
           <Tile
             label="NODOS SEMANA" color={WC.nodes}
-            value={w ? `+${formatNumber(w.totalNodesGained)}` : '—'}
-            sub={m ? `+${formatNumber(m.totalNodesGained)} mes` : '—'}
+            value={w ? formatNumber(w.totalNodesGained) : '—'}
+            sub={m ? `${formatNumber(m.totalNodesGained)} mes` : ''}
           />
           <Tile
             label="FAM. COMUNES SEM." color={WC.common}
-            value={w ? `+${w.totalCommonFamiliarsGained}` : '—'}
-            sub={m ? `+${m.totalCommonFamiliarsGained} mes` : '—'}
+            value={w ? String(w.totalCommonFamiliarsGained) : '—'}
+            sub={m ? `${m.totalCommonFamiliarsGained} mes` : ''}
           />
           <Tile
             label="FAM. RAROS SEM." color={WC.rare}
-            value={w ? `+${w.totalRareFamiliarsGained}` : '—'}
-            sub={m ? `+${m.totalRareFamiliarsGained} mes` : '—'}
+            value={w ? String(w.totalRareFamiliarsGained) : '—'}
+            sub={m ? `${m.totalRareFamiliarsGained} mes` : ''}
           />
         </View>
 
@@ -324,23 +327,27 @@ export default function HomeScreenDesktop({
 
             <ResRow
               label="Fragmentos" color={WC.frags}
-              week={w ? `+${formatNumber(w.totalFragsGained)}` : '—'}
-              month={m ? `+${formatNumber(m.totalFragsGained)}` : '—'}
+              week={w ? formatNumber(w.totalFragsGained) : '—'}
+              month={m ? formatNumber(m.totalFragsGained) : '—'}
+              total={at ? formatNumber(at.totalFragsGained) : undefined}
             />
             <ResRow
               label="Nodos" color={WC.nodes}
-              week={w ? `+${formatNumber(w.totalNodesGained)}` : '—'}
-              month={m ? `+${formatNumber(m.totalNodesGained)}` : '—'}
+              week={w ? formatNumber(w.totalNodesGained) : '—'}
+              month={m ? formatNumber(m.totalNodesGained) : '—'}
+              total={at ? formatNumber(at.totalNodesGained) : undefined}
             />
             <ResRow
               label="Fam. Comunes" color={WC.common}
-              week={w ? `+${w.totalCommonFamiliarsGained}` : '—'}
-              month={m ? `+${m.totalCommonFamiliarsGained}` : '—'}
+              week={w ? String(w.totalCommonFamiliarsGained) : '—'}
+              month={m ? String(m.totalCommonFamiliarsGained) : '—'}
+              total={at ? String(at.totalCommonFamiliarsGained) : undefined}
             />
             <ResRow
               label="Fam. Raros" color={WC.rare}
-              week={w ? `+${w.totalRareFamiliarsGained}` : '—'}
-              month={m ? `+${m.totalRareFamiliarsGained}` : '—'}
+              week={w ? String(w.totalRareFamiliarsGained) : '—'}
+              month={m ? String(m.totalRareFamiliarsGained) : '—'}
+              total={at ? String(at.totalRareFamiliarsGained) : undefined}
             />
           </View>
 
@@ -515,8 +522,8 @@ const styles = StyleSheet.create({
   emptyText: { color: WC.textMuted, fontSize: 12, marginTop: 12, textAlign: 'center' },
   sessCard: { paddingVertical: 8 },
   sessTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 5 },
-  sessDate: { fontSize: 11, color: 'rgba(255,255,255,0.82)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.3 },
-  sessLv: { fontSize: 9, color: 'rgba(180,127,255,0.75)', marginTop: 1, letterSpacing: 0.3 },
+  sessDate: { fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
+  sessLv: { fontSize: 11, color: 'rgba(180,127,255,0.85)', marginTop: 2, letterSpacing: 0.3, fontWeight: '600' },
   sessExp: { fontSize: 15, fontWeight: '900', letterSpacing: -0.5 },
   sessChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
   chip: {
