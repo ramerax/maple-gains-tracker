@@ -207,7 +207,7 @@ export default function HomeScreenDesktop({
         <View style={styles.bestDaySection}>
           <Text style={styles.bestDayHdr}>
             MEJOR DÍA{best.date ? (
-              <Text style={styles.bestDayDate}> · {best.date.slice(5).replace('-', ' ')}</Text>
+              <Text style={styles.bestDayDate}> · {(([,mm,dd]) => `${parseInt(dd,10)} ${MONTHS[parseInt(mm,10)-1]}`)(best.date.split('-'))}</Text>
             ) : null}
           </Text>
           <View style={styles.bestDayGrid}>
