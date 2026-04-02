@@ -176,3 +176,13 @@ export function addDays(dateStr: string, days: number): string {
 export function compareDates(a: string, b: string): number {
   return a.localeCompare(b);
 }
+
+const MONTHS_SHORT_ES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+
+/**
+ * Formats a YYYY-MM-DD date string as "DD MMM" (e.g. "28 MAR")
+ */
+export function formatDateShortEs(dateStr: string): string {
+  const [, mm, dd] = dateStr.split('-');
+  return `${parseInt(dd, 10)} ${MONTHS_SHORT_ES[parseInt(mm, 10) - 1]}`;
+}

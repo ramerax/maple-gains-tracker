@@ -125,11 +125,14 @@ function openSessionToRow(session: OpenSession): Record<string, unknown> {
 
 // ── Session CRUD ───────────────────────────────────────────────────────────────
 
-export async function getAllSessions(): Promise<Session[]> {
-  const { data, error } = await supabase
+export async function getAllSessions(profileId?: string): Promise<Session[]> {
+  let query = supabase
     .from('sessions')
     .select('*')
+    .order('date', { ascending: false })
     .order('created_at', { ascending: false });
+  if (profileId) query = query.eq('profile_id', profileId);
+  const { data, error } = await query;
   if (error) { console.error('getAllSessions:', error.message); return []; }
   return (data ?? []).map(rowToSession);
 }
@@ -237,13 +240,6 @@ export async function getProfiles(): Promise<Profile[]> {
   return (data ?? []).map(rowToProfile);
 }
 
-/** @deprecated Use addProfile / updateProfile individually */
-export async function saveProfiles(profiles: Profile[]): Promise<void> {
-  for (const p of profiles) {
-    const { error } = await supabase.from('profiles').upsert(profileToRow(p));
-    if (error) console.error('saveProfiles upsert:', error.message);
-  }
-}
 
 export async function addProfile(profile: Profile): Promise<void> {
   const { error } = await supabase.from('profiles').insert(profileToRow(profile));
@@ -293,14 +289,10 @@ export async function saveOpenSession(session: OpenSession): Promise<void> {
   if (error) console.error('saveOpenSession:', error.message);
 }
 
-export async function deleteOpenSession(profileId?: string): Promise<void> {
-  let query = supabase.from('open_sessions').delete();
-  if (profileId) {
-    const { error } = await query.eq('profile_id', profileId);
-    if (error) console.error('deleteOpenSession:', error.message);
-  } else {
-    // Delete all (fallback)
-    const { error } = await query.gte('started_at', 0);
-    if (error) console.error('deleteOpenSession:', error.message);
-  }
+export async function deleteOpenSession(profileId: string): Promise<void> {
+  const { error } = await supabase
+    .from('open_sessions')
+    .delete()
+    .eq('profile_id', profileId);
+  if (error) console.error('deleteOpenSession:', error.message);
 }

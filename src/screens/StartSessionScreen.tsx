@@ -77,6 +77,10 @@ export default function StartSessionScreen({ navigation, route }: Props) {
   const pf = (v: string) => parseFloat(v.replace(',', '.')) || 0;
 
   const handleSave = useCallback(async () => {
+    if (!activeProfile) {
+      Alert.alert('Sin perfil', 'Selecciona un perfil antes de iniciar una sesión.');
+      return;
+    }
     if (!lvStart || !expStart) {
       Alert.alert('Datos incompletos', 'Ingresa al menos el nivel y % de EXP inicial.');
       return;
@@ -87,7 +91,7 @@ export default function StartSessionScreen({ navigation, route }: Props) {
       id: existingSession?.id ?? generateId(),
       startedAt: existingSession?.startedAt ?? Date.now(),
       date,
-      profileId: activeProfile?.id ?? 'default',
+      profileId: activeProfile.id,
       lvStart: pi(lvStart),
       expStart: pf(expStart),
       fragsStart: pi(fragsStart),
@@ -173,6 +177,7 @@ export default function StartSessionScreen({ navigation, route }: Props) {
             placeholderTextColor={COLORS.textMuted}
             multiline
             numberOfLines={3}
+            maxLength={500}
           />
         </View>
 

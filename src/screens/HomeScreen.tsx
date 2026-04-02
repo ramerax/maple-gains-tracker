@@ -103,21 +103,18 @@ export default function HomeScreen() {
     const { start: mS, end: mE } = getMonthRange(today);
     const [s, all, open, weekSessions, monthSessions] = await Promise.all([
       getSessionsByDate(today, activeProfileId ?? undefined),
-      getAllSessions(),
+      getAllSessions(activeProfileId ?? undefined),
       getOpenSession(activeProfileId ?? undefined),
       getSessionsByDateRange(wS, wE, activeProfileId ?? undefined),
       getSessionsByDateRange(mS, mE, activeProfileId ?? undefined),
     ]);
-    const profileSessions = activeProfileId
-      ? all.filter((r) => r.profileId === activeProfileId)
-      : all;
     setOpenSession(open ?? null);
     setSessions(s);
     setStats(aggregateStats(s));
-    setAllTimeStats(aggregateStats(profileSessions));
+    setAllTimeStats(aggregateStats(all));
     setWeekStats(aggregateStats(weekSessions));
     setMonthStats(aggregateStats(monthSessions));
-    setAllSessions(profileSessions);
+    setAllSessions(all);
   }, [today, activeProfileId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -138,7 +135,7 @@ export default function HomeScreen() {
           text: 'Sí, cancelar',
           style: 'destructive',
           onPress: async () => {
-            await deleteOpenSession(activeProfileId ?? undefined);
+            if (activeProfileId) await deleteOpenSession(activeProfileId);
             setOpenSession(null);
           },
         },
@@ -670,5 +667,4 @@ const styles = StyleSheet.create({
   },
   weekChipValue: { fontSize: FONTS.md, fontWeight: '800' },
   weekChipLabel: { color: COLORS.textMuted, fontSize: FONTS.xs, marginTop: 2 },
-  weekEmpty: { color: COLORS.textMuted, fontSize: FONTS.sm },
 });

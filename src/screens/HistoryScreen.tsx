@@ -7,39 +7,18 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Session, PeriodStats } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
+import { WC } from '../constants/themeWeb';
 import { getSessionsByDateRange, aggregateStats } from '../utils/storage';
 import {
   getTodayString, formatDateLong, formatDateMedium, formatWeekRange,
-  formatMonthDisplay, formatExp, formatNumber, formatPercent, getWeekRange, getMonthRange, addDays,
+  formatMonthDisplay, formatExp, formatNumber, formatPercent, formatDateShortEs,
+  getWeekRange, getMonthRange, addDays,
 } from '../utils/formatters';
 import { useProfile } from '../context/ProfileContext';
 import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Mode = 'day' | 'week' | 'month';
-
-// Glass Cosmos palette (same as HomeScreenDesktop)
-const WC = {
-  bg: '#040215',
-  panelBg: 'rgba(255,255,255,0.05)',
-  panelBorder: 'rgba(255,255,255,0.08)',
-  panelBgStrong: 'rgba(255,255,255,0.07)',
-  primary: '#C49FFF',
-  primaryDim: 'rgba(180,127,255,0.15)',
-  primaryBorder: 'rgba(180,127,255,0.28)',
-  text: '#FFFFFF',
-  textDim: 'rgba(255,255,255,0.75)',
-  textMuted: 'rgba(255,255,255,0.28)',
-  sep: 'rgba(255,255,255,0.06)',
-  exp: '#4ADE80', mesos: '#FCD34D', frags: '#818CF8',
-  nodes: '#BAE6FD', common: '#CBD5E1', rare: '#60A5FA',
-};
-
-const MONTHS_SHORT = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-function fmtDate(dateStr: string) {
-  const [, mm, dd] = dateStr.split('-');
-  return `${parseInt(dd, 10)} ${MONTHS_SHORT[parseInt(mm, 10) - 1]}`;
-}
 
 function StatsBar({ stats }: { stats: PeriodStats }) {
   return (
@@ -75,10 +54,7 @@ function Chip({ label, value, color }: { label: string; value: string; color: st
 }
 
 function SessionItem({ session, onPress, desktop }: { session: Session; onPress: () => void; desktop?: boolean }) {
-  const [, mm, dd] = session.date.split('-');
-  const dateStr = desktop
-    ? `${parseInt(dd, 10)} ${MONTHS_SHORT[parseInt(mm, 10) - 1]}`
-    : formatDateMedium(session.date);
+  const dateStr = desktop ? formatDateShortEs(session.date) : formatDateMedium(session.date);
   return (
     <TouchableOpacity
       style={desktop ? dStyles.sessItem : styles.sessionItem}

@@ -107,6 +107,10 @@ export default function AddSessionScreen({ route, navigation }: Props) {
   const rareGained = pi(rareEnd) - pi(rareStart);
 
   const handleSave = useCallback(async () => {
+    if (!activeProfile) {
+      Alert.alert('Sin perfil', 'Selecciona un perfil antes de guardar una sesión.');
+      return;
+    }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       Alert.alert('Fecha inválida', 'El formato debe ser YYYY-MM-DD.');
       return;
@@ -130,7 +134,7 @@ export default function AddSessionScreen({ route, navigation }: Props) {
       id: editId ?? generateId(),
       date,
       createdAt: Date.now(),
-      profileId: activeProfile?.id ?? 'default',
+      profileId: activeProfile.id,
       lvStart: lvS,
       expStart: p(expStart),
       lvEnd: lvE,
