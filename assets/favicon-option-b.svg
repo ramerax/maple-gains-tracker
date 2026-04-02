@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Background -->
+  <rect width="64" height="64" rx="14" fill="#040215"/>
+  <!-- Maple leaf path (classic 11-point maple leaf silhouette) -->
+  <g transform="translate(32,33) scale(1.15)">
+    <path
+      d="M0,-22
+         L3,-14 L9,-17 L7,-10 L14,-9 L10,-4
+         L16,0 L11,2 L13,8 L8,6 L7,13
+         L0,12 L-7,13 L-8,6 L-13,8
+         L-11,2 L-16,0 L-10,-4 L-14,-9
+         L-7,-10 L-9,-17 L-3,-14 Z"
+      fill="url(#grad-b)"
+    />
+    <!-- Stem -->
+    <rect x="-1.5" y="12" width="3" height="7" rx="1.5" fill="#C49FFF"/>
+  </g>
+  <defs>
+    <linearGradient id="grad-b" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D4B0FF"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+</svg>

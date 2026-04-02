@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Background -->
+  <rect width="64" height="64" rx="14" fill="#040215"/>
+
+  <!-- XP arc track (background ring) -->
+  <circle cx="32" cy="28" r="18" fill="none" stroke="#1a0a3d" stroke-width="5"/>
+
+  <!-- XP arc fill (~75% progress) -->
+  <!-- circumference = 2*pi*18 = ~113.1 -->
+  <!-- 75% = 84.8 -->
+  <circle
+    cx="32" cy="28" r="18"
+    fill="none"
+    stroke="url(#grad-c)"
+    stroke-width="5"
+    stroke-linecap="round"
+    stroke-dasharray="84.8 113.1"
+    transform="rotate(-90 32 28)"
+  />
+
+  <!-- Center "G" initial -->
+  <text
+    x="32" y="34"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="18"
+    font-weight="900"
+    fill="#C49FFF"
+    text-anchor="middle"
+  >G</text>
+
+  <!-- Small "XP" label below ring -->
+  <text
+    x="32" y="57"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="9"
+    font-weight="700"
+    fill="#5A18CC"
+    text-anchor="middle"
+    letter-spacing="2"
+  >XP</text>
+
+  <defs>
+    <linearGradient id="grad-c" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#C49FFF"/>
+      <stop offset="100%" stop-color="#5A18CC"/>
+    </linearGradient>
+  </defs>
+</svg>

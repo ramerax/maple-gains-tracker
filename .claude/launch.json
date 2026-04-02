@@ -2,6 +2,13 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "Assets Preview",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "py -3 -m http.server %PORT% --directory assets"],
+      "port": 8090,
+      "autoPort": true
+    },
+    {
       "name": "UI Concepts Static Server",
       "runtimeExecutable": "cmd",
       "runtimeArgs": ["/c", "py -3 -m http.server 8090 --directory ."],

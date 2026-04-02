@@ -20,7 +20,11 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "single"
+      "output": "single",
+      "favicon": "./assets/favicon.svg",
+      "name": "MapleGains",
+      "shortName": "MapleGains",
+      "description": "MapleStory session tracker — XP, Mesos, Fragments & Nodes"
     },
     "plugins": [
       "expo-asset",
