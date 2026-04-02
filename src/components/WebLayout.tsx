@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { FONTS, SPACING, RADIUS } from '../constants/theme';
 import { WC } from '../constants/themeWeb';
 import { RootStackParamList } from '../types';
 import { useProfile } from '../context/ProfileContext';
+import { getOpenSession } from '../utils/storage';
 import HomeScreen from '../screens/HomeScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import StatsScreen from '../screens/StatsScreen';
@@ -14,27 +15,70 @@ import StatsScreen from '../screens/StatsScreen';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type TabId = 'home' | 'history' | 'stats';
 
-const TABS: { id: TabId; label: string; icon: keyof typeof Ionicons.glyphMap; activeIcon: keyof typeof Ionicons.glyphMap }[] = [
-  { id: 'home',    label: 'Inicio',         icon: 'home-outline',        activeIcon: 'home' },
-  { id: 'history', label: 'Historial',      icon: 'time-outline',        activeIcon: 'time' },
-  { id: 'stats',   label: 'Estadísticas',   icon: 'stats-chart-outline', activeIcon: 'stats-chart' },
+const TABS: {
+  id: TabId;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  activeIcon: keyof typeof Ionicons.glyphMap;
+}[] = [
+  { id: 'home',    label: 'Inicio',       icon: 'home-outline',        activeIcon: 'home' },
+  { id: 'history', label: 'Historial',    icon: 'time-outline',        activeIcon: 'time' },
+  { id: 'stats',   label: 'Estadísticas', icon: 'stats-chart-outline', activeIcon: 'stats-chart' },
 ];
+
+// Pulsing dot component for active session indicator
+function PulsingDot() {
+  const opacity = React.useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 0.2, duration: 900, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [opacity]);
+
+  return (
+    <Animated.View style={[styles.pulsingDot, { opacity }]} />
+  );
+}
 
 export default function WebLayout() {
   const [activeTab, setActiveTab] = useState<TabId>('home');
+  const [mountedTabs, setMountedTabs] = useState<Set<TabId>>(new Set(['home']));
   const [refreshKey, setRefreshKey] = useState(0);
-  const { activeProfile } = useProfile();
+  const [hasOpenSession, setHasOpenSession] = useState(false);
+  const { activeProfile, activeProfileId } = useProfile();
   const navigation = useNavigation<Nav>();
 
-  // Re-mount the active screen when returning from modals so data refreshes
+  // Lazy mount: only mount a tab the first time it's visited
+  const handleTabChange = useCallback((tab: TabId) => {
+    setActiveTab(tab);
+    setMountedTabs((prev) => new Set([...prev, tab]));
+  }, []);
+
+  // Re-mount active screen & check session on focus
   useFocusEffect(useCallback(() => {
     setRefreshKey((k) => k + 1);
-  }, []));
+    getOpenSession(activeProfileId ?? undefined).then((s) => setHasOpenSession(!!s));
+  }, [activeProfileId]));
+
+  // Poll for open session changes (e.g. when returning from StartSession modal)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      getOpenSession(activeProfileId ?? undefined).then((s) => setHasOpenSession(!!s));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [activeProfileId]);
 
   return (
     <View style={styles.root}>
-      {/* ── Sidebar ─────────────────────────────────────────────── */}
+      {/* ── Sidebar ─────────────────────────────────────────────────── */}
       <View style={styles.sidebar}>
+
         {/* Logo */}
         <View style={styles.logoArea}>
           <Text style={styles.logoLeaf}>🍁</Text>
@@ -54,6 +98,7 @@ export default function WebLayout() {
         <View style={styles.navList}>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
+            const showDot = tab.id === 'home' && hasOpenSession;
             return (
               <Pressable
                 key={tab.id}
@@ -63,9 +108,8 @@ export default function WebLayout() {
                   state.hovered && !isActive && styles.navItemHovered,
                   isActive && styles.navItemActive,
                 ]}
-                onPress={() => setActiveTab(tab.id)}
+                onPress={() => handleTabChange(tab.id)}
               >
-                {/* Active left-border accent */}
                 <View style={[styles.navAccent, isActive && styles.navAccentActive]} />
                 <Ionicons
                   name={isActive ? tab.activeIcon : tab.icon}
@@ -75,12 +119,36 @@ export default function WebLayout() {
                 <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
                   {tab.label}
                 </Text>
+                {showDot && <PulsingDot />}
               </Pressable>
             );
           })}
         </View>
 
         <View style={{ flex: 1 }} />
+
+        {/* Nueva Sesión CTA in sidebar */}
+        {!hasOpenSession && (
+          <Pressable
+            style={styles.sidebarNewBtn}
+            onPress={() => navigation.navigate('StartSession')}
+          >
+            <Ionicons name="add-circle" size={15} color="#fff" />
+            <Text style={styles.sidebarNewBtnText}>Nueva Sesión</Text>
+          </Pressable>
+        )}
+
+        {/* Active session pill in sidebar */}
+        {hasOpenSession && (
+          <Pressable
+            style={styles.sidebarSessionPill}
+            onPress={() => { handleTabChange('home'); }}
+          >
+            <View style={styles.sidebarSessionDot} />
+            <Text style={styles.sidebarSessionText}>Sesión activa</Text>
+            <Ionicons name="chevron-forward" size={11} color={WC.primary} />
+          </Pressable>
+        )}
 
         <View style={styles.divider} />
 
@@ -106,17 +174,23 @@ export default function WebLayout() {
         </Pressable>
       </View>
 
-      {/* ── Content area ────────────────────────────────────────── */}
+      {/* ── Content area ─────────────────────────────────────────────── */}
       <View style={styles.content}>
-        <View style={activeTab === 'home' ? styles.screenVisible : styles.screenHidden}>
-          <HomeScreen key={activeTab === 'home' ? `home-${refreshKey}` : 'home'} />
-        </View>
-        <View style={activeTab === 'history' ? styles.screenVisible : styles.screenHidden}>
-          <HistoryScreen key={activeTab === 'history' ? `history-${refreshKey}` : 'history'} />
-        </View>
-        <View style={activeTab === 'stats' ? styles.screenVisible : styles.screenHidden}>
-          <StatsScreen key={activeTab === 'stats' ? `stats-${refreshKey}` : 'stats'} />
-        </View>
+        {mountedTabs.has('home') && (
+          <View style={activeTab === 'home' ? styles.screenVisible : styles.screenHidden}>
+            <HomeScreen key={activeTab === 'home' ? `home-${refreshKey}` : 'home'} />
+          </View>
+        )}
+        {mountedTabs.has('history') && (
+          <View style={activeTab === 'history' ? styles.screenVisible : styles.screenHidden}>
+            <HistoryScreen key={activeTab === 'history' ? `history-${refreshKey}` : 'history'} />
+          </View>
+        )}
+        {mountedTabs.has('stats') && (
+          <View style={activeTab === 'stats' ? styles.screenVisible : styles.screenHidden}>
+            <StatsScreen key={activeTab === 'stats' ? `stats-${refreshKey}` : 'stats'} />
+          </View>
+        )}
       </View>
     </View>
   );
@@ -131,10 +205,10 @@ const styles = StyleSheet.create({
     backgroundColor: WC.bg,
   },
 
-  // ── Sidebar ────────────────────────────────────────────────────
+  // ── Sidebar ──────────────────────────────────────────────────────
   sidebar: {
     width: SIDEBAR_WIDTH,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: 'rgba(255,255,255,0.025)',
     borderRightWidth: 1,
     borderRightColor: WC.panelBorder,
     paddingVertical: SPACING.lg,
@@ -148,9 +222,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     marginBottom: SPACING.lg,
   },
-  logoTextBlock: {
-    flex: 1,
-  },
+  logoTextBlock: { flex: 1 },
   logoLeaf: { fontSize: 28 },
   logoTitle: {
     color: WC.text,
@@ -193,26 +265,85 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: 'transparent',
   },
-  navAccentActive: {
-    backgroundColor: WC.primary,
-  },
-  navItemHovered: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-  },
-  navItemActive: {
-    backgroundColor: WC.primaryDim,
-  },
+  navAccentActive: { backgroundColor: WC.primary },
+  navItemHovered: { backgroundColor: 'rgba(255,255,255,0.05)' },
+  navItemActive: { backgroundColor: WC.primaryDim },
   navLabel: {
     color: WC.textMuted,
     fontSize: FONTS.md,
     fontWeight: '500',
     flex: 1,
   },
-  navLabelActive: {
+  navLabelActive: { color: WC.primary, fontWeight: '700' },
+
+  // Pulsing dot
+  pulsingDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: WC.exp,
+    shadowColor: WC.exp,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 4,
+  },
+
+  // Sidebar CTA button
+  sidebarNewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: SPACING.md,
+    marginBottom: SPACING.md,
+    backgroundColor: WC.btn,
+    borderRadius: RADIUS.lg,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    justifyContent: 'center',
+    shadowColor: WC.btnGlow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+  },
+  sidebarNewBtnText: {
+    color: '#fff',
+    fontSize: FONTS.sm,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+
+  // Active session pill in sidebar
+  sidebarSessionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    marginHorizontal: SPACING.md,
+    marginBottom: SPACING.md,
+    backgroundColor: WC.primaryDim,
+    borderWidth: 1,
+    borderColor: WC.primaryBorder,
+    borderRadius: RADIUS.lg,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+  },
+  sidebarSessionDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: WC.primary,
+    shadowColor: WC.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 6,
+  },
+  sidebarSessionText: {
+    flex: 1,
     color: WC.primary,
+    fontSize: FONTS.xs,
     fontWeight: '700',
   },
 
+  // Profile footer
   profileFooter: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -238,10 +369,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarLetter: {
-    fontSize: FONTS.md,
-    fontWeight: '800',
-  },
+  avatarLetter: { fontSize: FONTS.md, fontWeight: '800' },
   profileName: {
     flex: 1,
     color: WC.textDim,
@@ -249,11 +377,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // ── Content ────────────────────────────────────────────────────
+  // ── Content ───────────────────────────────────────────────────────
   content: {
     flex: 1,
     backgroundColor: WC.bg,
   },
   screenVisible: { flex: 1 },
-  screenHidden:  { display: 'none' },
+  screenHidden: { display: 'none' },
 });
