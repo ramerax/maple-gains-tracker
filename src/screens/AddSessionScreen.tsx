@@ -5,7 +5,8 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, Session } from '../types';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
+import { FONTS, RADIUS, SPACING } from '../constants/theme';
+import { WC } from '../constants/themeWeb';
 import { calculateExpGained, calculateTotalExpPercent } from '../utils/expCalculator';
 import { addSession, updateSession, getSessionById, generateId } from '../utils/storage';
 import { getTodayString, formatExp, formatNumber, formatPercent, formatDateShort } from '../utils/formatters';
@@ -25,7 +26,7 @@ function NumInput({ label, value, onChange, placeholder, decimal }: {
         value={value}
         onChangeText={onChange}
         placeholder={placeholder ?? '0'}
-        placeholderTextColor={COLORS.textMuted}
+        placeholderTextColor={WC.textMuted}
         keyboardType={decimal ? 'decimal-pad' : 'number-pad'}
         selectTextOnFocus
       />
@@ -35,9 +36,17 @@ function NumInput({ label, value, onChange, placeholder, decimal }: {
 
 function CalcBadge({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <View style={[styles.calcBadge, { borderColor: color + '30' }]}>
+    <View style={[styles.calcBadge, { borderColor: color + '40' }]}>
       <Text style={styles.calcBadgeLabel}>{label}</Text>
       <Text style={[styles.calcBadgeValue, { color }]}>{value}</Text>
+    </View>
+  );
+}
+
+function SectionHeader({ color, title }: { color: string; title: string }) {
+  return (
+    <View style={[styles.sectionHeader, { borderLeftColor: color }]}>
+      <Text style={styles.sectionHeaderText}>{title}</Text>
     </View>
   );
 }
@@ -194,9 +203,8 @@ export default function AddSessionScreen({ route, navigation }: Props) {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-
         {/* ── FECHA ─────────────────────────────── */}
-        <SectionHeader color={COLORS.primary} title="📅  Fecha" />
+        <SectionHeader color={WC.primary} title="📅  Fecha" />
         <View style={styles.section}>
           <View style={styles.dateRow}>
             <TouchableOpacity
@@ -213,7 +221,7 @@ export default function AddSessionScreen({ route, navigation }: Props) {
               value={date}
               onChangeText={setDate}
               placeholder="2026-03-24"
-              placeholderTextColor={COLORS.textMuted}
+              placeholderTextColor={WC.textMuted}
               keyboardType="numbers-and-punctuation"
               maxLength={10}
             />
@@ -222,7 +230,7 @@ export default function AddSessionScreen({ route, navigation }: Props) {
         </View>
 
         {/* ── NIVEL Y EXP ───────────────────────── */}
-        <SectionHeader color={COLORS.exp} title="⚔️  Nivel y Experiencia" />
+        <SectionHeader color={WC.exp} title="⚔️  Nivel y Experiencia" />
         <View style={styles.section}>
           <View style={styles.row}>
             <NumInput label="Nivel Inicio" value={lvStart} onChange={setLvStart} placeholder="265" />
@@ -236,14 +244,14 @@ export default function AddSessionScreen({ route, navigation }: Props) {
           </View>
           {(lvStart || lvEnd) && (expStart || expEnd) ? (
             <View style={styles.calcRow}>
-              <CalcBadge label="EXP Ganada" value={formatExp(expGained)} color={COLORS.exp} />
-              <CalcBadge label="% Total" value={`${formatPercent(totalExpPct)}%`} color={COLORS.primaryLight} />
+              <CalcBadge label="EXP Ganada" value={formatExp(expGained)} color={WC.exp} />
+              <CalcBadge label="% Total" value={`${formatPercent(totalExpPct)}%`} color={WC.primary} />
             </View>
           ) : null}
         </View>
 
         {/* ── FRAGMENTOS ────────────────────────── */}
-        <SectionHeader color={COLORS.frags} title="💎  Fragmentos" />
+        <SectionHeader color={WC.frags} title="💎  Fragmentos" />
         <View style={styles.section}>
           <View style={styles.row}>
             <NumInput label="Inicio" value={fragsStart} onChange={setFragsStart} />
@@ -252,13 +260,13 @@ export default function AddSessionScreen({ route, navigation }: Props) {
           </View>
           {(fragsStart || fragsEnd) ? (
             <View style={styles.calcRow}>
-              <CalcBadge label="Ganados" value={`+${formatNumber(fragsGained)}`} color={COLORS.frags} />
+              <CalcBadge label="Ganados" value={`+${formatNumber(fragsGained)}`} color={WC.frags} />
             </View>
           ) : null}
         </View>
 
         {/* ── NODOS ─────────────────────────────── */}
-        <SectionHeader color={COLORS.nodes} title="🔮  Nodos" />
+        <SectionHeader color={WC.nodes} title="🔮  Nodos" />
         <View style={styles.section}>
           <View style={styles.row}>
             <NumInput label="Inicio" value={nodesStart} onChange={setNodesStart} />
@@ -267,26 +275,26 @@ export default function AddSessionScreen({ route, navigation }: Props) {
           </View>
           {(nodesStart || nodesEnd) ? (
             <View style={styles.calcRow}>
-              <CalcBadge label="Ganados" value={`+${formatNumber(nodesGained)}`} color={COLORS.nodes} />
+              <CalcBadge label="Ganados" value={`+${formatNumber(nodesGained)}`} color={WC.nodes} />
             </View>
           ) : null}
         </View>
 
         {/* ── MESOS ─────────────────────────────── */}
-        <SectionHeader color={COLORS.mesos} title="💰  Mesos" />
+        <SectionHeader color={WC.mesos} title="💰  Mesos" />
         <View style={styles.section}>
           <NumInput label="Mesos Inicio" value={mesosStart} onChange={setMesosStart} />
           <NumInput label="Mesos Fin" value={mesosEnd} onChange={setMesosEnd} />
           {(mesosStart || mesosEnd) ? (
             <View style={styles.calcRow}>
-              <CalcBadge label="Ganados" value={`+${formatExp(mesosGained)}`} color={COLORS.mesos} />
-              <CalcBadge label="Exacto" value={formatNumber(mesosGained)} color={COLORS.textSecondary} />
+              <CalcBadge label="Ganados" value={`+${formatExp(mesosGained)}`} color={WC.mesos} />
+              <CalcBadge label="Exacto" value={formatNumber(mesosGained)} color={WC.textDim} />
             </View>
           ) : null}
         </View>
 
         {/* ── FAMILIARES COMUNES ────────────────── */}
-        <SectionHeader color={COLORS.common} title="👾  Familiares Comunes" />
+        <SectionHeader color={WC.common} title="👾  Familiares Comunes" />
         <View style={styles.section}>
           <View style={styles.row}>
             <NumInput label="Inicio" value={commonStart} onChange={setCommonStart} />
@@ -295,13 +303,13 @@ export default function AddSessionScreen({ route, navigation }: Props) {
           </View>
           {(commonStart || commonEnd) ? (
             <View style={styles.calcRow}>
-              <CalcBadge label="Ganados" value={`+${formatNumber(commonGained)}`} color={COLORS.common} />
+              <CalcBadge label="Ganados" value={`+${formatNumber(commonGained)}`} color={WC.common} />
             </View>
           ) : null}
         </View>
 
         {/* ── FAMILIARES RAROS ──────────────────── */}
-        <SectionHeader color={COLORS.rare} title="✨  Familiares Raros" />
+        <SectionHeader color={WC.rare} title="✨  Familiares Raros" />
         <View style={styles.section}>
           <View style={styles.row}>
             <NumInput label="Inicio" value={rareStart} onChange={setRareStart} />
@@ -310,20 +318,20 @@ export default function AddSessionScreen({ route, navigation }: Props) {
           </View>
           {(rareStart || rareEnd) ? (
             <View style={styles.calcRow}>
-              <CalcBadge label="Ganados" value={`+${formatNumber(rareGained)}`} color={COLORS.rare} />
+              <CalcBadge label="Ganados" value={`+${formatNumber(rareGained)}`} color={WC.rare} />
             </View>
           ) : null}
         </View>
 
         {/* ── NOTAS ─────────────────────────────── */}
-        <SectionHeader color={COLORS.textMuted} title="📝  Notas (opcional)" />
+        <SectionHeader color={WC.textMuted} title="📝  Notas (opcional)" />
         <View style={styles.section}>
           <TextInput
             style={[styles.input, styles.notesInput]}
             value={notes}
             onChangeText={setNotes}
             placeholder="Agrega notas..."
-            placeholderTextColor={COLORS.textMuted}
+            placeholderTextColor={WC.textMuted}
             multiline
             numberOfLines={3}
             maxLength={500}
@@ -341,32 +349,29 @@ export default function AddSessionScreen({ route, navigation }: Props) {
   );
 }
 
-function SectionHeader({ color, title }: { color: string; title: string }) {
-  return (
-    <View style={[styles.sectionHeader, { borderLeftColor: color }]}>
-      <Text style={styles.sectionHeaderText}>{title}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  keyboardView: { flex: 1, backgroundColor: COLORS.bg },
+  keyboardView: { flex: 1, backgroundColor: WC.bg },
   scroll: { flex: 1 },
-  scrollContent: { paddingBottom: 48 },
+  scrollContent: {
+    paddingBottom: 48,
+    maxWidth: 640,
+    width: '100%',
+    alignSelf: 'center' as const,
+  },
 
   sectionHeader: {
     borderLeftWidth: 3,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.lg,
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     marginTop: SPACING.lg,
   },
-  sectionHeaderText: { color: COLORS.text, fontSize: FONTS.md, fontWeight: '700' },
+  sectionHeaderText: { color: WC.text, fontSize: FONTS.md, fontWeight: '700' },
 
   section: {
-    backgroundColor: COLORS.card,
+    backgroundColor: WC.panelBg,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: WC.sep,
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.md,
   },
@@ -375,69 +380,65 @@ const styles = StyleSheet.create({
   rowGap: { width: SPACING.md },
 
   inputGroup: { flex: 1, paddingTop: SPACING.md },
-  inputLabel: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginBottom: 5 },
+  inputLabel: { color: WC.textDim, fontSize: FONTS.sm, marginBottom: 5 },
   input: {
-    backgroundColor: COLORS.inputBg,
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: RADIUS.sm,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    color: COLORS.text,
+    borderColor: WC.panelBorder,
+    color: WC.text,
     fontSize: FONTS.lg,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },
-  inputHint: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginTop: 4 },
+  inputHint: { color: WC.textMuted, fontSize: FONTS.xs, marginTop: 4 },
   notesInput: { minHeight: 80, textAlignVertical: 'top', paddingTop: SPACING.sm },
 
-  calcRow: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-    marginTop: SPACING.md,
-  },
+  calcRow: { flexDirection: 'row', gap: SPACING.sm, marginTop: SPACING.md },
   calcBadge: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     borderRadius: RADIUS.sm,
     padding: SPACING.sm,
     alignItems: 'center',
     borderWidth: 1,
   },
-  calcBadgeLabel: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginBottom: 2 },
+  calcBadgeLabel: { color: WC.textMuted, fontSize: FONTS.xs, marginBottom: 2 },
   calcBadgeValue: { fontSize: FONTS.lg, fontWeight: '800' },
 
-  dateRow: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-    paddingTop: SPACING.md,
-  },
+  dateRow: { flexDirection: 'row', gap: SPACING.sm, paddingTop: SPACING.md },
   dateBtn: {
     flex: 1,
     paddingVertical: SPACING.sm,
     borderRadius: RADIUS.sm,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: WC.panelBorder,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.inputBg,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     minHeight: 44,
   },
-  dateBtnActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
-  dateBtnText: { color: COLORS.textSecondary, fontSize: FONTS.md, fontWeight: '600' },
-  dateBtnTextActive: { color: COLORS.primary },
+  dateBtnActive: { borderColor: WC.primaryBorder, backgroundColor: WC.primaryDim },
+  dateBtnText: { color: WC.textDim, fontSize: FONTS.md, fontWeight: '600' },
+  dateBtnTextActive: { color: WC.primary },
 
   saveButton: {
     margin: SPACING.lg,
     marginTop: SPACING.xl,
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#3A1090',
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.lg,
     borderRadius: RADIUS.lg,
     alignItems: 'center',
     minHeight: 52,
     justifyContent: 'center',
+    shadowColor: '#5A18CC',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
   },
-  saveButtonText: { color: '#000', fontSize: FONTS.xl, fontWeight: '800' },
+  saveButtonText: { color: '#fff', fontSize: FONTS.xl, fontWeight: '800' },
 
   headerSaveBtn: { marginRight: 4, padding: SPACING.sm },
-  headerSaveBtnText: { color: COLORS.primary, fontSize: FONTS.lg, fontWeight: '700' },
+  headerSaveBtnText: { color: WC.primary, fontSize: FONTS.lg, fontWeight: '700' },
 });

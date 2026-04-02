@@ -5,7 +5,8 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, OpenSession } from '../types';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
+import { FONTS, RADIUS, SPACING } from '../constants/theme';
+import { WC } from '../constants/themeWeb';
 import { saveOpenSession, generateId, getOpenSession } from '../utils/storage';
 import { getTodayString, formatDateShort } from '../utils/formatters';
 import { useProfile } from '../context/ProfileContext';
@@ -24,7 +25,7 @@ function NumInput({ label, value, onChange, placeholder, decimal }: {
         value={value}
         onChangeText={onChange}
         placeholder={placeholder ?? '0'}
-        placeholderTextColor={COLORS.textMuted}
+        placeholderTextColor={WC.textMuted}
         keyboardType={decimal ? 'decimal-pad' : 'number-pad'}
         selectTextOnFocus
       />
@@ -55,7 +56,6 @@ export default function StartSessionScreen({ navigation, route }: Props) {
   const [rareStart, setRareStart] = useState('');
   const [notes, setNotes] = useState('');
 
-  // In edit mode, load the existing open session and pre-fill fields
   useEffect(() => {
     if (!editing) return;
     getOpenSession(activeProfile?.id).then((open) => {
@@ -87,7 +87,6 @@ export default function StartSessionScreen({ navigation, route }: Props) {
     }
 
     const open: OpenSession = {
-      // Preserve id/startedAt when editing, generate new ones when creating
       id: existingSession?.id ?? generateId(),
       startedAt: existingSession?.startedAt ?? Date.now(),
       date,
@@ -127,7 +126,7 @@ export default function StartSessionScreen({ navigation, route }: Props) {
         </View>
 
         {/* EXP */}
-        <SectionHeader color={COLORS.exp} title="⚔️  Nivel y EXP — Inicio" />
+        <SectionHeader color={WC.exp} title="⚔️  Nivel y EXP — Inicio" />
         <View style={styles.section}>
           <View style={styles.row}>
             <NumInput label="Nivel" value={lvStart} onChange={setLvStart} placeholder="265" />
@@ -137,44 +136,44 @@ export default function StartSessionScreen({ navigation, route }: Props) {
         </View>
 
         {/* Frags */}
-        <SectionHeader color={COLORS.frags} title="💎  Fragmentos — Inicio" />
+        <SectionHeader color={WC.frags} title="💎  Fragmentos — Inicio" />
         <View style={styles.section}>
           <NumInput label="Fragmentos" value={fragsStart} onChange={setFragsStart} />
         </View>
 
         {/* Nodes */}
-        <SectionHeader color={COLORS.nodes} title="🔮  Nodos — Inicio" />
+        <SectionHeader color={WC.nodes} title="🔮  Nodos — Inicio" />
         <View style={styles.section}>
           <NumInput label="Nodos" value={nodesStart} onChange={setNodesStart} />
         </View>
 
         {/* Mesos */}
-        <SectionHeader color={COLORS.mesos} title="💰  Mesos — Inicio" />
+        <SectionHeader color={WC.mesos} title="💰  Mesos — Inicio" />
         <View style={styles.section}>
           <NumInput label="Mesos" value={mesosStart} onChange={setMesosStart} />
         </View>
 
         {/* Familiares Comunes */}
-        <SectionHeader color={COLORS.common} title="👾  Fam. Comunes — Inicio" />
+        <SectionHeader color={WC.common} title="👾  Fam. Comunes — Inicio" />
         <View style={styles.section}>
           <NumInput label="Familiares Comunes" value={commonStart} onChange={setCommonStart} />
         </View>
 
         {/* Familiares Raros */}
-        <SectionHeader color={COLORS.rare} title="✨  Fam. Raros — Inicio" />
+        <SectionHeader color={WC.rare} title="✨  Fam. Raros — Inicio" />
         <View style={styles.section}>
           <NumInput label="Familiares Raros" value={rareStart} onChange={setRareStart} />
         </View>
 
         {/* Notas */}
-        <SectionHeader color={COLORS.textSecondary} title="📝  Notas (opcional)" />
+        <SectionHeader color={WC.textMuted} title="📝  Notas (opcional)" />
         <View style={styles.section}>
           <TextInput
             style={[styles.input, styles.notesInput]}
             value={notes}
             onChangeText={setNotes}
             placeholder="Agrega notas..."
-            placeholderTextColor={COLORS.textMuted}
+            placeholderTextColor={WC.textMuted}
             multiline
             numberOfLines={3}
             maxLength={500}
@@ -193,36 +192,42 @@ export default function StartSessionScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  keyboardView: { flex: 1, backgroundColor: COLORS.bg },
+  keyboardView: { flex: 1, backgroundColor: WC.bg },
   scroll: { flex: 1 },
-  scrollContent: { paddingTop: 8, paddingBottom: 48 },
+  scrollContent: {
+    paddingTop: 8,
+    paddingBottom: 48,
+    maxWidth: 640,
+    width: '100%',
+    alignSelf: 'center' as const,
+  },
 
   dateBanner: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
+    backgroundColor: WC.panelBg,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: WC.sep,
   },
-  dateBannerLabel: { color: COLORS.textSecondary, fontSize: FONTS.sm },
-  dateBannerValue: { color: COLORS.primary, fontSize: FONTS.md, fontWeight: '700' },
+  dateBannerLabel: { color: WC.textDim, fontSize: FONTS.sm },
+  dateBannerValue: { color: WC.primary, fontSize: FONTS.md, fontWeight: '700' },
 
   sectionHeader: {
     borderLeftWidth: 3,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.lg,
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     marginTop: SPACING.lg,
   },
-  sectionHeaderText: { color: COLORS.text, fontSize: FONTS.md, fontWeight: '700' },
+  sectionHeaderText: { color: WC.text, fontSize: FONTS.md, fontWeight: '700' },
 
   section: {
-    backgroundColor: COLORS.card,
+    backgroundColor: WC.panelBg,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: WC.sep,
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.md,
   },
@@ -231,13 +236,13 @@ const styles = StyleSheet.create({
   rowGap: { width: SPACING.md },
 
   inputGroup: { flex: 1, paddingTop: SPACING.md },
-  inputLabel: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginBottom: 5 },
+  inputLabel: { color: WC.textDim, fontSize: FONTS.sm, marginBottom: 5 },
   input: {
-    backgroundColor: COLORS.inputBg,
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: RADIUS.sm,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    color: COLORS.text,
+    borderColor: WC.panelBorder,
+    color: WC.text,
     fontSize: FONTS.lg,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
@@ -247,13 +252,17 @@ const styles = StyleSheet.create({
   startButton: {
     margin: SPACING.lg,
     marginTop: SPACING.xl,
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#3A1090',
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.lg,
     borderRadius: RADIUS.lg,
     alignItems: 'center',
     minHeight: 52,
     justifyContent: 'center',
+    shadowColor: '#5A18CC',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
   },
-  startButtonText: { color: '#000', fontSize: FONTS.xl, fontWeight: '800' },
+  startButtonText: { color: '#fff', fontSize: FONTS.xl, fontWeight: '800' },
 });

@@ -5,7 +5,8 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, Session, OpenSession } from '../types';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
+import { FONTS, RADIUS, SPACING } from '../constants/theme';
+import { WC } from '../constants/themeWeb';
 import { calculateExpGained } from '../utils/expCalculator';
 import { addSession, getOpenSession, deleteOpenSession, generateId } from '../utils/storage';
 import { useProfile } from '../context/ProfileContext';
@@ -25,7 +26,7 @@ function NumInput({ label, value, onChange, placeholder, decimal }: {
         value={value}
         onChangeText={onChange}
         placeholder={placeholder ?? '0'}
-        placeholderTextColor={COLORS.textMuted}
+        placeholderTextColor={WC.textMuted}
         keyboardType={decimal ? 'decimal-pad' : 'number-pad'}
         selectTextOnFocus
       />
@@ -43,7 +44,7 @@ function SectionHeader({ color, title }: { color: string; title: string }) {
 
 function GainBadge({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <View style={[styles.gainBadge, { borderColor: color + '30' }]}>
+    <View style={[styles.gainBadge, { borderColor: color + '40' }]}>
       <Text style={styles.gainBadgeLabel}>{label}</Text>
       <Text style={[styles.gainBadgeValue, { color }]}>{value}</Text>
     </View>
@@ -80,7 +81,6 @@ export default function FinishSessionScreen({ navigation }: Props) {
         return;
       }
       setOpen(s);
-      // Leave end fields empty — placeholders show start values as reference
     });
   }, [activeProfileId, navigation]);
 
@@ -182,7 +182,7 @@ export default function FinishSessionScreen({ navigation }: Props) {
         </View>
 
         {/* EXP end */}
-        <SectionHeader color={COLORS.exp} title="⚔️  Nivel y EXP — Fin" />
+        <SectionHeader color={WC.exp} title="⚔️  Nivel y EXP — Fin" />
         <View style={styles.section}>
           <View style={styles.row}>
             <NumInput label="Nivel" value={lvEnd} onChange={setLvEnd} placeholder={String(open.lvStart)} />
@@ -190,55 +190,55 @@ export default function FinishSessionScreen({ navigation }: Props) {
             <NumInput label="% EXP" value={expEnd} onChange={setExpEnd} placeholder={String(open.expStart)} decimal />
           </View>
           <View style={styles.gainRow}>
-            <GainBadge label="EXP Ganada" value={formatExp(expGained)} color={COLORS.exp} />
+            <GainBadge label="EXP Ganada" value={formatExp(expGained)} color={WC.exp} />
             {lvEndN > open.lvStart && (
-              <GainBadge label="Niveles" value={`+${lvEndN - open.lvStart}`} color={COLORS.primary} />
+              <GainBadge label="Niveles" value={`+${lvEndN - open.lvStart}`} color={WC.primary} />
             )}
           </View>
         </View>
 
         {/* Frags end */}
-        <SectionHeader color={COLORS.frags} title="💎  Fragmentos — Fin" />
+        <SectionHeader color={WC.frags} title="💎  Fragmentos — Fin" />
         <View style={styles.section}>
           <NumInput label="Fragmentos" value={fragsEnd} onChange={setFragsEnd} placeholder={String(open.fragsStart)} />
           <View style={styles.gainRow}>
-            <GainBadge label="Ganados" value={`+${formatNumber(fragsGained)}`} color={COLORS.frags} />
+            <GainBadge label="Ganados" value={`+${formatNumber(fragsGained)}`} color={WC.frags} />
           </View>
         </View>
 
         {/* Nodes end */}
-        <SectionHeader color={COLORS.nodes} title="🔮  Nodos — Fin" />
+        <SectionHeader color={WC.nodes} title="🔮  Nodos — Fin" />
         <View style={styles.section}>
           <NumInput label="Nodos" value={nodesEnd} onChange={setNodesEnd} placeholder={String(open.nodesStart)} />
           <View style={styles.gainRow}>
-            <GainBadge label="Ganados" value={`+${formatNumber(nodesGained)}`} color={COLORS.nodes} />
+            <GainBadge label="Ganados" value={`+${formatNumber(nodesGained)}`} color={WC.nodes} />
           </View>
         </View>
 
         {/* Mesos end */}
-        <SectionHeader color={COLORS.mesos} title="💰  Mesos — Fin" />
+        <SectionHeader color={WC.mesos} title="💰  Mesos — Fin" />
         <View style={styles.section}>
           <NumInput label="Mesos" value={mesosEnd} onChange={setMesosEnd} placeholder={String(open.mesosStart)} />
           <View style={styles.gainRow}>
-            <GainBadge label="Ganados" value={`+${formatExp(mesosGained)}`} color={COLORS.mesos} />
+            <GainBadge label="Ganados" value={`+${formatExp(mesosGained)}`} color={WC.mesos} />
           </View>
         </View>
 
         {/* Common familiars end */}
-        <SectionHeader color={COLORS.common} title="👾  Fam. Comunes — Fin" />
+        <SectionHeader color={WC.common} title="👾  Fam. Comunes — Fin" />
         <View style={styles.section}>
           <NumInput label="Familiares Comunes" value={commonEnd} onChange={setCommonEnd} placeholder={String(open.commonFamiliarsStart)} />
           <View style={styles.gainRow}>
-            <GainBadge label="Ganados" value={`+${commonGained}`} color={COLORS.common} />
+            <GainBadge label="Ganados" value={`+${commonGained}`} color={WC.common} />
           </View>
         </View>
 
         {/* Rare familiars end */}
-        <SectionHeader color={COLORS.rare} title="✨  Fam. Raros — Fin" />
+        <SectionHeader color={WC.rare} title="✨  Fam. Raros — Fin" />
         <View style={styles.section}>
           <NumInput label="Familiares Raros" value={rareEnd} onChange={setRareEnd} placeholder={String(open.rareFamiliarsStart)} />
           <View style={styles.gainRow}>
-            <GainBadge label="Ganados" value={`+${rareGained}`} color={COLORS.rare} />
+            <GainBadge label="Ganados" value={`+${rareGained}`} color={WC.rare} />
           </View>
         </View>
 
@@ -252,23 +252,27 @@ export default function FinishSessionScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.bg },
-  loadingText: { color: COLORS.textSecondary, fontSize: FONTS.md },
-  keyboardView: { flex: 1, backgroundColor: COLORS.bg },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: WC.bg },
+  loadingText: { color: WC.textMuted, fontSize: FONTS.md },
+  keyboardView: { flex: 1, backgroundColor: WC.bg },
   scroll: { flex: 1 },
-  scrollContent: { paddingBottom: 48 },
+  scrollContent: {
+    paddingBottom: 48,
+    maxWidth: 640,
+    width: '100%',
+    alignSelf: 'center' as const,
+  },
 
   startSummary: {
-    backgroundColor: COLORS.card,
-    marginBottom: 0,
+    backgroundColor: WC.primaryDim,
     padding: SPACING.lg,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: WC.sep,
     borderLeftWidth: 3,
-    borderLeftColor: COLORS.primary,
+    borderLeftColor: WC.primary,
   },
   startSummaryTitle: {
-    color: COLORS.primary,
+    color: WC.primary,
     fontSize: FONTS.sm,
     fontWeight: '700',
     marginBottom: SPACING.sm,
@@ -280,24 +284,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 4,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: WC.sep,
   },
-  startRowLabel: { color: COLORS.textSecondary, fontSize: FONTS.sm },
-  startRowValue: { color: COLORS.textSecondary, fontSize: FONTS.sm, fontWeight: '600' },
+  startRowLabel: { color: WC.textDim, fontSize: FONTS.sm },
+  startRowValue: { color: WC.textDim, fontSize: FONTS.sm, fontWeight: '600' },
 
   sectionHeader: {
     borderLeftWidth: 3,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.lg,
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     marginTop: SPACING.lg,
   },
-  sectionHeaderText: { color: COLORS.text, fontSize: FONTS.md, fontWeight: '700' },
+  sectionHeaderText: { color: WC.text, fontSize: FONTS.md, fontWeight: '700' },
 
   section: {
-    backgroundColor: COLORS.card,
+    backgroundColor: WC.panelBg,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: WC.sep,
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.md,
   },
@@ -306,13 +310,13 @@ const styles = StyleSheet.create({
   rowGap: { width: SPACING.md },
 
   inputGroup: { flex: 1, paddingTop: SPACING.md },
-  inputLabel: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginBottom: 5 },
+  inputLabel: { color: WC.textDim, fontSize: FONTS.sm, marginBottom: 5 },
   input: {
-    backgroundColor: COLORS.inputBg,
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: RADIUS.sm,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    color: COLORS.text,
+    borderColor: WC.panelBorder,
+    color: WC.text,
     fontSize: FONTS.lg,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
@@ -321,25 +325,29 @@ const styles = StyleSheet.create({
   gainRow: { flexDirection: 'row', gap: SPACING.sm, marginTop: SPACING.sm },
   gainBadge: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     borderRadius: RADIUS.sm,
     padding: SPACING.sm,
     alignItems: 'center',
     borderWidth: 1,
   },
-  gainBadgeLabel: { color: COLORS.textSecondary, fontSize: FONTS.xs, marginBottom: 2 },
+  gainBadgeLabel: { color: WC.textMuted, fontSize: FONTS.xs, marginBottom: 2 },
   gainBadgeValue: { fontSize: FONTS.lg, fontWeight: '800' },
 
   saveButton: {
     margin: SPACING.lg,
     marginTop: SPACING.xl,
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#3A1090',
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.lg,
     borderRadius: RADIUS.lg,
     alignItems: 'center',
     minHeight: 52,
     justifyContent: 'center',
+    shadowColor: '#5A18CC',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
   },
-  saveButtonText: { color: '#000', fontSize: FONTS.xl, fontWeight: '800' },
+  saveButtonText: { color: '#fff', fontSize: FONTS.xl, fontWeight: '800' },
 });
