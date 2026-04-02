@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, FONTS } from './src/constants/theme';
+import { WC } from './src/constants/themeWeb';
 import { RootStackParamList, TabParamList } from './src/types';
 import { ProfileProvider } from './src/context/ProfileContext';
 import { useIsDesktopWeb } from './src/hooks/useIsDesktopWeb';
@@ -26,9 +27,9 @@ const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const NAV_HEADER = {
-  headerStyle: { backgroundColor: COLORS.surface },
-  headerTintColor: COLORS.text,
-  headerTitleStyle: { fontWeight: '700' as const, fontSize: FONTS.lg },
+  headerStyle: { backgroundColor: WC.bg },
+  headerTintColor: WC.text,
+  headerTitleStyle: { fontWeight: '700' as const, fontSize: FONTS.lg, color: WC.text },
   headerShadowVisible: false,
 };
 
@@ -140,7 +141,7 @@ function AppContent() {
           <Stack.Navigator
             screenOptions={{
               ...NAV_HEADER,
-              contentStyle: { backgroundColor: COLORS.bg },
+              contentStyle: { backgroundColor: WC.bg },
             }}
           >
             <Stack.Screen

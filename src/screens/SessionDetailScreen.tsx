@@ -6,7 +6,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Session } from '../types';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
+import { FONTS, RADIUS, SPACING } from '../constants/theme';
+import { WC } from '../constants/themeWeb';
 import { getSessionById, deleteSession } from '../utils/storage';
 import { formatDateLong, formatExp, formatNumber, formatPercent } from '../utils/formatters';
 
@@ -61,7 +62,7 @@ export default function SessionDetailScreen({ route, navigation }: Props) {
   if (!session) {
     return (
       <View style={styles.center}>
-        <Text style={{ color: COLORS.textSecondary, fontSize: FONTS.md }}>Cargando...</Text>
+        <Text style={{ color: WC.textMuted, fontSize: FONTS.md }}>Cargando...</Text>
       </View>
     );
   }
@@ -72,60 +73,60 @@ export default function SessionDetailScreen({ route, navigation }: Props) {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Date */}
       <View style={styles.dateCard}>
-        <Ionicons name="calendar-outline" size={16} color={COLORS.primary} />
+        <Ionicons name="calendar-outline" size={16} color={WC.primary} />
         <Text style={styles.dateText}>{'  '}{formatDateLong(session.date)}</Text>
       </View>
 
       {/* EXP */}
-      <Section title="⚔️  Nivel y Experiencia" color={COLORS.exp}>
+      <Section title="⚔️  Nivel y Experiencia" color={WC.exp}>
         <Row label="Nivel inicio" value={`${session.lvStart}  (${formatPercent(session.expStart)}%)`} />
         <Row label="Nivel fin"    value={`${session.lvEnd}  (${formatPercent(session.expEnd)}%)`} />
         {levelsGained > 0 && (
-          <Row label="Niveles ganados" value={`+${levelsGained}`} color={COLORS.primary} />
+          <Row label="Niveles ganados" value={`+${levelsGained}`} color={WC.primary} />
         )}
-        <Row label="EXP ganada" value={formatExp(session.expGainedActual)} color={COLORS.exp} big />
-        <Row label="EXP exacta"  value={formatNumber(session.expGainedActual)} color={COLORS.textSecondary} />
+        <Row label="EXP ganada" value={formatExp(session.expGainedActual)} color={WC.exp} big />
+        <Row label="EXP exacta"  value={formatNumber(session.expGainedActual)} color={WC.textMuted} />
       </Section>
 
       {/* Fragments */}
-      <Section title="💎  Fragmentos" color={COLORS.frags}>
+      <Section title="💎  Fragmentos" color={WC.frags}>
         <Row label="Inicio"   value={formatNumber(session.fragsStart)} />
         <Row label="Fin"      value={formatNumber(session.fragsEnd)} />
-        <Row label="Ganados"  value={`+${formatNumber(session.fragsGained)}`} color={COLORS.frags} big />
+        <Row label="Ganados"  value={`+${formatNumber(session.fragsGained)}`} color={WC.frags} big />
       </Section>
 
       {/* Nodes */}
-      <Section title="🔮  Nodos" color={COLORS.nodes}>
+      <Section title="🔮  Nodos" color={WC.nodes}>
         <Row label="Inicio"  value={formatNumber(session.nodesStart)} />
         <Row label="Fin"     value={formatNumber(session.nodesEnd)} />
-        <Row label="Ganados" value={`+${formatNumber(session.nodesGained)}`} color={COLORS.nodes} big />
+        <Row label="Ganados" value={`+${formatNumber(session.nodesGained)}`} color={WC.nodes} big />
       </Section>
 
       {/* Mesos */}
-      <Section title="💰  Mesos" color={COLORS.mesos}>
+      <Section title="💰  Mesos" color={WC.mesos}>
         <Row label="Inicio"        value={formatExp(session.mesosStart)} />
         <Row label="Fin"           value={formatExp(session.mesosEnd)} />
-        <Row label="Ganados"       value={`+${formatExp(session.mesosGained)}`} color={COLORS.mesos} big />
-        <Row label="Mesos exactos" value={formatNumber(session.mesosGained)} color={COLORS.textSecondary} />
+        <Row label="Ganados"       value={`+${formatExp(session.mesosGained)}`} color={WC.mesos} big />
+        <Row label="Mesos exactos" value={formatNumber(session.mesosGained)} color={WC.textMuted} />
       </Section>
 
       {/* Common Familiars */}
-      <Section title="👾  Familiares Comunes" color={COLORS.common}>
+      <Section title="👾  Familiares Comunes" color={WC.common}>
         <Row label="Inicio"  value={formatNumber(session.commonFamiliarsStart)} />
         <Row label="Fin"     value={formatNumber(session.commonFamiliarsEnd)} />
-        <Row label="Ganados" value={`+${formatNumber(session.commonFamiliarsGained)}`} color={COLORS.common} big />
+        <Row label="Ganados" value={`+${formatNumber(session.commonFamiliarsGained)}`} color={WC.common} big />
       </Section>
 
       {/* Rare Familiars */}
-      <Section title="✨  Familiares Raros" color={COLORS.rare}>
+      <Section title="✨  Familiares Raros" color={WC.rare}>
         <Row label="Inicio"  value={formatNumber(session.rareFamiliarsStart)} />
         <Row label="Fin"     value={formatNumber(session.rareFamiliarsEnd)} />
-        <Row label="Ganados" value={`+${formatNumber(session.rareFamiliarsGained)}`} color={COLORS.rare} big />
+        <Row label="Ganados" value={`+${formatNumber(session.rareFamiliarsGained)}`} color={WC.rare} big />
       </Section>
 
       {/* Notes */}
       {session.notes ? (
-        <Section title="📝  Notas" color={COLORS.textSecondary}>
+        <Section title="📝  Notas" color={WC.textMuted}>
           <Text style={styles.notesText}>{session.notes}</Text>
         </Section>
       ) : null}
@@ -137,7 +138,7 @@ export default function SessionDetailScreen({ route, navigation }: Props) {
           onPress={() => navigation.navigate('AddSession', { sessionId: session.id })}
           activeOpacity={0.8}
         >
-          <Ionicons name="pencil" size={16} color={COLORS.primary} />
+          <Ionicons name="pencil" size={16} color={WC.primary} />
           <Text style={styles.editBtnText}>Editar</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -145,7 +146,7 @@ export default function SessionDetailScreen({ route, navigation }: Props) {
           onPress={handleDelete}
           activeOpacity={0.8}
         >
-          <Ionicons name="trash" size={16} color={COLORS.error} />
+          <Ionicons name="trash" size={16} color="#FF4444" />
           <Text style={styles.deleteBtnText}>Eliminar</Text>
         </TouchableOpacity>
       </View>
@@ -154,30 +155,36 @@ export default function SessionDetailScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
-  content: { padding: SPACING.lg, paddingBottom: 48 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.bg },
+  container: { flex: 1, backgroundColor: WC.bg },
+  content: {
+    padding: SPACING.lg,
+    paddingBottom: 48,
+    maxWidth: 720,
+    width: '100%',
+    alignSelf: 'center' as const,
+  },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: WC.bg },
 
   dateCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
+    backgroundColor: WC.panelBg,
     padding: SPACING.md,
     borderRadius: RADIUS.md,
     marginBottom: SPACING.lg,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: WC.panelBorder,
   },
-  dateText: { color: COLORS.text, fontSize: FONTS.md, fontWeight: '600', textTransform: 'capitalize' },
+  dateText: { color: WC.text, fontSize: FONTS.md, fontWeight: '600', textTransform: 'capitalize' },
 
   section: {
-    backgroundColor: COLORS.card,
+    backgroundColor: WC.panelBg,
     borderRadius: RADIUS.lg,
     padding: SPACING.lg,
     marginBottom: SPACING.md,
     borderLeftWidth: 3,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: WC.panelBorder,
   },
   sectionTitle: { fontSize: FONTS.lg, fontWeight: '700', marginBottom: SPACING.md },
 
@@ -187,13 +194,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: WC.sep,
   },
-  rowLabel: { color: COLORS.textSecondary, fontSize: FONTS.md },
-  rowValue: { color: COLORS.text, fontSize: FONTS.md, fontWeight: '600' },
+  rowLabel: { color: WC.textDim, fontSize: FONTS.md },
+  rowValue: { color: WC.text, fontSize: FONTS.md, fontWeight: '600' },
   rowValueBig: { fontSize: FONTS.xl, fontWeight: '800' },
 
-  notesText: { color: COLORS.textSecondary, fontSize: FONTS.md, lineHeight: 22 },
+  notesText: { color: WC.textDim, fontSize: FONTS.md, lineHeight: 22 },
 
   actions: { flexDirection: 'row', gap: SPACING.md, marginTop: SPACING.sm },
   actionBtn: {
@@ -201,8 +208,8 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md, paddingHorizontal: SPACING.md,
     borderRadius: RADIUS.lg, gap: SPACING.sm, borderWidth: 1, minHeight: 52,
   },
-  editBtn: { backgroundColor: COLORS.primaryDim, borderColor: COLORS.primaryBorder },
-  editBtnText: { color: COLORS.primary, fontSize: FONTS.lg, fontWeight: '700' },
-  deleteBtn: { backgroundColor: COLORS.error + '22', borderColor: COLORS.error + '60' },
-  deleteBtnText: { color: COLORS.error, fontSize: FONTS.lg, fontWeight: '700' },
+  editBtn: { backgroundColor: WC.primaryDim, borderColor: WC.primaryBorder },
+  editBtnText: { color: WC.primary, fontSize: FONTS.lg, fontWeight: '700' },
+  deleteBtn: { backgroundColor: 'rgba(255,68,68,0.12)', borderColor: 'rgba(255,68,68,0.35)' },
+  deleteBtnText: { color: '#FF4444', fontSize: FONTS.lg, fontWeight: '700' },
 });

@@ -17,7 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../context/ProfileContext';
 import { addProfile, updateProfile, deleteProfile, generateId } from '../utils/storage';
 import { Profile } from '../types';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
+import { FONTS, RADIUS, SPACING } from '../constants/theme';
+import { WC } from '../constants/themeWeb';
 
 const PROFILE_COLORS = [
   '#FF8C00',
@@ -155,7 +156,7 @@ export default function ProfilesScreen() {
               <Text style={styles.profileName}>{item.name}</Text>
               {isActive && (
                 <View style={styles.activeBadge}>
-                  <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
+                  <Ionicons name="checkmark-circle" size={14} color={WC.primary} />
                   <Text style={styles.activeBadgeText}>Activo</Text>
                 </View>
               )}
@@ -181,14 +182,14 @@ export default function ProfilesScreen() {
               onPress={() => openEdit(item)}
               activeOpacity={0.75}
             >
-              <Ionicons name="pencil" size={16} color={COLORS.textSecondary} />
+              <Ionicons name="pencil" size={16} color={WC.textDim} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.iconBtn}
               onPress={() => handleDelete(item)}
               activeOpacity={0.75}
             >
-              <Ionicons name="trash-outline" size={16} color={COLORS.error} />
+              <Ionicons name="trash-outline" size={16} color="#FF4444" />
             </TouchableOpacity>
           </View>
         </View>
@@ -228,7 +229,7 @@ export default function ProfilesScreen() {
                 {editingProfile ? 'Editar Perfil' : 'Nuevo Perfil'}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalClose}>
-                <Ionicons name="close" size={22} color={COLORS.textSecondary} />
+                <Ionicons name="close" size={22} color={WC.textDim} />
               </TouchableOpacity>
             </View>
 
@@ -243,7 +244,7 @@ export default function ProfilesScreen() {
                 value={form.name}
                 onChangeText={(v) => setForm((f) => ({ ...f, name: v }))}
                 placeholder="Ej: MiKain2024"
-                placeholderTextColor={COLORS.textMuted}
+                placeholderTextColor={WC.textMuted}
                 maxLength={30}
               />
 
@@ -254,7 +255,7 @@ export default function ProfilesScreen() {
                 value={form.gameClass}
                 onChangeText={(v) => setForm((f) => ({ ...f, gameClass: v }))}
                 placeholder="Ej: Kain, Adele, Bowmaster..."
-                placeholderTextColor={COLORS.textMuted}
+                placeholderTextColor={WC.textMuted}
                 maxLength={30}
               />
 
@@ -265,7 +266,7 @@ export default function ProfilesScreen() {
                 value={form.server}
                 onChangeText={(v) => setForm((f) => ({ ...f, server: v }))}
                 placeholder="Ej: Reboot, Bera, Scania..."
-                placeholderTextColor={COLORS.textMuted}
+                placeholderTextColor={WC.textMuted}
                 maxLength={30}
               />
 
@@ -323,11 +324,11 @@ export default function ProfilesScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.bg },
+  safeArea: { flex: 1, backgroundColor: WC.bg },
 
-  listContent: { padding: SPACING.lg, paddingBottom: 100 },
+  listContent: { padding: SPACING.lg, paddingBottom: 100, maxWidth: 720, width: '100%', alignSelf: 'center' as const },
   listHeader: {
-    color: COLORS.textSecondary,
+    color: WC.textMuted,
     fontSize: FONTS.xs,
     fontWeight: '700',
     letterSpacing: 1,
@@ -338,17 +339,17 @@ const styles = StyleSheet.create({
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
+    backgroundColor: WC.panelBg,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
     marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: WC.panelBorder,
     gap: SPACING.md,
   },
   profileCardActive: {
-    borderColor: COLORS.primaryBorder,
-    backgroundColor: COLORS.cardHighlight,
+    borderColor: WC.primaryBorder,
+    backgroundColor: WC.primaryDim,
   },
 
   avatar: {
@@ -360,37 +361,35 @@ const styles = StyleSheet.create({
 
   profileInfo: { flex: 1 },
   profileNameRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
-  profileName: { color: COLORS.text, fontSize: FONTS.lg, fontWeight: '700' },
+  profileName: { color: WC.text, fontSize: FONTS.lg, fontWeight: '700' },
   activeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: COLORS.primaryDim,
+    backgroundColor: WC.primaryDim,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: COLORS.primaryBorder,
+    borderColor: WC.primaryBorder,
   },
-  activeBadgeText: { color: COLORS.primary, fontSize: FONTS.xs, fontWeight: '700' },
-  profileSub: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginTop: 2 },
+  activeBadgeText: { color: WC.primary, fontSize: FONTS.xs, fontWeight: '700' },
+  profileSub: { color: WC.textDim, fontSize: FONTS.sm, marginTop: 2 },
 
   profileActions: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
   activateBtn: {
-    backgroundColor: COLORS.primaryDim,
+    backgroundColor: WC.primaryDim,
     borderRadius: RADIUS.sm,
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
     borderWidth: 1,
-    borderColor: COLORS.primaryBorder,
+    borderColor: WC.primaryBorder,
     minHeight: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  activateBtnText: { color: COLORS.primary, fontSize: FONTS.xs, fontWeight: '700' },
-  iconBtn: {
-    padding: SPACING.sm,
-  },
+  activateBtnText: { color: WC.primary, fontSize: FONTS.xs, fontWeight: '700' },
+  iconBtn: { padding: SPACING.sm },
 
   fab: {
     position: 'absolute',
@@ -399,10 +398,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: COLORS.primary,
+    backgroundColor: WC.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.primary,
+    shadowColor: WC.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 10,
@@ -412,15 +411,15 @@ const styles = StyleSheet.create({
   // Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.75)',
+    backgroundColor: 'rgba(0,0,0,0.8)',
     justifyContent: 'flex-end',
   },
   modalSheet: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#0A0820',
     borderTopLeftRadius: RADIUS.xl,
     borderTopRightRadius: RADIUS.xl,
     borderTopWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: WC.primaryBorder,
     maxHeight: '90%',
   },
   modalHeader: {
@@ -429,25 +428,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: SPACING.lg,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: WC.sep,
   },
-  modalTitle: { color: COLORS.text, fontSize: FONTS.xl, fontWeight: '700' },
+  modalTitle: { color: WC.text, fontSize: FONTS.xl, fontWeight: '700' },
   modalClose: { padding: SPACING.sm },
   modalBody: { padding: SPACING.lg, paddingBottom: SPACING.xxl },
 
   fieldLabel: {
-    color: COLORS.textSecondary,
+    color: WC.textDim,
     fontSize: FONTS.sm,
     fontWeight: '600',
     marginBottom: 6,
     marginTop: SPACING.md,
   },
   fieldInput: {
-    backgroundColor: COLORS.inputBg,
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: RADIUS.sm,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    color: COLORS.text,
+    borderColor: WC.panelBorder,
+    color: WC.text,
     fontSize: FONTS.lg,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
@@ -469,23 +468,27 @@ const styles = StyleSheet.create({
   previewRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
+    backgroundColor: WC.panelBg,
     borderRadius: RADIUS.md,
     padding: SPACING.md,
     marginTop: SPACING.lg,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: WC.panelBorder,
   },
   previewDetails: { marginLeft: SPACING.md },
   previewName: { fontSize: FONTS.lg, fontWeight: '700' },
-  previewSub: { color: COLORS.textSecondary, fontSize: FONTS.sm, marginTop: 2 },
+  previewSub: { color: WC.textDim, fontSize: FONTS.sm, marginTop: 2 },
 
   saveBtn: {
     marginTop: SPACING.xl,
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#3A1090',
     borderRadius: RADIUS.lg,
     padding: SPACING.lg,
     alignItems: 'center',
+    shadowColor: '#5A18CC',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
   },
-  saveBtnText: { color: '#000', fontSize: FONTS.xl, fontWeight: '800' },
+  saveBtnText: { color: '#fff', fontSize: FONTS.xl, fontWeight: '800' },
 });
