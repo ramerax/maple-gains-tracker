@@ -67,10 +67,19 @@ function SessionItem({ session, onPress, desktop }: { session: Session; onPress:
           Lv {session.lvStart} ({formatPercent(session.expStart)}%) → Lv {session.lvEnd} ({formatPercent(session.expEnd)}%)
         </Text>
       </View>
-      <View style={styles.sessionRight}>
-        <Text style={[desktop ? dStyles.sessExp : styles.sessionExp, { color: desktop ? WC.exp : COLORS.exp }]}>
-          {formatExp(session.expGainedActual)}
-        </Text>
+      <View style={desktop ? dStyles.sessRight : styles.sessionRight}>
+        {desktop ? (
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={[dStyles.sessExp, { color: WC.exp }]}>
+              {formatExp(session.expGainedActual)}
+            </Text>
+            <Text style={dStyles.sessMesos}>+{formatExp(session.mesosGained)}</Text>
+          </View>
+        ) : (
+          <Text style={[styles.sessionExp, { color: COLORS.exp }]}>
+            {formatExp(session.expGainedActual)}
+          </Text>
+        )}
         <Ionicons name="chevron-forward" size={14} color={desktop ? WC.textMuted : COLORS.textMuted} />
       </View>
     </TouchableOpacity>
@@ -329,8 +338,8 @@ const dStyles = StyleSheet.create({
   },
 
   body: { flex: 1, flexDirection: 'row' },
-  listCol: { flex: 1, borderRightWidth: 1, borderRightColor: WC.panelBorder },
-  statsCol: { width: 260, padding: 14 },
+  listCol: { flex: 1, maxWidth: 760, borderRightWidth: 1, borderRightColor: WC.panelBorder },
+  statsCol: { minWidth: 260, maxWidth: 300, width: 280, padding: 14 },
 
   panel: {
     backgroundColor: WC.panelBgStrong,
@@ -369,7 +378,9 @@ const dStyles = StyleSheet.create({
   },
   sessDate: { fontSize: 13, color: WC.text, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
   sessLevel: { fontSize: 10, color: WC.textMuted, marginTop: 3 },
-  sessExp: { fontSize: 16, fontWeight: '900', letterSpacing: -0.5, marginRight: 8 },
+  sessExp: { fontSize: 16, fontWeight: '900', letterSpacing: -0.5 },
+  sessMesos: { fontSize: 11, color: WC.mesos, fontWeight: '600', marginTop: 1, textAlign: 'right' },
+  sessRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
   fab: {
     position: 'absolute', right: 20, bottom: 20,
