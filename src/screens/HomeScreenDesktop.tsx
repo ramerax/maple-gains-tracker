@@ -314,10 +314,11 @@ const styles = StyleSheet.create({
   actionBtn: {
     width: '100%', marginTop: 'auto',
     backgroundColor: '#3A1090',
-    borderRadius: 50, paddingVertical: 11, alignItems: 'center',
-    shadowColor: '#5A18CC', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.45, shadowRadius: 12,
+    borderRadius: 50, paddingVertical: 12, alignItems: 'center',
+    borderWidth: 1, borderColor: 'rgba(90,24,204,0.55)',
+    shadowColor: '#5A18CC', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.65, shadowRadius: 18,
   },
-  actionBtnText: { color: '#fff', fontSize: 13, fontWeight: '800', letterSpacing: 0.3 },
+  actionBtnText: { color: '#fff', fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
 
   // ─ Right area ─
   rightArea: { flex: 1, flexDirection: 'column', gap: 10 },
@@ -365,12 +366,15 @@ const styles = StyleSheet.create({
   sessionPill: {
     position: 'absolute',
     bottom: 10, left: 14, right: 14,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(10,8,32,0.72)',
     borderWidth: 1, borderColor: WC.primaryBorder,
     borderRadius: 50,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 18, paddingVertical: 10,
     zIndex: 20,
+    // @ts-ignore — web only
+    backdropFilter: 'blur(18px)',
+    WebkitBackdropFilter: 'blur(18px)',
   },
   pillLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   pillDot: {

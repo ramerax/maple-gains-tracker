@@ -2,9 +2,10 @@ import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { Session } from '../types';
+import { RootStackParamList, Session } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
 import { WC } from '../constants/themeWeb';
 import { getAllSessions } from '../utils/storage';
@@ -138,6 +139,8 @@ function PeriodCard({ title, sessions, color }: {
   );
 }
 
+type Nav = NativeStackNavigationProp<RootStackParamList>;
+
 // ── Desktop sub-components ───────────────────────────────────────────────
 
 function DeskStatRow({ label, value, color }: { label: string; value: string; color: string }) {
@@ -149,8 +152,8 @@ function DeskStatRow({ label, value, color }: { label: string; value: string; co
   );
 }
 
-function DeskPeriodPanel({ title, sessions, color, empty }: {
-  title: string; sessions: Session[]; color: string; empty?: boolean;
+function DeskPeriodPanel({ title, sessions, color, empty, onNewSession }: {
+  title: string; sessions: Session[]; color: string; empty?: boolean; onNewSession?: () => void;
 }) {
   const isEmpty = sessions.length === 0 || empty;
 
@@ -193,6 +196,12 @@ function DeskPeriodPanel({ title, sessions, color, empty }: {
       <DeskStatRow label="Mesos"  value={isEmpty ? '—' : formatExp(totalMesos)}       color={isEmpty ? WC.textMuted : WC.mesos} />
       <DeskStatRow label="Fam. C" value={isEmpty ? '—' : String(totalCommon)}         color={isEmpty ? WC.textMuted : WC.common} />
       <DeskStatRow label="Fam. R" value={isEmpty ? '—' : String(totalRare)}           color={isEmpty ? WC.textMuted : WC.rare} />
+
+      {isEmpty && onNewSession && (
+        <TouchableOpacity style={dStyles.newSessionBtn} onPress={onNewSession} activeOpacity={0.8}>
+          <Text style={dStyles.newSessionBtnText}>▶  Nueva Sesión</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -270,6 +279,7 @@ function DeskBestDays({ sessions }: { sessions: Session[] }) {
 export default function StatsScreen() {
   const { activeProfileId } = useProfile();
   const isDesktop = useIsDesktopWeb();
+  const navigation = useNavigation<Nav>();
   const [allSessions, setAllSessions] = useState<Session[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -319,7 +329,7 @@ export default function StatsScreen() {
 
         {/* Period panels row */}
         <View style={dStyles.periodRow}>
-          <DeskPeriodPanel title="☀️  Hoy"         sessions={todaySessions} color={WC.primary} />
+          <DeskPeriodPanel title="☀️  Hoy"         sessions={todaySessions} color={WC.primary} onNewSession={() => navigation.navigate('StartSession')} />
           <DeskPeriodPanel title="📅  Esta Semana" sessions={weekSessions}  color={WC.frags} />
           <DeskPeriodPanel title="🗓️  Este Mes"    sessions={monthSessions} color={WC.exp} />
         </View>
@@ -495,6 +505,20 @@ const dStyles = StyleSheet.create({
     borderWidth: 1, borderColor: WC.panelBorder,
     borderRadius: 14, padding: 16,
   },
+
+  // Nueva Sesión button (shown in empty "Hoy" panel)
+  newSessionBtn: {
+    marginTop: 12,
+    backgroundColor: '#3A1090',
+    borderRadius: 50,
+    paddingVertical: 9,
+    alignItems: 'center',
+    shadowColor: '#5A18CC',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+  },
+  newSessionBtnText: { color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.3 },
 });
 
 // ── Mobile styles ────────────────────────────────────────────────────────
