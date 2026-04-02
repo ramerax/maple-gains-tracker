@@ -3,7 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
+import { FONTS, SPACING, RADIUS } from '../constants/theme';
+import { WC } from '../constants/themeWeb';
 import { RootStackParamList } from '../types';
 import { useProfile } from '../context/ProfileContext';
 import HomeScreen from '../screens/HomeScreen';
@@ -37,7 +38,7 @@ export default function WebLayout() {
         {/* Logo */}
         <View style={styles.logoArea}>
           <Text style={styles.logoLeaf}>🍁</Text>
-          <View>
+          <View style={styles.logoTextBlock}>
             <Text style={styles.logoTitle}>MapleGains</Text>
             {activeProfile && (
               <Text style={styles.logoSub} numberOfLines={1}>
@@ -69,7 +70,7 @@ export default function WebLayout() {
                 <Ionicons
                   name={isActive ? tab.activeIcon : tab.icon}
                   size={18}
-                  color={isActive ? COLORS.primary : COLORS.textSecondary}
+                  color={isActive ? WC.primary : WC.textMuted}
                 />
                 <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
                   {tab.label}
@@ -86,22 +87,22 @@ export default function WebLayout() {
         {/* Profile footer */}
         <Pressable
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          style={(state: any) => [styles.profileFooter, state.hovered && styles.navItemHovered]}
+          style={(state: any) => [styles.profileFooter, state.hovered && styles.profileFooterHovered]}
           onPress={() => navigation.navigate('Profiles')}
         >
           {activeProfile ? (
-            <View style={[styles.avatar, { backgroundColor: activeProfile.color + '30', borderColor: activeProfile.color }]}>
+            <View style={[styles.avatar, { backgroundColor: activeProfile.color + '22', borderColor: activeProfile.color + '80' }]}>
               <Text style={[styles.avatarLetter, { color: activeProfile.color }]}>
                 {activeProfile.name.charAt(0).toUpperCase()}
               </Text>
             </View>
           ) : (
-            <Ionicons name="person-circle-outline" size={30} color={COLORS.textMuted} />
+            <Ionicons name="person-circle-outline" size={30} color={WC.textMuted} />
           )}
           <Text style={styles.profileName} numberOfLines={1}>
             {activeProfile ? activeProfile.name : 'Perfiles'}
           </Text>
-          <Ionicons name="chevron-forward" size={13} color={COLORS.textMuted} />
+          <Ionicons name="chevron-forward" size={13} color={WC.textMuted} />
         </Pressable>
       </View>
 
@@ -127,15 +128,15 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: COLORS.bg,
+    backgroundColor: WC.bg,
   },
 
   // ── Sidebar ────────────────────────────────────────────────────
   sidebar: {
     width: SIDEBAR_WIDTH,
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(255,255,255,0.03)',
     borderRightWidth: 1,
-    borderRightColor: COLORS.border,
+    borderRightColor: WC.panelBorder,
     paddingVertical: SPACING.lg,
     flexDirection: 'column',
   },
@@ -147,31 +148,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     marginBottom: SPACING.lg,
   },
-  logoLeaf: { fontSize: 30 },
+  logoTextBlock: {
+    flex: 1,
+  },
+  logoLeaf: { fontSize: 28 },
   logoTitle: {
-    color: COLORS.text,
+    color: WC.text,
     fontSize: FONTS.xl,
     fontWeight: '800',
     letterSpacing: -0.5,
   },
   logoSub: {
-    color: COLORS.primary,
+    color: WC.primary,
     fontSize: FONTS.xs,
     fontWeight: '600',
     marginTop: 2,
-    opacity: 0.9,
+    opacity: 0.85,
   },
 
   divider: {
     height: 1,
-    backgroundColor: COLORS.border,
-    marginHorizontal: SPACING.lg,
+    backgroundColor: WC.sep,
+    marginHorizontal: SPACING.md,
     marginBottom: SPACING.md,
   },
 
   navList: {
     gap: 2,
     paddingHorizontal: SPACING.xs,
+    paddingTop: SPACING.xs,
   },
   navItem: {
     flexDirection: 'row',
@@ -183,28 +188,28 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   navAccent: {
-    width: 4,
+    width: 3,
     height: 18,
     borderRadius: 2,
     backgroundColor: 'transparent',
   },
   navAccentActive: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: WC.primary,
   },
   navItemHovered: {
-    backgroundColor: COLORS.cardHighlight,
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   navItemActive: {
-    backgroundColor: COLORS.primaryDim,
+    backgroundColor: WC.primaryDim,
   },
   navLabel: {
-    color: COLORS.textSecondary,
+    color: WC.textMuted,
     fontSize: FONTS.md,
     fontWeight: '500',
     flex: 1,
   },
   navLabelActive: {
-    color: COLORS.primary,
+    color: WC.primary,
     fontWeight: '700',
   },
 
@@ -218,8 +223,12 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.card,
+    borderColor: WC.panelBorder,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  profileFooterHovered: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderColor: WC.primaryBorder,
   },
   avatar: {
     width: 32,
@@ -235,7 +244,7 @@ const styles = StyleSheet.create({
   },
   profileName: {
     flex: 1,
-    color: COLORS.text,
+    color: WC.textDim,
     fontSize: FONTS.sm,
     fontWeight: '600',
   },
@@ -243,7 +252,7 @@ const styles = StyleSheet.create({
   // ── Content ────────────────────────────────────────────────────
   content: {
     flex: 1,
-    backgroundColor: COLORS.bg,
+    backgroundColor: WC.bg,
   },
   screenVisible: { flex: 1 },
   screenHidden:  { display: 'none' },
