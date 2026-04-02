@@ -42,7 +42,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, Error
     if (this.state.error) {
       return (
         <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-          <Text style={{ color: '#FF8C00', fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+          <Text style={{ color: WC.primary, fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
             ⚠️ Error al cargar
           </Text>
           <Text style={{ color: '#fff', fontSize: 13, textAlign: 'center' }}>

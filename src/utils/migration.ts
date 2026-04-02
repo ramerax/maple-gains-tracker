@@ -72,7 +72,7 @@ export async function runMigrationIfNeeded(): Promise<void> {
     const done = await AsyncStorage.getItem(MIGRATION_FLAG);
     if (done === 'true') return;
 
-    console.log('[Migration v3] Starting...');
+    // Migration v3 starting
 
     // 1. Profiles
     const rawProfiles = await AsyncStorage.getItem('@maple_profiles');
@@ -80,7 +80,7 @@ export async function runMigrationIfNeeded(): Promise<void> {
     if (profiles.length > 0) {
       const { error } = await supabase.from('profiles').upsert(profiles.map(profileToRow));
       if (error) console.warn('[Migration] profiles:', error.message);
-      else console.log(`[Migration] Migrated ${profiles.length} profile(s)`);
+      // profiles migrated
     }
 
     // 2. Sessions
@@ -89,7 +89,7 @@ export async function runMigrationIfNeeded(): Promise<void> {
     if (sessions.length > 0) {
       const { error } = await supabase.from('sessions').upsert(sessions.map(sessionToRow));
       if (error) console.warn('[Migration] sessions:', error.message);
-      else console.log(`[Migration] Migrated ${sessions.length} session(s)`);
+      // sessions migrated
     }
 
     // 3. Open session
@@ -105,7 +105,7 @@ export async function runMigrationIfNeeded(): Promise<void> {
     if (profiles.length > 0) {
       const correctId = profiles[0].id;
       await AsyncStorage.setItem(ACTIVE_PROFILE_KEY, correctId);
-      console.log(`[Migration] activeProfileId → ${correctId}`);
+      // activeProfileId updated
     }
 
     // 5. Clean up auto-created duplicate profiles (profiles in Supabase not in migrated list)
@@ -122,14 +122,14 @@ export async function runMigrationIfNeeded(): Promise<void> {
             .limit(1);
           if (!linked || linked.length === 0) {
             await supabase.from('profiles').delete().eq('id', row.id);
-            console.log(`[Migration] Removed orphan profile ${row.id}`);
+            // orphan profile removed
           }
         }
       }
     }
 
     await AsyncStorage.setItem(MIGRATION_FLAG, 'true');
-    console.log('[Migration v3] Done ✓');
+    // Migration v3 complete
   } catch (e) {
     console.warn('[Migration] Error:', e);
   }

@@ -6,6 +6,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Session, OpenSession } from '../types';
+// Note: Ionicons, NativeStackNavigationProp, RootStackParamList used below in mobile layout + Nav type
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
 import { WC } from '../constants/themeWeb';
 import { getAllSessions, getOpenSession } from '../utils/storage';
@@ -15,6 +16,7 @@ import {
 } from '../utils/formatters';
 import { useProfile } from '../context/ProfileContext';
 import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
+import StatsScreenDesktop from './StatsScreenDesktop';
 
 // ── Mobile sub-components ────────────────────────────────────────────────
 
@@ -141,146 +143,6 @@ function PeriodCard({ title, sessions, color }: {
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-// ── Desktop sub-components ───────────────────────────────────────────────
-
-function DeskStatRow({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <View style={dStyles.statRow}>
-      <Text style={dStyles.statRowLabel}>{label}</Text>
-      <Text style={[dStyles.statRowValue, { color }]}>{value}</Text>
-    </View>
-  );
-}
-
-function DeskPeriodPanel({ title, sessions, color, empty, onNewSession, hasOpenSession }: {
-  title: string; sessions: Session[]; color: string; empty?: boolean; onNewSession?: () => void; hasOpenSession?: boolean;
-}) {
-  const isEmpty = sessions.length === 0 || empty;
-
-  let first: Session | undefined, last: Session | undefined;
-  let totalExp = 0, totalFrags = 0, totalNodes = 0, totalMesos = 0, totalCommon = 0, totalRare = 0;
-
-  if (!isEmpty) {
-    const sorted = [...sessions].sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt);
-    first = sorted[0];
-    last = sorted[sorted.length - 1];
-    totalExp   = sessions.reduce((s, r) => s + r.expGainedActual, 0);
-    totalFrags = sessions.reduce((s, r) => s + r.fragsGained, 0);
-    totalNodes = sessions.reduce((s, r) => s + r.nodesGained, 0);
-    totalMesos = sessions.reduce((s, r) => s + r.mesosGained, 0);
-    totalCommon = sessions.reduce((s, r) => s + r.commonFamiliarsGained, 0);
-    totalRare  = sessions.reduce((s, r) => s + r.rareFamiliarsGained, 0);
-  }
-
-  return (
-    <View style={[dStyles.periodPanel, { borderTopColor: color }]}>
-      <View style={dStyles.periodPanelHdr}>
-        <Text style={dStyles.periodPanelTitle}>{title}</Text>
-        <Text style={[dStyles.periodPanelCount, { color }]}>
-          {isEmpty ? '0 sesiones' : `${sessions.length} ${sessions.length !== 1 ? 'sesiones' : 'sesión'}`}
-        </Text>
-      </View>
-
-      {!isEmpty && first && last && (
-        <View style={dStyles.levelBadge}>
-          <Ionicons name="trending-up" size={11} color={color} />
-          <Text style={dStyles.levelBadgeText}>
-            {' '}Lv {first.lvStart} ({formatPercent(first.expStart)}%) → Lv {last.lvEnd} ({formatPercent(last.expEnd)}%)
-          </Text>
-        </View>
-      )}
-
-      <DeskStatRow label="EXP"    value={isEmpty ? '—' : formatExp(totalExp)}         color={isEmpty ? WC.textMuted : WC.exp} />
-      <DeskStatRow label="Frags"  value={isEmpty ? '—' : formatNumber(totalFrags)}    color={isEmpty ? WC.textMuted : WC.frags} />
-      <DeskStatRow label="Nodos"  value={isEmpty ? '—' : formatNumber(totalNodes)}    color={isEmpty ? WC.textMuted : WC.nodes} />
-      <DeskStatRow label="Mesos"  value={isEmpty ? '—' : formatExp(totalMesos)}       color={isEmpty ? WC.textMuted : WC.mesos} />
-      <DeskStatRow label="Fam. C" value={isEmpty ? '—' : String(totalCommon)}         color={isEmpty ? WC.textMuted : WC.common} />
-      <DeskStatRow label="Fam. R" value={isEmpty ? '—' : String(totalRare)}           color={isEmpty ? WC.textMuted : WC.rare} />
-
-      {isEmpty && (
-        hasOpenSession ? (
-          <View style={dStyles.openSessionBadge}>
-            <View style={dStyles.openSessionDot} />
-            <Text style={dStyles.openSessionBadgeText}>Sesión en progreso</Text>
-          </View>
-        ) : onNewSession ? (
-          <TouchableOpacity style={dStyles.newSessionBtn} onPress={onNewSession} activeOpacity={0.8}>
-            <Text style={dStyles.newSessionBtnText}>▶  Nueva Sesión</Text>
-          </TouchableOpacity>
-        ) : null
-      )}
-    </View>
-  );
-}
-
-function DeskBarChart({ sessions }: { sessions: Session[] }) {
-  if (sessions.length === 0) return null;
-
-  const byDate: Record<string, number> = {};
-  for (const s of sessions) {
-    byDate[s.date] = (byDate[s.date] ?? 0) + s.expGainedActual;
-  }
-  const sorted = Object.entries(byDate)
-    .sort((a, b) => b[0].localeCompare(a[0]))
-    .slice(0, 7)
-    .reverse();
-
-  if (sorted.length === 0) return null;
-  const maxVal = Math.max(...sorted.map(([, v]) => v));
-
-  return (
-    <View style={dStyles.chartCard}>
-      <Text style={dStyles.chartTitle}>EXP POR DÍA (ÚLTIMOS 7)</Text>
-      <View style={dStyles.chartBars}>
-        {sorted.map(([date, val]) => {
-          const pct = maxVal > 0 ? val / maxVal : 0;
-          return (
-            <View key={date} style={dStyles.chartCol}>
-              <Text style={dStyles.chartValLabel}>{formatExp(val)}</Text>
-              <View style={dStyles.chartBarTrack}>
-                <View style={[dStyles.chartBarFill, { height: `${Math.max(pct * 100, 4)}%` as `${number}%` }]} />
-              </View>
-              <Text style={dStyles.chartDateLabel}>{formatDateShortEs(date)}</Text>
-            </View>
-          );
-        })}
-      </View>
-    </View>
-  );
-}
-
-function DeskBestDays({ sessions }: { sessions: Session[] }) {
-  if (sessions.length === 0) return null;
-
-  const bestOf = (getValue: (s: Session) => number) => {
-    const byDate: Record<string, number> = {};
-    for (const s of sessions) byDate[s.date] = (byDate[s.date] ?? 0) + getValue(s);
-    return Object.entries(byDate).sort((a, b) => b[1] - a[1])[0];
-  };
-
-  const bests = [
-    { label: 'Más EXP',   color: WC.exp,   entry: bestOf((s) => s.expGainedActual), fmt: formatExp },
-    { label: 'Más Frags', color: WC.frags,  entry: bestOf((s) => s.fragsGained),     fmt: formatNumber },
-    { label: 'Más Nodos', color: WC.nodes,  entry: bestOf((s) => s.nodesGained),     fmt: formatNumber },
-    { label: 'Más Mesos', color: WC.mesos,  entry: bestOf((s) => s.mesosGained),     fmt: formatExp },
-  ];
-
-  return (
-    <View style={dStyles.bestGrid}>
-      {bests.map(({ label, color, entry, fmt }) => {
-        if (!entry) return null;
-        return (
-          <View key={label} style={[dStyles.bestCell, { borderTopColor: color }]}>
-            <Text style={[dStyles.bestVal, { color }]}>{fmt(entry[1])}</Text>
-            <Text style={dStyles.bestLabel}>{label}</Text>
-            <Text style={dStyles.bestDate}>{formatDateShortEs(entry[0])}</Text>
-          </View>
-        );
-      })}
-    </View>
-  );
-}
-
 // ── Main component ───────────────────────────────────────────────────────
 
 export default function StatsScreen() {
@@ -326,53 +188,22 @@ export default function StatsScreen() {
   // ── Desktop layout ───────────────────────────────────────────────────
   if (isDesktop) {
     return (
-      <ScrollView
-        style={dStyles.container}
-        contentContainerStyle={dStyles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={WC.primary} />}
-      >
-        {/* Header */}
-        <View style={dStyles.pageHeader}>
-          <Text style={dStyles.pageTitle}>Estadísticas</Text>
-          <Text style={dStyles.pageSubtitle}>
-            {allSessions.length} {allSessions.length === 1 ? 'sesión' : 'sesiones'} registradas
-          </Text>
-        </View>
-
-        {/* Period panels row */}
-        <View style={dStyles.periodRow}>
-          <DeskPeriodPanel title="☀️  Hoy"         sessions={todaySessions} color={WC.primary} hasOpenSession={!!openSession} onNewSession={() => navigation.navigate('StartSession')} />
-          <DeskPeriodPanel title="📅  Esta Semana" sessions={weekSessions}  color={WC.frags} />
-          <DeskPeriodPanel title="🗓️  Este Mes"    sessions={monthSessions} color={WC.exp} />
-        </View>
-
-        {allSessions.length > 0 && (
-          <>
-            {/* Bar chart */}
-            <DeskBarChart sessions={allSessions} />
-
-            {/* Best days + totals side by side */}
-            <View style={dStyles.bottomRow}>
-              <View style={dStyles.bestSection}>
-                <Text style={dStyles.sectionTitle}>MEJORES DÍAS</Text>
-                <DeskBestDays sessions={allSessions} />
-              </View>
-
-              <View style={dStyles.totalsSection}>
-                <Text style={dStyles.sectionTitle}>TOTALES HISTÓRICOS</Text>
-                <View style={dStyles.totalsPanel}>
-                  <DeskStatRow label="EXP total"    value={formatExp(totalExp)}      color={WC.exp} />
-                  <DeskStatRow label="Fragmentos"   value={formatNumber(totalFrags)} color={WC.frags} />
-                  <DeskStatRow label="Nodos"        value={formatNumber(totalNodes)} color={WC.nodes} />
-                  <DeskStatRow label="Mesos"        value={formatExp(totalMesos)}    color={WC.mesos} />
-                  <DeskStatRow label="Fam. Comunes" value={String(totalCommon)}      color={WC.common} />
-                  <DeskStatRow label="Fam. Raros"   value={String(totalRare)}        color={WC.rare} />
-                </View>
-              </View>
-            </View>
-          </>
-        )}
-      </ScrollView>
+      <StatsScreenDesktop
+        allSessions={allSessions}
+        todaySessions={todaySessions}
+        weekSessions={weekSessions}
+        monthSessions={monthSessions}
+        totalExp={totalExp}
+        totalFrags={totalFrags}
+        totalNodes={totalNodes}
+        totalMesos={totalMesos}
+        totalCommon={totalCommon}
+        totalRare={totalRare}
+        openSession={openSession}
+        onNewSession={() => navigation.navigate('StartSession')}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+      />
     );
   }
 
@@ -424,138 +255,6 @@ export default function StatsScreen() {
     </ScrollView>
   );
 }
-
-// ── Desktop styles ───────────────────────────────────────────────────────
-const dStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: WC.bg },
-  content: { padding: 24, paddingBottom: 60, maxWidth: 1200, width: '100%', alignSelf: 'center' as const },
-
-  pageHeader: { marginBottom: 24 },
-  pageTitle: { color: WC.text, fontSize: 26, fontWeight: '800', letterSpacing: -0.5 },
-  pageSubtitle: { color: WC.textMuted, fontSize: 13, marginTop: 4 },
-
-  sectionTitle: {
-    color: WC.textMuted,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 12,
-  },
-
-  // Period panels
-  periodRow: { flexDirection: 'row', gap: 12, marginBottom: 20 },
-  periodPanel: {
-    flex: 1,
-    backgroundColor: WC.panelBgStrong,
-    borderWidth: 1, borderColor: WC.panelBorder,
-    borderTopWidth: 2,
-    borderRadius: 14,
-    padding: 16,
-  },
-  periodPanelHdr: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  periodPanelTitle: { color: WC.text, fontSize: 14, fontWeight: '700' },
-  periodPanelCount: { fontSize: 11, fontWeight: '600' },
-  levelBadge: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 5,
-    marginBottom: 10, borderWidth: 1, borderColor: WC.sep,
-  },
-  levelBadgeText: { fontSize: 10, color: WC.textDim, flex: 1 },
-
-  statRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: WC.sep,
-  },
-  statRowLabel: { color: WC.textMuted, fontSize: 12 },
-  statRowValue: { fontSize: 12, fontWeight: '700' },
-
-  // Bar chart
-  chartCard: {
-    backgroundColor: WC.panelBgStrong,
-    borderWidth: 1, borderColor: WC.panelBorder,
-    borderRadius: 14, padding: 20, marginBottom: 20,
-  },
-  chartTitle: {
-    color: WC.textMuted, fontSize: 10, fontWeight: '700',
-    letterSpacing: 2, textTransform: 'uppercase', marginBottom: 16,
-  },
-  chartBars: { flexDirection: 'row', alignItems: 'flex-end', height: 160, gap: 8 },
-  chartCol: { flex: 1, alignItems: 'center', height: '100%', justifyContent: 'flex-end' },
-  chartValLabel: { color: WC.exp, fontSize: 9, fontWeight: '700', marginBottom: 3, textAlign: 'center' },
-  chartBarTrack: {
-    width: '70%', height: '80%',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 4, justifyContent: 'flex-end', overflow: 'hidden',
-    borderWidth: 1, borderColor: WC.panelBorder,
-  },
-  chartBarFill: { width: '100%', backgroundColor: WC.exp, borderRadius: 3, opacity: 0.85 },
-  chartDateLabel: { color: WC.textMuted, fontSize: 9, marginTop: 4, textAlign: 'center' },
-
-  // Bottom row
-  bottomRow: { flexDirection: 'row', gap: 16 },
-  bestSection: { flex: 1 },
-  totalsSection: { width: 280 },
-
-  // Best days grid
-  bestGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  bestCell: {
-    width: '47%',
-    backgroundColor: WC.panelBgStrong,
-    borderWidth: 1, borderColor: WC.panelBorder,
-    borderTopWidth: 2,
-    borderRadius: 10, padding: 14,
-  },
-  bestVal: { fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
-  bestLabel: { color: WC.textMuted, fontSize: 11, marginTop: 3 },
-  bestDate: { color: WC.textMuted, fontSize: 10, marginTop: 2 },
-
-  // Totals panel
-  totalsPanel: {
-    backgroundColor: WC.panelBgStrong,
-    borderWidth: 1, borderColor: WC.panelBorder,
-    borderRadius: 14, padding: 16,
-  },
-
-  // Open session badge (shown in empty "Hoy" panel when session is in progress)
-  openSessionBadge: {
-    marginTop: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: WC.primaryDim,
-    borderWidth: 1,
-    borderColor: WC.primaryBorder,
-    borderRadius: 50,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    justifyContent: 'center',
-  },
-  openSessionDot: {
-    width: 7, height: 7, borderRadius: 4,
-    backgroundColor: WC.primary,
-    shadowColor: WC.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 6,
-  },
-  openSessionBadgeText: { color: WC.primary, fontSize: 12, fontWeight: '700' },
-
-  // Nueva Sesión button (shown in empty "Hoy" panel)
-  newSessionBtn: {
-    marginTop: 12,
-    backgroundColor: WC.btn,
-    borderRadius: 50,
-    paddingVertical: 9,
-    alignItems: 'center',
-    shadowColor: WC.btnGlow,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-  },
-  newSessionBtnText: { color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.3 },
-});
 
 // ── Mobile styles ────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
