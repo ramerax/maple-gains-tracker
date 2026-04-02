@@ -133,8 +133,15 @@ export default function HistoryScreen() {
 
   const isFuture = () => {
     if (mode === 'day') return cursor >= getTodayString();
-    const next = mode === 'week' ? addDays(cursor, 7) : addDays(cursor, 32);
-    return getRange(next).start > getTodayString();
+    let nextStart: string;
+    if (mode === 'week') {
+      nextStart = getWeekRange(addDays(cursor, 7)).start;
+    } else {
+      const [y, m] = cursor.split('-').map(Number);
+      const d = new Date(y, m, 1); // first day of next month
+      nextStart = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+    }
+    return nextStart > getTodayString();
   };
 
   if (isDesktop) {

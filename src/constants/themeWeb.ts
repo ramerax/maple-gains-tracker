@@ -21,4 +21,7 @@ export const WC = {
   nodes: '#BAE6FD',
   common: '#CBD5E1',
   rare: '#60A5FA',
+  // CTA button colors (dark purple)
+  btn: '#3A1090',
+  btnGlow: '#5A18CC',
 };
