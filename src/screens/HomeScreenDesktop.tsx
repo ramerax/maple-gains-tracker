@@ -9,36 +9,11 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, Session, PeriodStats, OpenSession } from '../types';
-import { formatExp, formatNumber } from '../utils/formatters';
+import { formatExp, formatNumber, formatDateShortEs } from '../utils/formatters';
+import { WC } from '../constants/themeWeb';
 import XPRing from '../components/XPRing';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
-
-// ── Web color palette (Glass Cosmos × orange accent) ──────────────────
-const WC = {
-  bg: '#040215',
-  panelBg: 'rgba(255,255,255,0.05)',
-  panelBorder: 'rgba(255,255,255,0.08)',
-  panelBgStrong: 'rgba(255,255,255,0.07)',
-  panelBorderStrong: 'rgba(255,255,255,0.10)',
-  primary: '#C49FFF',
-  primaryDim: 'rgba(180,127,255,0.15)',
-  primaryBorder: 'rgba(180,127,255,0.28)',
-  text: '#FFFFFF',
-  textDim: 'rgba(255,255,255,0.75)',
-  textMuted: 'rgba(255,255,255,0.28)',
-  sep: 'rgba(255,255,255,0.05)',
-  headerSep: 'rgba(255,255,255,0.055)',
-  // Resource colors
-  exp: '#4ADE80',
-  expDim: '#86EFAC',
-  mesos: '#FCD34D',
-  mesosDim: '#FDE68A',
-  frags: '#818CF8',
-  nodes: '#BAE6FD',
-  common: '#CBD5E1',
-  rare: '#60A5FA',
-};
 
 // ── Helpers ───────────────────────────────────────────────────────────
 function sectionHdr(label: string) {
@@ -87,12 +62,9 @@ function ResRow({ label, week, month, color }: {
   );
 }
 
-const MONTHS = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-
 function SessCard({ session }: { session: Session }) {
   const navigation = useNavigation<Nav>();
-  const [, mm, dd] = session.date.split('-');
-  const dateLabel = `${parseInt(dd, 10)} ${MONTHS[parseInt(mm, 10) - 1]}`;
+  const dateLabel = formatDateShortEs(session.date);
   const lvStr = session.lvEnd > session.lvStart
     ? `LV ${session.lvStart} → ${session.lvEnd}`
     : `LV ${session.lvStart}`;
@@ -201,7 +173,7 @@ export default function HomeScreenDesktop({
         <View style={styles.bestDaySection}>
           <Text style={styles.bestDayHdr}>
             MEJOR DÍA{best.date ? (
-              <Text style={styles.bestDayDate}> · {(([,mm,dd]) => `${parseInt(dd,10)} ${MONTHS[parseInt(mm,10)-1]}`)(best.date.split('-'))}</Text>
+              <Text style={styles.bestDayDate}> · {formatDateShortEs(best.date)}</Text>
             ) : null}
           </Text>
           <View style={styles.bestDayGrid}>

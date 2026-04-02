@@ -6,36 +6,14 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Session } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
+import { WC } from '../constants/themeWeb';
 import { getAllSessions } from '../utils/storage';
 import {
   getTodayString, getWeekRange, getMonthRange,
-  formatExp, formatNumber, formatPercent, formatDateMedium,
+  formatExp, formatNumber, formatPercent, formatDateMedium, formatDateShortEs,
 } from '../utils/formatters';
 import { useProfile } from '../context/ProfileContext';
 import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
-
-// Glass Cosmos palette
-const WC = {
-  bg: '#040215',
-  panelBg: 'rgba(255,255,255,0.05)',
-  panelBorder: 'rgba(255,255,255,0.08)',
-  panelBgStrong: 'rgba(255,255,255,0.07)',
-  primary: '#C49FFF',
-  primaryDim: 'rgba(180,127,255,0.15)',
-  primaryBorder: 'rgba(180,127,255,0.28)',
-  text: '#FFFFFF',
-  textDim: 'rgba(255,255,255,0.75)',
-  textMuted: 'rgba(255,255,255,0.28)',
-  sep: 'rgba(255,255,255,0.06)',
-  exp: '#4ADE80', mesos: '#FCD34D', frags: '#818CF8',
-  nodes: '#BAE6FD', common: '#CBD5E1', rare: '#60A5FA',
-};
-
-const MONTHS_SHORT = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-function fmtChartDate(dateStr: string) {
-  const [, mm, dd] = dateStr.split('-');
-  return `${parseInt(dd, 10)} ${MONTHS_SHORT[parseInt(mm, 10) - 1]}`;
-}
 
 // ── Mobile sub-components ────────────────────────────────────────────────
 
@@ -61,7 +39,7 @@ function ExpBarChart({ sessions }: { sessions: Session[] }) {
       <View style={styles.chartBars}>
         {sorted.map(([date, val]) => {
           const pct = maxVal > 0 ? val / maxVal : 0;
-          const label = fmtChartDate(date);
+          const label = formatDateShortEs(date);
           return (
             <View key={date} style={styles.chartCol}>
               <Text style={styles.chartBarLabel}>{formatExp(val)}</Text>
@@ -246,7 +224,7 @@ function DeskBarChart({ sessions }: { sessions: Session[] }) {
               <View style={dStyles.chartBarTrack}>
                 <View style={[dStyles.chartBarFill, { height: `${Math.max(pct * 100, 4)}%` as unknown as number }]} />
               </View>
-              <Text style={dStyles.chartDateLabel}>{fmtChartDate(date)}</Text>
+              <Text style={dStyles.chartDateLabel}>{formatDateShortEs(date)}</Text>
             </View>
           );
         })}
@@ -279,7 +257,7 @@ function DeskBestDays({ sessions }: { sessions: Session[] }) {
           <View key={label} style={[dStyles.bestCell, { borderTopColor: color }]}>
             <Text style={[dStyles.bestVal, { color }]}>{fmt(entry[1])}</Text>
             <Text style={dStyles.bestLabel}>{label}</Text>
-            <Text style={dStyles.bestDate}>{fmtChartDate(entry[0])}</Text>
+            <Text style={dStyles.bestDate}>{formatDateShortEs(entry[0])}</Text>
           </View>
         );
       })}
@@ -296,12 +274,8 @@ export default function StatsScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const all = await getAllSessions();
-    setAllSessions(
-      activeProfileId == null
-        ? all
-        : all.filter((s) => s.profileId === activeProfileId)
-    );
+    const all = await getAllSessions(activeProfileId ?? undefined);
+    setAllSessions(all);
   }, [activeProfileId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
