@@ -5,10 +5,10 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { RootStackParamList, Session } from '../types';
+import { RootStackParamList, Session, OpenSession } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
 import { WC } from '../constants/themeWeb';
-import { getAllSessions } from '../utils/storage';
+import { getAllSessions, getOpenSession } from '../utils/storage';
 import {
   getTodayString, getWeekRange, getMonthRange,
   formatExp, formatNumber, formatPercent, formatDateMedium, formatDateShortEs,
@@ -152,8 +152,8 @@ function DeskStatRow({ label, value, color }: { label: string; value: string; co
   );
 }
 
-function DeskPeriodPanel({ title, sessions, color, empty, onNewSession }: {
-  title: string; sessions: Session[]; color: string; empty?: boolean; onNewSession?: () => void;
+function DeskPeriodPanel({ title, sessions, color, empty, onNewSession, hasOpenSession }: {
+  title: string; sessions: Session[]; color: string; empty?: boolean; onNewSession?: () => void; hasOpenSession?: boolean;
 }) {
   const isEmpty = sessions.length === 0 || empty;
 
@@ -197,10 +197,17 @@ function DeskPeriodPanel({ title, sessions, color, empty, onNewSession }: {
       <DeskStatRow label="Fam. C" value={isEmpty ? '—' : String(totalCommon)}         color={isEmpty ? WC.textMuted : WC.common} />
       <DeskStatRow label="Fam. R" value={isEmpty ? '—' : String(totalRare)}           color={isEmpty ? WC.textMuted : WC.rare} />
 
-      {isEmpty && onNewSession && (
-        <TouchableOpacity style={dStyles.newSessionBtn} onPress={onNewSession} activeOpacity={0.8}>
-          <Text style={dStyles.newSessionBtnText}>▶  Nueva Sesión</Text>
-        </TouchableOpacity>
+      {isEmpty && (
+        hasOpenSession ? (
+          <View style={dStyles.openSessionBadge}>
+            <View style={dStyles.openSessionDot} />
+            <Text style={dStyles.openSessionBadgeText}>Sesión en progreso</Text>
+          </View>
+        ) : onNewSession ? (
+          <TouchableOpacity style={dStyles.newSessionBtn} onPress={onNewSession} activeOpacity={0.8}>
+            <Text style={dStyles.newSessionBtnText}>▶  Nueva Sesión</Text>
+          </TouchableOpacity>
+        ) : null
       )}
     </View>
   );
@@ -281,11 +288,16 @@ export default function StatsScreen() {
   const isDesktop = useIsDesktopWeb();
   const navigation = useNavigation<Nav>();
   const [allSessions, setAllSessions] = useState<Session[]>([]);
+  const [openSession, setOpenSession] = useState<OpenSession | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const all = await getAllSessions(activeProfileId ?? undefined);
+    const [all, open] = await Promise.all([
+      getAllSessions(activeProfileId ?? undefined),
+      getOpenSession(activeProfileId ?? undefined),
+    ]);
     setAllSessions(all);
+    setOpenSession(open);
   }, [activeProfileId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -329,7 +341,7 @@ export default function StatsScreen() {
 
         {/* Period panels row */}
         <View style={dStyles.periodRow}>
-          <DeskPeriodPanel title="☀️  Hoy"         sessions={todaySessions} color={WC.primary} onNewSession={() => navigation.navigate('StartSession')} />
+          <DeskPeriodPanel title="☀️  Hoy"         sessions={todaySessions} color={WC.primary} hasOpenSession={!!openSession} onNewSession={() => navigation.navigate('StartSession')} />
           <DeskPeriodPanel title="📅  Esta Semana" sessions={weekSessions}  color={WC.frags} />
           <DeskPeriodPanel title="🗓️  Este Mes"    sessions={monthSessions} color={WC.exp} />
         </View>
@@ -505,6 +517,30 @@ const dStyles = StyleSheet.create({
     borderWidth: 1, borderColor: WC.panelBorder,
     borderRadius: 14, padding: 16,
   },
+
+  // Open session badge (shown in empty "Hoy" panel when session is in progress)
+  openSessionBadge: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: WC.primaryDim,
+    borderWidth: 1,
+    borderColor: WC.primaryBorder,
+    borderRadius: 50,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    justifyContent: 'center',
+  },
+  openSessionDot: {
+    width: 7, height: 7, borderRadius: 4,
+    backgroundColor: WC.primary,
+    shadowColor: WC.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 6,
+  },
+  openSessionBadgeText: { color: WC.primary, fontSize: 12, fontWeight: '700' },
 
   // Nueva Sesión button (shown in empty "Hoy" panel)
   newSessionBtn: {
