@@ -150,10 +150,10 @@ export default function HomeScreen() {
   const profileLevel = latestSession?.lvEnd ?? (activeProfile ? 1 : 1);
   const profileXpPct = latestSession?.expEnd ?? 0;
 
-  // Recent 10 sessions sorted descending
+  // Recent 5 sessions sorted descending
   const recentSessions = [...allSessions]
     .sort((a, b) => b.createdAt - a.createdAt)
-    .slice(0, 10);
+    .slice(0, 5);
 
   if (isDesktop) {
     return (
@@ -164,7 +164,6 @@ export default function HomeScreen() {
         profileXpPct={profileXpPct}
         weekStats={weekStats}
         monthStats={monthStats}
-        allSessions={allSessions}
         recentSessions={recentSessions}
         openSession={openSession}
         onFinishSession={() => navigation.navigate('FinishSession')}

@@ -1,10 +1,10 @@
 /**
- * HomeScreenDesktop — nueva UI dashboard para web desktop
- * Layout: panel izquierdo (ring + char + best day) + área derecha (6 tiles + tabla recursos + sesiones)
+ * HomeScreenDesktop — Glass Cosmos dashboard (desktop web)
+ * Layout: left panel (ring + char info + action) | right area (resources table + sessions)
  */
 import React from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,40 +15,7 @@ import XPRing from '../components/XPRing';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-// ── Helpers ───────────────────────────────────────────────────────────
-function sectionHdr(label: string) {
-  return (
-    <Text style={styles.colHdr}>{label}</Text>
-  );
-}
-
-// Compute best day stats: max per resource across all sessions
-function computeBestDay(sessions: Session[]) {
-  let best = {
-    exp: 0, mesos: 0, frags: 0, nodes: 0, common: 0, rare: 0, date: '',
-  };
-  for (const s of sessions) {
-    if (s.expGainedActual > best.exp) { best.exp = s.expGainedActual; best.date = s.date; }
-    if (s.mesosGained > best.mesos) best.mesos = s.mesosGained;
-    if (s.fragsGained > best.frags) best.frags = s.fragsGained;
-    if (s.nodesGained > best.nodes) best.nodes = s.nodesGained;
-    if (s.commonFamiliarsGained > best.common) best.common = s.commonFamiliarsGained;
-    if (s.rareFamiliarsGained > best.rare) best.rare = s.rareFamiliarsGained;
-  }
-  return best;
-}
-
 // ── Sub-components ────────────────────────────────────────────────────
-
-function Tile({ label, value, color, sub }: { label: string; value: string; color: string; sub: string }) {
-  return (
-    <View style={styles.tile}>
-      <Text style={styles.tileLabel}>{label}</Text>
-      <Text style={[styles.tileVal, { color }]}>{value}</Text>
-      <Text style={styles.tileSub}>{sub}</Text>
-    </View>
-  );
-}
 
 function ResRow({ label, week, month, color }: {
   label: string; week: string; month: string; color: string;
@@ -119,7 +86,6 @@ interface Props {
   profileXpPct: number;
   weekStats: PeriodStats | null;
   monthStats: PeriodStats | null;
-  allSessions: Session[];
   recentSessions: Session[];
   openSession: OpenSession | null;
   onFinishSession: () => void;
@@ -134,26 +100,25 @@ export default function HomeScreenDesktop({
   profileXpPct,
   weekStats,
   monthStats,
-  allSessions,
   recentSessions,
   openSession,
   onFinishSession,
   onCancelSession,
   onNewSession,
 }: Props) {
-  const best = computeBestDay(allSessions);
-
   const w = weekStats;
   const m = monthStats;
 
   return (
     <View style={[styles.root, openSession ? styles.rootWithPill : null]}>
+
       {/* ── LEFT PANEL ──────────────────────────────────────────── */}
       <View style={styles.leftPanel}>
+
         {/* XP Ring */}
         <XPRing level={profileLevel} xpPercent={profileXpPct} size={148} strokeWidth={9} />
 
-        {/* XP Progress */}
+        {/* XP details */}
         <View style={styles.xpBlock}>
           <Text style={styles.xpSub}>XP PROGRESS</Text>
           <Text style={styles.xpPct}>{profileXpPct.toFixed(1)}%</Text>
@@ -163,58 +128,23 @@ export default function HomeScreenDesktop({
           <Text style={styles.xpNext}>→ Nivel {profileLevel + 1}</Text>
         </View>
 
-        {/* Character */}
+        {/* Character info */}
         <Text style={styles.charName}>{profileName}</Text>
         {profileClass ? <Text style={styles.charClass}>{profileClass}</Text> : null}
 
         <View style={styles.leftSep} />
 
-        {/* Best day per resource */}
-        <View style={styles.bestDaySection}>
-          <Text style={styles.bestDayHdr}>
-            MEJOR DÍA{best.date ? (
-              <Text style={styles.bestDayDate}> · {formatDateShortEs(best.date)}</Text>
-            ) : null}
-          </Text>
-          <View style={styles.bestDayGrid}>
-            <View style={styles.bdCell}>
-              <Text style={styles.bdKey}>EXP</Text>
-              <Text style={[styles.bdVal, { color: WC.exp }]}>{formatExp(best.exp)}</Text>
-            </View>
-            <View style={styles.bdCell}>
-              <Text style={styles.bdKey}>Mesos</Text>
-              <Text style={[styles.bdVal, { color: WC.mesos }]}>{formatExp(best.mesos)}</Text>
-            </View>
-            <View style={styles.bdCell}>
-              <Text style={styles.bdKey}>Frags</Text>
-              <Text style={[styles.bdVal, { color: WC.frags }]}>{formatNumber(best.frags)}</Text>
-            </View>
-            <View style={styles.bdCell}>
-              <Text style={styles.bdKey}>Nodos</Text>
-              <Text style={[styles.bdVal, { color: WC.nodes }]}>{formatNumber(best.nodes)}</Text>
-            </View>
-            <View style={styles.bdCell}>
-              <Text style={styles.bdKey}>Fam.C</Text>
-              <Text style={[styles.bdVal, { color: WC.common }]}>{best.common}</Text>
-            </View>
-            <View style={styles.bdCell}>
-              <Text style={styles.bdKey}>Fam.R</Text>
-              <Text style={[styles.bdVal, { color: WC.rare }]}>{best.rare}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Sessions count */}
+        {/* Week session count */}
         <View style={styles.sessionsCount}>
-          <Text style={styles.sessCountLabel}>SESIONES ESTE MES</Text>
+          <Text style={styles.sessCountLabel}>SESIONES ESTA SEMANA</Text>
           <Text style={[styles.sessCountVal, { color: WC.primary }]}>
-            {m?.sessionCount ?? 0}
+            {w?.sessionCount ?? 0}
           </Text>
         </View>
 
-        {/* Action button — only show Nueva Sesión; when session open the pill handles it */}
+        {/* Action button */}
         {!openSession && (
-          <TouchableOpacity style={[styles.actionBtn, styles.actionBtnNew]} onPress={onNewSession} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.actionBtn} onPress={onNewSession} activeOpacity={0.8}>
             <Text style={styles.actionBtnText}>▶ Nueva Sesión</Text>
           </TouchableOpacity>
         )}
@@ -223,46 +153,12 @@ export default function HomeScreenDesktop({
       {/* ── RIGHT AREA ──────────────────────────────────────────── */}
       <View style={styles.rightArea}>
 
-        {/* 6 TILES — 2×3 grid */}
-        <View style={styles.tilesGrid}>
-          <Tile
-            label="EXP SEMANA" color={WC.exp}
-            value={w ? formatExp(w.totalExpGained) : '—'}
-            sub={m ? `${formatExp(m.totalExpGained)} mes` : ''}
-          />
-          <Tile
-            label="MESOS SEMANA" color={WC.mesos}
-            value={w ? formatExp(w.totalMesosGained) : '—'}
-            sub={m ? `${formatExp(m.totalMesosGained)} mes` : ''}
-          />
-          <Tile
-            label="FRAGS SEMANA" color={WC.frags}
-            value={w ? formatNumber(w.totalFragsGained) : '—'}
-            sub={m ? `${formatNumber(m.totalFragsGained)} mes` : ''}
-          />
-          <Tile
-            label="NODOS SEMANA" color={WC.nodes}
-            value={w ? formatNumber(w.totalNodesGained) : '—'}
-            sub={m ? `${formatNumber(m.totalNodesGained)} mes` : ''}
-          />
-          <Tile
-            label="FAM. COMUNES SEM." color={WC.common}
-            value={w ? String(w.totalCommonFamiliarsGained) : '—'}
-            sub={m ? `${m.totalCommonFamiliarsGained} mes` : ''}
-          />
-          <Tile
-            label="FAM. RAROS SEM." color={WC.rare}
-            value={w ? String(w.totalRareFamiliarsGained) : '—'}
-            sub={m ? `${m.totalRareFamiliarsGained} mes` : ''}
-          />
-        </View>
-
         {/* DATA COLUMNS */}
         <View style={styles.dataCols}>
 
           {/* LEFT COL: Resources table */}
           <View style={[styles.dataCol, styles.dataColPanel]}>
-            {sectionHdr('RECURSOS · TOTALES')}
+            <Text style={styles.colHdr}>RECURSOS · TOTALES</Text>
 
             {/* Table header */}
             <View style={styles.resTableHdr}>
@@ -308,7 +204,7 @@ export default function HomeScreenDesktop({
 
           {/* RIGHT COL: Recent sessions */}
           <View style={[styles.dataCol, styles.dataColPanel]}>
-            {sectionHdr('SESIONES RECIENTES')}
+            <Text style={styles.colHdr}>SESIONES RECIENTES</Text>
             <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
               {recentSessions.length === 0 ? (
                 <Text style={styles.emptyText}>Sin sesiones registradas</Text>
@@ -405,20 +301,7 @@ const styles = StyleSheet.create({
 
   leftSep: { width: '100%', height: 1, backgroundColor: WC.sep },
 
-  // Best day grid 2×3
-  bestDaySection: { width: '100%', gap: 6 },
-  bestDayHdr: { fontSize: 8, fontWeight: '700', color: WC.textMuted, letterSpacing: 2 },
-  bestDayDate: { color: 'rgba(180,127,255,0.5)', fontWeight: '700' },
-  bestDayGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
-  bdCell: {
-    width: '47%', backgroundColor: 'rgba(255,255,255,0.03)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.055)',
-    borderRadius: 8, padding: 6,
-  },
-  bdKey: { fontSize: 8, color: WC.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
-  bdVal: { fontSize: 13, fontWeight: '900', letterSpacing: -0.5, marginTop: 1 },
-
-  // Sessions count
+  // Week sessions count
   sessionsCount: {
     width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: WC.panelBorder,
@@ -430,28 +313,14 @@ const styles = StyleSheet.create({
   // Action button
   actionBtn: {
     width: '100%', marginTop: 'auto',
-    backgroundColor: '#5A18CC',
+    backgroundColor: '#3A1090',
     borderRadius: 50, paddingVertical: 11, alignItems: 'center',
     shadowColor: '#5A18CC', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.45, shadowRadius: 12,
   },
-  actionBtnNew: { backgroundColor: '#3A1090' },
   actionBtnText: { color: '#fff', fontSize: 13, fontWeight: '800', letterSpacing: 0.3 },
 
   // ─ Right area ─
   rightArea: { flex: 1, flexDirection: 'column', gap: 10 },
-
-  // Tiles grid 2×3
-  tilesGrid: {
-    flexDirection: 'row', flexWrap: 'wrap', gap: 8, flexShrink: 0,
-  },
-  tile: {
-    flex: 1, minWidth: '30%',
-    backgroundColor: WC.panelBg, borderWidth: 1, borderColor: WC.panelBorder,
-    borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10,
-  },
-  tileLabel: { fontSize: 8, color: WC.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4, fontWeight: '700' },
-  tileVal: { fontSize: 20, fontWeight: '900', letterSpacing: -0.8, lineHeight: 22 },
-  tileSub: { fontSize: 9, color: WC.textMuted, marginTop: 3 },
 
   // Data columns
   dataCols: { flex: 1, flexDirection: 'row', gap: 8, minHeight: 0 },
@@ -520,4 +389,3 @@ const styles = StyleSheet.create({
   },
   pillFinishText: { fontSize: 12, color: '#fff', fontWeight: '800' },
 });
-
