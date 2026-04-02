@@ -313,10 +313,10 @@ const styles = StyleSheet.create({
   // Action button
   actionBtn: {
     width: '100%', marginTop: 'auto',
-    backgroundColor: '#3A1090',
+    backgroundColor: WC.btn,
     borderRadius: 50, paddingVertical: 12, alignItems: 'center',
     borderWidth: 1, borderColor: 'rgba(90,24,204,0.55)',
-    shadowColor: '#5A18CC', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.65, shadowRadius: 18,
+    shadowColor: WC.btnGlow, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.65, shadowRadius: 18,
   },
   actionBtnText: { color: '#fff', fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
 
@@ -387,9 +387,9 @@ const styles = StyleSheet.create({
   pillCancelBtn: { paddingHorizontal: 14, paddingVertical: 6 },
   pillCancelText: { fontSize: 11, color: WC.textMuted, fontWeight: '600' },
   pillFinishBtn: {
-    backgroundColor: '#5A18CC', borderRadius: 50,
+    backgroundColor: WC.btnGlow, borderRadius: 50,
     paddingHorizontal: 18, paddingVertical: 7,
-    shadowColor: '#5A18CC', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.4, shadowRadius: 10,
+    shadowColor: WC.btnGlow, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.4, shadowRadius: 10,
   },
   pillFinishText: { fontSize: 12, color: '#fff', fontWeight: '800' },
 });

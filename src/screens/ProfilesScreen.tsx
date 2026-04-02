@@ -21,12 +21,12 @@ import { FONTS, RADIUS, SPACING } from '../constants/theme';
 import { WC } from '../constants/themeWeb';
 
 const PROFILE_COLORS = [
-  '#FF8C00',
-  '#FFB347',
-  '#FFD700',
-  '#FF4444',
-  '#4A9EFF',
-  '#50C878',
+  '#C49FFF', // lila principal
+  '#4ADE80', // verde EXP
+  '#FCD34D', // dorado mesos
+  '#818CF8', // indigo frags
+  '#60A5FA', // azul rare
+  '#F87171', // rojo accent
 ];
 
 interface FormState {
@@ -481,11 +481,11 @@ const styles = StyleSheet.create({
 
   saveBtn: {
     marginTop: SPACING.xl,
-    backgroundColor: '#3A1090',
+    backgroundColor: WC.btn,
     borderRadius: RADIUS.lg,
     padding: SPACING.lg,
     alignItems: 'center',
-    shadowColor: '#5A18CC',
+    shadowColor: WC.btnGlow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 12,

@@ -183,6 +183,10 @@ const MONTHS_SHORT_ES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','
  * Formats a YYYY-MM-DD date string as "DD MMM" (e.g. "28 MAR")
  */
 export function formatDateShortEs(dateStr: string): string {
-  const [, mm, dd] = dateStr.split('-');
-  return `${parseInt(dd, 10)} ${MONTHS_SHORT_ES[parseInt(mm, 10) - 1]}`;
+  const parts = dateStr.split('-');
+  if (parts.length < 3) return dateStr;
+  const mm = parseInt(parts[1], 10);
+  const dd = parseInt(parts[2], 10);
+  if (mm < 1 || mm > 12 || isNaN(dd)) return dateStr;
+  return `${dd} ${MONTHS_SHORT_ES[mm - 1]}`;
 }

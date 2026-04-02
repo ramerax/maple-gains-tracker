@@ -65,7 +65,7 @@ function SessionCard({ session, onPress }: { session: Session; onPress: () => vo
         </Text>
         <Text style={[styles.sessionCardEXP, { color: COLORS.exp }]}>
           +{formatExp(session.expGainedActual)} EXP
-          <Text style={styles.sessionCardPct}>  (+{formatPercent(pctGained)}%)</Text>
+          <Text style={styles.sessionCardPct}>  ({pctGained >= 0 ? '+' : ''}{formatPercent(pctGained)}%)</Text>
         </Text>
       </View>
       <View style={styles.sessionCardRight}>
@@ -147,7 +147,7 @@ export default function HomeScreen() {
   const latestSession = allSessions.length > 0
     ? allSessions.reduce((a, b) => (b.createdAt > a.createdAt ? b : a))
     : null;
-  const profileLevel = latestSession?.lvEnd ?? (activeProfile ? 1 : 1);
+  const profileLevel = latestSession?.lvEnd ?? 1;
   const profileXpPct = latestSession?.expEnd ?? 0;
 
   // Recent 5 sessions sorted descending
@@ -245,7 +245,7 @@ export default function HomeScreen() {
                 const pctGained = levelsUp * 100 + (stats.expEnd - stats.expStart);
                 const expSub = levelsUp > 0
                   ? `+${levelsUp} lv · +${formatPercent(stats.expEnd)}%`
-                  : `+${formatPercent(pctGained)}%`;
+                  : `${pctGained >= 0 ? '+' : ''}${formatPercent(pctGained)}%`;
                 return (
                   <View style={styles.pillRow}>
                     <StatPill

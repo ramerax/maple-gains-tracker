@@ -45,7 +45,7 @@ function ExpBarChart({ sessions }: { sessions: Session[] }) {
             <View key={date} style={styles.chartCol}>
               <Text style={styles.chartBarLabel}>{formatExp(val)}</Text>
               <View style={styles.chartBarTrack}>
-                <View style={[styles.chartBarFill, { height: `${Math.max(pct * 100, 4)}%` as unknown as number }]} />
+                <View style={[styles.chartBarFill, { height: `${Math.max(pct * 100, 4)}%` as `${number}%` }]} />
               </View>
               <Text style={styles.chartDateLabel}>{label}</Text>
             </View>
@@ -238,7 +238,7 @@ function DeskBarChart({ sessions }: { sessions: Session[] }) {
             <View key={date} style={dStyles.chartCol}>
               <Text style={dStyles.chartValLabel}>{formatExp(val)}</Text>
               <View style={dStyles.chartBarTrack}>
-                <View style={[dStyles.chartBarFill, { height: `${Math.max(pct * 100, 4)}%` as unknown as number }]} />
+                <View style={[dStyles.chartBarFill, { height: `${Math.max(pct * 100, 4)}%` as `${number}%` }]} />
               </View>
               <Text style={dStyles.chartDateLabel}>{formatDateShortEs(date)}</Text>
             </View>
@@ -545,11 +545,11 @@ const dStyles = StyleSheet.create({
   // Nueva Sesión button (shown in empty "Hoy" panel)
   newSessionBtn: {
     marginTop: 12,
-    backgroundColor: '#3A1090',
+    backgroundColor: WC.btn,
     borderRadius: 50,
     paddingVertical: 9,
     alignItems: 'center',
-    shadowColor: '#5A18CC',
+    shadowColor: WC.btnGlow,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.5,
     shadowRadius: 10,
