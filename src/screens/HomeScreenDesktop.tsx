@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   statCardLabel: { fontSize: 8, color: WC.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 },
-  statCardValue: { fontSize: 15, fontWeight: '900', letterSpacing: -0.5 },
+  statCardValue: { fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
   statCardSub: { fontSize: 8, color: WC.textMuted, marginTop: 1 },
 
   weekSessions: { fontSize: 10, color: WC.textMuted, textAlign: 'center' },

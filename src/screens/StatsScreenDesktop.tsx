@@ -203,10 +203,6 @@ export default function StatsScreenDesktop({
             {allSessions.length} {allSessions.length === 1 ? 'sesión registrada' : 'sesiones registradas'}
           </Text>
         </View>
-        <TouchableOpacity style={styles.newBtn} onPress={onNewSession} activeOpacity={0.8}>
-          <Ionicons name="add" size={15} color="#fff" />
-          <Text style={styles.newBtnText}>Nueva Sesión</Text>
-        </TouchableOpacity>
       </View>
 
       {/* ── PERIOD HERO ROW ────────────────────────────────────────── */}
@@ -277,15 +273,6 @@ const styles = StyleSheet.create({
   },
   pageTitle: { color: WC.text, fontSize: 30, fontWeight: '900', letterSpacing: -1 },
   pageSubtitle: { color: WC.textMuted, fontSize: 13, marginTop: 4 },
-  newBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: WC.btn, borderRadius: 50,
-    paddingHorizontal: 18, paddingVertical: 9,
-    shadowColor: WC.btnGlow, shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5, shadowRadius: 12,
-  },
-  newBtnText: { color: '#fff', fontSize: 13, fontWeight: '800' },
-
   // Period hero panels
   periodRow: { flexDirection: 'row', gap: 14, marginBottom: 24 },
   periodHero: {

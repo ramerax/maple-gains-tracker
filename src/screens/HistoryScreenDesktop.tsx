@@ -110,11 +110,6 @@ export default function HistoryScreenDesktop({
           </TouchableOpacity>
         </View>
 
-        {/* New session button */}
-        <TouchableOpacity style={styles.newBtn} onPress={onNewSession} activeOpacity={0.8}>
-          <Ionicons name="add" size={15} color="#fff" />
-          <Text style={styles.newBtnText}>Nueva Sesión</Text>
-        </TouchableOpacity>
       </View>
 
       {/* ── BODY ─────────────────────────────────────────────────────── */}
@@ -239,15 +234,6 @@ const styles = StyleSheet.create({
     textAlign: 'center', textTransform: 'capitalize',
   },
 
-  newBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: WC.btn, borderRadius: 50,
-    paddingHorizontal: 16, paddingVertical: 8,
-    shadowColor: WC.btnGlow, shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5, shadowRadius: 12,
-  },
-  newBtnText: { color: '#fff', fontSize: 12, fontWeight: '800' },
-
   // Body layout
   body: { flex: 1, flexDirection: 'row' },
 
@@ -283,7 +269,7 @@ const styles = StyleSheet.create({
 
   // Column widths
   cellDate:  { width: 72, color: WC.text, fontWeight: '700', textTransform: 'uppercase', fontSize: 12 },
-  cellLevel: { flex: 1, color: WC.textDim, fontWeight: '500' },
+  cellLevel: { width: 200, color: WC.textDim, fontWeight: '500' },
   cellLevelPct: { fontSize: 10, color: WC.textMuted },
   cellExp:   { width: 90, fontWeight: '800', letterSpacing: -0.5, textAlign: 'right' },
   cellMesos: { width: 80, fontWeight: '700', textAlign: 'right', fontSize: 12 },
@@ -300,6 +286,7 @@ const styles = StyleSheet.create({
   // Stats panel
   statsCol: { width: 280, padding: 16 },
   statsPanel: {
+    flex: 1,
     backgroundColor: WC.panelBgStrong,
     borderWidth: 1, borderColor: WC.panelBorder,
     borderRadius: 14, padding: 18,

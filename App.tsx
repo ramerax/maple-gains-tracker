@@ -13,6 +13,7 @@ import { RootStackParamList, TabParamList } from './src/types';
 import { ProfileProvider } from './src/context/ProfileContext';
 import { useIsDesktopWeb } from './src/hooks/useIsDesktopWeb';
 import WebLayout from './src/components/WebLayout';
+import WebScreenWrapper from './src/components/WebScreenWrapper';
 
 import HomeScreen from './src/screens/HomeScreen';
 import AddSessionScreen from './src/screens/AddSessionScreen';
@@ -22,6 +23,23 @@ import SessionDetailScreen from './src/screens/SessionDetailScreen';
 import ProfilesScreen from './src/screens/ProfilesScreen';
 import StartSessionScreen from './src/screens/StartSessionScreen';
 import FinishSessionScreen from './src/screens/FinishSessionScreen';
+
+// ── Wrapped screens for desktop web (sidebar + content) ──────────────────────
+function AddSessionWrapped(props: any) {
+  return <WebScreenWrapper><AddSessionScreen {...props} /></WebScreenWrapper>;
+}
+function SessionDetailWrapped(props: any) {
+  return <WebScreenWrapper><SessionDetailScreen {...props} /></WebScreenWrapper>;
+}
+function ProfilesWrapped(props: any) {
+  return <WebScreenWrapper><ProfilesScreen {...props} /></WebScreenWrapper>;
+}
+function StartSessionWrapped(props: any) {
+  return <WebScreenWrapper><StartSessionScreen {...props} /></WebScreenWrapper>;
+}
+function FinishSessionWrapped(props: any) {
+  return <WebScreenWrapper><FinishSessionScreen {...props} /></WebScreenWrapper>;
+}
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -151,33 +169,34 @@ function AppContent() {
             />
             <Stack.Screen
               name="AddSession"
-              component={AddSessionScreen}
-              options={{ title: 'Nueva Sesión', presentation: 'modal' }}
+              component={isDesktopWeb ? AddSessionWrapped : AddSessionScreen}
+              options={{ title: 'Nueva Sesión', presentation: 'modal', headerShown: !isDesktopWeb }}
             />
             <Stack.Screen
               name="SessionDetail"
-              component={SessionDetailScreen}
-              options={{ title: 'Detalle' }}
+              component={isDesktopWeb ? SessionDetailWrapped : SessionDetailScreen}
+              options={{ title: 'Detalle', headerShown: !isDesktopWeb }}
             />
             <Stack.Screen
               name="Profiles"
-              component={ProfilesScreen}
-              options={{ title: 'Perfiles' }}
+              component={isDesktopWeb ? ProfilesWrapped : ProfilesScreen}
+              options={{ title: 'Perfiles', headerShown: !isDesktopWeb }}
             />
             <Stack.Screen
               name="StartSession"
-              component={StartSessionScreen}
+              component={isDesktopWeb ? StartSessionWrapped : StartSessionScreen}
               options={({ route }) => ({
                 title: (route.params as { editing?: boolean })?.editing
                   ? 'Editar Sesión'
                   : 'Iniciar Sesión',
                 presentation: 'modal',
+                headerShown: !isDesktopWeb,
               })}
             />
             <Stack.Screen
               name="FinishSession"
-              component={FinishSessionScreen}
-              options={{ title: 'Finalizar Sesión', presentation: 'modal' }}
+              component={isDesktopWeb ? FinishSessionWrapped : FinishSessionScreen}
+              options={{ title: 'Finalizar Sesión', presentation: 'modal', headerShown: !isDesktopWeb }}
             />
           </Stack.Navigator>
         </NavigationContainer>
