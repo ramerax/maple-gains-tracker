@@ -79,7 +79,7 @@ export async function runMigrationIfNeeded(): Promise<void> {
     const profiles: Profile[] = rawProfiles ? JSON.parse(rawProfiles) : [];
     if (profiles.length > 0) {
       const { error } = await supabase.from('profiles').upsert(profiles.map(profileToRow));
-      if (error) console.warn('[Migration] profiles:', error.message);
+      if (error) if (__DEV__) console.warn('[Migration] profiles:', error.message);
       // profiles migrated
     }
 
@@ -88,7 +88,7 @@ export async function runMigrationIfNeeded(): Promise<void> {
     const sessions: Session[] = rawSessions ? JSON.parse(rawSessions) : [];
     if (sessions.length > 0) {
       const { error } = await supabase.from('sessions').upsert(sessions.map(sessionToRow));
-      if (error) console.warn('[Migration] sessions:', error.message);
+      if (error) if (__DEV__) console.warn('[Migration] sessions:', error.message);
       // sessions migrated
     }
 
@@ -98,7 +98,7 @@ export async function runMigrationIfNeeded(): Promise<void> {
       const open: OpenSession = JSON.parse(rawOpen);
       await supabase.from('open_sessions').delete().eq('profile_id', open.profileId);
       const { error } = await supabase.from('open_sessions').insert(openSessionToRow(open));
-      if (error) console.warn('[Migration] open_session:', error.message);
+      if (error) if (__DEV__) console.warn('[Migration] open_session:', error.message);
     }
 
     // 4. Fix activeProfileId: point to the first MIGRATED profile (not any auto-created one)
@@ -131,6 +131,6 @@ export async function runMigrationIfNeeded(): Promise<void> {
     await AsyncStorage.setItem(MIGRATION_FLAG, 'true');
     // Migration v3 complete
   } catch (e) {
-    console.warn('[Migration] Error:', e);
+    if (__DEV__) console.warn('[Migration] Error:', e);
   }
 }
