@@ -133,7 +133,7 @@ export async function getAllSessions(profileId?: string): Promise<Session[]> {
     .order('created_at', { ascending: false });
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query;
-  if (error) { console.error('getAllSessions:', error.message); return []; }
+  if (error) { if (__DEV__) console.error('getAllSessions:', error.message); return []; }
   return (data ?? []).map(rowToSession);
 }
 
@@ -143,13 +143,13 @@ export async function getSessionById(id: string): Promise<Session | null> {
     .select('*')
     .eq('id', id)
     .single();
-  if (error) { console.error('getSessionById:', error.message); return null; }
+  if (error) { if (__DEV__) console.error('getSessionById:', error.message); return null; }
   return data ? rowToSession(data) : null;
 }
 
 export async function addSession(session: Session): Promise<void> {
   const { error } = await supabase.from('sessions').insert(sessionToRow(session));
-  if (error) console.error('addSession:', error.message);
+  if (error) { if (__DEV__) console.error('addSession:', error.message); }
 }
 
 export async function updateSession(updated: Session): Promise<void> {
@@ -157,12 +157,12 @@ export async function updateSession(updated: Session): Promise<void> {
     .from('sessions')
     .update(sessionToRow(updated))
     .eq('id', updated.id);
-  if (error) console.error('updateSession:', error.message);
+  if (error) { if (__DEV__) console.error('updateSession:', error.message); }
 }
 
 export async function deleteSession(id: string): Promise<void> {
   const { error } = await supabase.from('sessions').delete().eq('id', id);
-  if (error) console.error('deleteSession:', error.message);
+  if (error) { if (__DEV__) console.error('deleteSession:', error.message); }
 }
 
 export async function getSessionsByDate(date: string, profileId?: string): Promise<Session[]> {
@@ -173,7 +173,7 @@ export async function getSessionsByDate(date: string, profileId?: string): Promi
     .order('created_at', { ascending: true });
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query;
-  if (error) { console.error('getSessionsByDate:', error.message); return []; }
+  if (error) { if (__DEV__) console.error('getSessionsByDate:', error.message); return []; }
   return (data ?? []).map(rowToSession);
 }
 
@@ -191,7 +191,7 @@ export async function getSessionsByDateRange(
     .order('created_at', { ascending: true });
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query;
-  if (error) { console.error('getSessionsByDateRange:', error.message); return []; }
+  if (error) { if (__DEV__) console.error('getSessionsByDateRange:', error.message); return []; }
   return (data ?? []).map(rowToSession);
 }
 
@@ -236,14 +236,14 @@ export async function getProfiles(): Promise<Profile[]> {
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: true });
-  if (error) { console.error('getProfiles:', error.message); return []; }
+  if (error) { if (__DEV__) console.error('getProfiles:', error.message); return []; }
   return (data ?? []).map(rowToProfile);
 }
 
 
 export async function addProfile(profile: Profile): Promise<void> {
   const { error } = await supabase.from('profiles').insert(profileToRow(profile));
-  if (error) console.error('addProfile:', error.message);
+  if (error) { if (__DEV__) console.error('addProfile:', error.message); }
 }
 
 export async function updateProfile(profile: Profile): Promise<void> {
@@ -251,12 +251,12 @@ export async function updateProfile(profile: Profile): Promise<void> {
     .from('profiles')
     .update(profileToRow(profile))
     .eq('id', profile.id);
-  if (error) console.error('updateProfile:', error.message);
+  if (error) { if (__DEV__) console.error('updateProfile:', error.message); }
 }
 
 export async function deleteProfile(id: string): Promise<void> {
   const { error } = await supabase.from('profiles').delete().eq('id', id);
-  if (error) console.error('deleteProfile:', error.message);
+  if (error) { if (__DEV__) console.error('deleteProfile:', error.message); }
 }
 
 // ── Active Profile (stays local — device preference) ──────────────────────────
@@ -278,7 +278,7 @@ export async function getOpenSession(profileId?: string): Promise<OpenSession | 
   let query = supabase.from('open_sessions').select('*');
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query.limit(1);
-  if (error) { console.error('getOpenSession:', error.message); return null; }
+  if (error) { if (__DEV__) console.error('getOpenSession:', error.message); return null; }
   return data && data.length > 0 ? rowToOpenSession(data[0]) : null;
 }
 
@@ -286,7 +286,7 @@ export async function saveOpenSession(session: OpenSession): Promise<void> {
   // Upsert: delete existing for this profile then insert fresh
   await supabase.from('open_sessions').delete().eq('profile_id', session.profileId);
   const { error } = await supabase.from('open_sessions').insert(openSessionToRow(session));
-  if (error) console.error('saveOpenSession:', error.message);
+  if (error) { if (__DEV__) console.error('saveOpenSession:', error.message); }
 }
 
 export async function deleteOpenSession(profileId: string): Promise<void> {
@@ -294,5 +294,5 @@ export async function deleteOpenSession(profileId: string): Promise<void> {
     .from('open_sessions')
     .delete()
     .eq('profile_id', profileId);
-  if (error) console.error('deleteOpenSession:', error.message);
+  if (error) { if (__DEV__) console.error('deleteOpenSession:', error.message); }
 }
