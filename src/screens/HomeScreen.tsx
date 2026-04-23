@@ -99,22 +99,26 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const { start: wS, end: wE } = getWeekRange(today);
-    const { start: mS, end: mE } = getMonthRange(today);
-    const [s, all, open, weekSessions, monthSessions] = await Promise.all([
-      getSessionsByDate(today, activeProfileId ?? undefined),
-      getAllSessions(activeProfileId ?? undefined),
-      getOpenSession(activeProfileId ?? undefined),
-      getSessionsByDateRange(wS, wE, activeProfileId ?? undefined),
-      getSessionsByDateRange(mS, mE, activeProfileId ?? undefined),
-    ]);
-    setOpenSession(open ?? null);
-    setSessions(s);
-    setStats(aggregateStats(s));
-    setAllTimeStats(aggregateStats(all));
-    setWeekStats(aggregateStats(weekSessions));
-    setMonthStats(aggregateStats(monthSessions));
-    setAllSessions(all);
+    try {
+      const { start: wS, end: wE } = getWeekRange(today);
+      const { start: mS, end: mE } = getMonthRange(today);
+      const [s, all, open, weekSessions, monthSessions] = await Promise.all([
+        getSessionsByDate(today, activeProfileId ?? undefined),
+        getAllSessions(activeProfileId ?? undefined),
+        getOpenSession(activeProfileId ?? undefined),
+        getSessionsByDateRange(wS, wE, activeProfileId ?? undefined),
+        getSessionsByDateRange(mS, mE, activeProfileId ?? undefined),
+      ]);
+      setOpenSession(open ?? null);
+      setSessions(s);
+      setStats(aggregateStats(s));
+      setAllTimeStats(aggregateStats(all));
+      setWeekStats(aggregateStats(weekSessions));
+      setMonthStats(aggregateStats(monthSessions));
+      setAllSessions(all);
+    } catch (e) {
+      if (__DEV__) console.error('HomeScreen load error:', e);
+    }
   }, [today, activeProfileId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));

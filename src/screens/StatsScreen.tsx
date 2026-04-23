@@ -154,12 +154,16 @@ export default function StatsScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const [all, open] = await Promise.all([
-      getAllSessions(activeProfileId ?? undefined),
-      getOpenSession(activeProfileId ?? undefined),
-    ]);
-    setAllSessions(all);
-    setOpenSession(open);
+    try {
+      const [all, open] = await Promise.all([
+        getAllSessions(activeProfileId ?? undefined),
+        getOpenSession(activeProfileId ?? undefined),
+      ]);
+      setAllSessions(all);
+      setOpenSession(open);
+    } catch (e) {
+      if (__DEV__) console.error('StatsScreen load error:', e);
+    }
   }, [activeProfileId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
