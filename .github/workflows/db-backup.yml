@@ -1,0 +1,57 @@
+name: Daily DB Backup
+
+on:
+  schedule:
+    # Every day at 06:00 UTC (midnight-ish MX time)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch all tables from Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          mkdir -p backup
+
+          echo "Backing up sessions..."
+          curl -sf \
+            "${SUPABASE_URL}/rest/v1/sessions?select=*&order=date.asc" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -o "backup/sessions.json"
+
+          echo "Backing up profiles..."
+          curl -sf \
+            "${SUPABASE_URL}/rest/v1/profiles?select=*" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -o "backup/profiles.json"
+
+          echo "Backing up open_sessions..."
+          curl -sf \
+            "${SUPABASE_URL}/rest/v1/open_sessions?select=*" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -o "backup/open_sessions.json"
+
+          # Summary
+          SESSIONS=$(cat backup/sessions.json | grep -o '"id"' | wc -l)
+          PROFILES=$(cat backup/profiles.json | grep -o '"id"' | wc -l)
+          echo "✅ Backup ${DATE}: ${SESSIONS} sessions, ${PROFILES} profiles"
+
+          # Write manifest
+          echo "{\"date\":\"${DATE}\",\"sessions\":${SESSIONS},\"profiles\":${PROFILES}}" \
+            > backup/manifest.json
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_number }}-${{ github.run_id }}
+          path: backup/
+          retention-days: 90
+          if-no-files-found: error
