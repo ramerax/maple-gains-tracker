@@ -1,5 +1,19 @@
 # MapleClaude – Instrucciones para Claude
 
+## ⛔ REGLA CRÍTICA — Seguridad de datos en DB
+
+**NUNCA ejecutar operaciones destructivas en Supabase sin autorización explícita del usuario.**
+
+Esto incluye: `DELETE`, `TRUNCATE`, `DROP`, cualquier migración que borre datos existentes, o código que ejecute esas operaciones automáticamente.
+
+Antes de cualquier operación destructiva en DB:
+1. Mostrar exactamente qué datos se van a afectar
+2. Preguntar: "¿Confirmas que quieres borrar/modificar esto?"
+3. Esperar respuesta afirmativa explícita
+4. Recién entonces ejecutar
+
+**Aplica aunque el usuario haya dado permisos automáticos generales.** Las operaciones destructivas en DB son siempre excepción.
+
 ## Flujo de trabajo con Git
 
 **Nunca hacer push directo a `master`.**
