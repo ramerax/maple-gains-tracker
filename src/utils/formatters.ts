@@ -83,20 +83,20 @@ export function formatDateMedium(dateStr: string): string {
 }
 
 /**
- * Returns today's date as YYYY-MM-DD based on UTC
+ * Returns today's date as YYYY-MM-DD in local time.
+ * Uses local time so it matches session dates (also saved in local time).
  */
 export function getTodayString(): string {
-  const now = new Date();
-  return toUTCDateString(now);
+  return toDateString(new Date());
 }
 
 /**
- * Returns yesterday's date as YYYY-MM-DD based on UTC
+ * Returns yesterday's date as YYYY-MM-DD in local time.
  */
 export function getYesterdayString(): string {
-  const now = new Date();
-  now.setUTCDate(now.getUTCDate() - 1);
-  return toUTCDateString(now);
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return toDateString(d);
 }
 
 /**

@@ -124,6 +124,12 @@ export default function AddSessionScreen({ route, navigation }: Props) {
       Alert.alert('Fecha inválida', 'El formato debe ser YYYY-MM-DD.');
       return;
     }
+    const [dy, dm, dd] = date.split('-').map(Number);
+    const parsedDate = new Date(dy, dm - 1, dd);
+    if (isNaN(parsedDate.getTime()) || parsedDate.getMonth() !== dm - 1) {
+      Alert.alert('Fecha inválida', 'La fecha ingresada no existe.');
+      return;
+    }
     if (!lvStart || !expStart || !lvEnd || !expEnd) {
       Alert.alert('Datos incompletos', 'Ingresa nivel y % de EXP de inicio y fin.');
       return;
