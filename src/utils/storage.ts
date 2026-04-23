@@ -283,10 +283,24 @@ export async function getOpenSession(profileId?: string): Promise<OpenSession | 
 }
 
 export async function saveOpenSession(session: OpenSession): Promise<void> {
-  // Upsert: delete existing for this profile then insert fresh
-  await supabase.from('open_sessions').delete().eq('profile_id', session.profileId);
-  const { error } = await supabase.from('open_sessions').insert(openSessionToRow(session));
-  if (error) { if (__DEV__) console.error('saveOpenSession:', error.message); }
+  // Step 1: INSERT/UPDATE this session first (safe — data exists before old row removed)
+  const { error: upsertErr } = await supabase
+    .from('open_sessions')
+    .upsert(openSessionToRow(session), { onConflict: 'id' });
+
+  if (upsertErr) {
+    // Always surface this — losing an open session silently is unacceptable
+    console.error('saveOpenSession upsert error:', upsertErr.message);
+    return; // Do NOT delete old rows if the write failed
+  }
+
+  // Step 2: Only after the new row is confirmed saved, remove any stale
+  // open sessions for this profile that have a different id
+  await supabase
+    .from('open_sessions')
+    .delete()
+    .eq('profile_id', session.profileId)
+    .neq('id', session.id);
 }
 
 export async function deleteOpenSession(profileId: string): Promise<void> {
