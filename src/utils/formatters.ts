@@ -84,8 +84,8 @@ export function formatDateMedium(dateStr: string): string {
 
 /**
  * Returns today's date as YYYY-MM-DD in UTC.
- * Day rolls over at 00:00 UTC regardless of local timezone,
- * so session dates align with MapleStory's UTC daily reset.
+ * Day rolls over at 00:00 UTC regardless of local timezone.
+ * e.g. Santiago (UTC-4): sessions after 20:00 local = next UTC day.
  */
 export function getTodayString(): string {
   return toUTCDateString(new Date());
