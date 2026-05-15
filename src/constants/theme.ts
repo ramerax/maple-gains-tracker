@@ -1,36 +1,36 @@
 export const COLORS = {
-  // Backgrounds - pure black family
-  bg: '#000000',
-  surface: '#0D0D0D',
-  card: '#111111',
-  cardHighlight: '#181818',
+  // Backgrounds — Glass Cosmos deep-space purple (matches themeWeb WC)
+  bg: '#040215',
+  surface: '#06031A',
+  card: '#0A0428',
+  cardHighlight: '#120840',
 
-  // Orange accent - the only color
-  primary: '#FF8C00',
-  primaryLight: '#FFA940',
-  primaryDim: '#FF8C0018',
-  primaryBorder: '#FF8C0040',
+  // Primary — purple accent (matches WC.primary)
+  primary: '#C49FFF',
+  primaryLight: '#D4AFFF',
+  primaryDim: 'rgba(180,127,255,0.12)',
+  primaryBorder: 'rgba(180,127,255,0.30)',
 
   // Text
   text: '#FFFFFF',
-  textSecondary: '#999999',
-  textMuted: '#555555',
+  textSecondary: 'rgba(255,255,255,0.55)',
+  textMuted: 'rgba(255,255,255,0.28)',
 
   // Status
-  success: '#4CAF50',
+  success: '#4ADE80',
   error: '#FF4444',
 
   // Borders & inputs
-  border: '#222222',
-  inputBg: '#181818',
+  border: 'rgba(255,255,255,0.08)',
+  inputBg: 'rgba(255,255,255,0.06)',
 
-  // Stat accent colors
-  exp: '#4ADE80',    // green
-  frags: '#A78BFA',  // purple/violet
-  nodes: '#BAE6FD',  // ice blue / blue-white
-  mesos: '#FCD34D',  // amber yellow
-  common: '#D1D5DB', // grayish white
-  rare: '#38BDF8',   // sky blue
+  // Stat accent colors — identical to WC tokens
+  exp: '#D946EF',    // fuchsia
+  frags: '#818CF8',  // indigo
+  nodes: '#7DD3FC',  // sky blue
+  mesos: '#FCD34D',  // amber
+  common: '#CBD5E1', // slate
+  rare: '#60A5FA',   // blue
 };
 
 export const FONTS = {
