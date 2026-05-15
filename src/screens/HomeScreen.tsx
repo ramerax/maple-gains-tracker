@@ -172,6 +172,7 @@ export default function HomeScreen() {
         openSession={openSession}
         onFinishSession={() => navigation.navigate('FinishSession')}
         onCancelSession={handleCancelOpenSession}
+        onEditSession={() => navigation.navigate('StartSession', { editing: true })}
         onNewSession={() => navigation.navigate('StartSession')}
       />
     );

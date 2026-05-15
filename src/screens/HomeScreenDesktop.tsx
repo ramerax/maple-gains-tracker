@@ -72,6 +72,7 @@ interface Props {
   openSession: OpenSession | null;
   onFinishSession: () => void;
   onCancelSession: () => void;
+  onEditSession: () => void;
   onNewSession: () => void;
 }
 
@@ -85,6 +86,7 @@ export default function HomeScreenDesktop({
   openSession,
   onFinishSession,
   onCancelSession,
+  onEditSession,
 }: Props) {
   const w = weekStats;
 
@@ -196,6 +198,10 @@ export default function HomeScreenDesktop({
           <View style={styles.pillActions}>
             <TouchableOpacity style={styles.pillCancelBtn} onPress={onCancelSession} activeOpacity={0.7}>
               <Text style={styles.pillCancelText}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.pillEditBtn} onPress={onEditSession} activeOpacity={0.8}>
+              <Ionicons name="pencil" size={13} color={WC.primary} />
+              <Text style={styles.pillEditText}>Editar Inicio</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.pillFinishBtn} onPress={onFinishSession} activeOpacity={0.8}>
               <Ionicons name="checkmark-circle" size={14} color="#fff" />
@@ -472,6 +478,13 @@ const styles = StyleSheet.create({
   pillActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   pillCancelBtn: { paddingHorizontal: 14, paddingVertical: 7 },
   pillCancelText: { fontSize: 12, color: WC.textMuted, fontWeight: '600' },
+  pillEditBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 12, paddingVertical: 7,
+    borderRadius: 8, borderWidth: 1,
+    borderColor: WC.primaryBorder, backgroundColor: WC.primaryDim,
+  },
+  pillEditText: { fontSize: 12, color: WC.primary, fontWeight: '700' },
   pillFinishBtn: {
     flexDirection: 'row',
     alignItems: 'center',
