@@ -10,7 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Session, PeriodStats, OpenSession } from '../types';
-import { formatExp, formatNumber, formatPercent, formatDateShortEs } from '../utils/formatters';
+import { formatExp, formatNumber, formatPercent, formatDateShortEs, formatDateShort } from '../utils/formatters';
 import { WC } from '../constants/themeWeb';
 import XPRing from '../components/XPRing';
 
@@ -191,7 +191,7 @@ export default function HomeScreenDesktop({
             <View>
               <Text style={styles.pillTitle}>Sesión en Progreso</Text>
               <Text style={styles.pillSub}>
-                Lv {openSession.lvStart} · {openSession.expStart.toFixed(2)}% EXP
+                {formatDateShort(openSession.date)}  ·  Lv {openSession.lvStart} · {openSession.expStart.toFixed(2)}% EXP
               </Text>
             </View>
           </View>

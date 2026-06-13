@@ -54,8 +54,6 @@ export default function StartSessionScreen({ navigation, route }: Props) {
   const [mesosStart, setMesosStart] = useState('');
   const [commonStart, setCommonStart] = useState('');
   const [rareStart, setRareStart] = useState('');
-  const [notes, setNotes] = useState('');
-
   useEffect(() => {
     if (!editing) return;
     getOpenSession(activeProfile?.id).then((open) => {
@@ -69,7 +67,6 @@ export default function StartSessionScreen({ navigation, route }: Props) {
       setMesosStart(open.mesosStart > 0 ? String(open.mesosStart) : '');
       setCommonStart(open.commonFamiliarsStart > 0 ? String(open.commonFamiliarsStart) : '');
       setRareStart(open.rareFamiliarsStart > 0 ? String(open.rareFamiliarsStart) : '');
-      setNotes(open.notes ?? '');
     });
   }, [editing, activeProfile?.id]);
 
@@ -98,14 +95,14 @@ export default function StartSessionScreen({ navigation, route }: Props) {
       mesosStart: Number(mesosStart) || 0,
       commonFamiliarsStart: pi(commonStart),
       rareFamiliarsStart: pi(rareStart),
-      notes: notes.trim() || undefined,
+      notes: existingSession?.notes,
     };
 
     await saveOpenSession(open);
     navigation.goBack();
   }, [
     date, lvStart, expStart, fragsStart, nodesStart,
-    mesosStart, commonStart, rareStart, notes, activeProfile,
+    mesosStart, commonStart, rareStart, activeProfile,
     existingSession,
   ]);
 
@@ -163,21 +160,6 @@ export default function StartSessionScreen({ navigation, route }: Props) {
         <SectionHeader color={WC.rare} title="✨  Fam. Raros — Inicio" />
         <View style={styles.section}>
           <NumInput label="Familiares Raros" value={rareStart} onChange={setRareStart} />
-        </View>
-
-        {/* Notas */}
-        <SectionHeader color={WC.textMuted} title="📝  Notas (opcional)" />
-        <View style={styles.section}>
-          <TextInput
-            style={[styles.input, styles.notesInput]}
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="Agrega notas..."
-            placeholderTextColor={WC.textMuted}
-            multiline
-            numberOfLines={3}
-            maxLength={500}
-          />
         </View>
 
         {/* Action button */}
@@ -247,8 +229,6 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },
-  notesInput: { minHeight: 80, textAlignVertical: 'top', paddingTop: SPACING.sm },
-
   startButton: {
     margin: SPACING.lg,
     marginTop: SPACING.xl,
