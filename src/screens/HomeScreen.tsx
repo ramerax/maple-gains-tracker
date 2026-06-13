@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Session, PeriodStats, OpenSession } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
 import { getSessionsByDate, getAllSessions, getSessionsByDateRange, aggregateStats, getOpenSession, deleteOpenSession } from '../utils/storage';
-import { getTodayString, formatDateLong, formatExp, formatNumber, formatPercent, getWeekRange, getMonthRange } from '../utils/formatters';
+import { getTodayString, formatDateLong, formatDateShort, formatExp, formatNumber, formatPercent, getWeekRange, getMonthRange } from '../utils/formatters';
 import { useProfile } from '../context/ProfileContext';
 import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
 import HomeScreenDesktop from './HomeScreenDesktop';
@@ -321,7 +321,7 @@ export default function HomeScreen() {
             >
               <Text style={styles.openSessionTitle}>⚡ Sesión en Progreso</Text>
               <Text style={styles.openSessionSub}>
-                Lv {openSession.lvStart}  ({formatPercent(openSession.expStart)}%)  ·  {formatNumber(openSession.fragsStart)} frags  ·  {formatExp(openSession.mesosStart)} mesos
+                {formatDateShort(openSession.date)}  ·  Lv {openSession.lvStart}  ({formatPercent(openSession.expStart)}%)  ·  {formatNumber(openSession.fragsStart)} frags
               </Text>
             </TouchableOpacity>
             <TouchableOpacity

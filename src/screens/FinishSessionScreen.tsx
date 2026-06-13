@@ -64,6 +64,8 @@ export default function FinishSessionScreen({ navigation }: Props) {
   const { activeProfileId } = useProfile();
   const [open, setOpen] = useState<OpenSession | null>(null);
 
+  const [notes, setNotes] = useState('');
+
   const [lvEnd, setLvEnd] = useState('');
   const [expEnd, setExpEnd] = useState('');
   const [fragsEnd, setFragsEnd] = useState('');
@@ -140,7 +142,7 @@ export default function FinishSessionScreen({ navigation }: Props) {
       rareFamiliarsStart: open.rareFamiliarsStart,
       rareFamiliarsEnd: rareEnd ? pi(rareEnd) : open.rareFamiliarsStart,
       rareFamiliarsGained: rareGained,
-      notes: open.notes,
+      notes: notes.trim() || open.notes || undefined,
     };
 
     await addSession(session);
@@ -149,7 +151,7 @@ export default function FinishSessionScreen({ navigation }: Props) {
   }, [
     open, lvEnd, expEnd, fragsEnd, nodesEnd, mesosEnd,
     commonEnd, rareEnd, expGained, fragsGained, nodesGained,
-    mesosGained, commonGained, rareGained,
+    mesosGained, commonGained, rareGained, notes,
   ]);
 
   if (!open) {
@@ -242,6 +244,21 @@ export default function FinishSessionScreen({ navigation }: Props) {
           </View>
         </View>
 
+        {/* Notas */}
+        <SectionHeader color={WC.textMuted} title="📝  Notas (opcional)" />
+        <View style={styles.section}>
+          <TextInput
+            style={[styles.input, styles.notesInput]}
+            value={notes}
+            onChangeText={setNotes}
+            placeholder="Agrega notas sobre la sesión..."
+            placeholderTextColor={WC.textMuted}
+            multiline
+            numberOfLines={3}
+            maxLength={500}
+          />
+        </View>
+
         {/* Save button */}
         <TouchableOpacity style={styles.saveButton} onPress={handleSave} activeOpacity={0.85}>
           <Text style={styles.saveButtonText}>✅  Guardar Sesión</Text>
@@ -321,6 +338,8 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },
+
+  notesInput: { minHeight: 80, textAlignVertical: 'top', paddingTop: SPACING.sm },
 
   gainRow: { flexDirection: 'row', gap: SPACING.sm, marginTop: SPACING.sm },
   gainBadge: {
