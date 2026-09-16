@@ -34,7 +34,6 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     const { data: sessionSnapshot } = await supabase.auth.getSession();
     const accessToken = sessionSnapshot.session?.access_token ?? undefined;
     const sessionUid = sessionSnapshot.session?.user?.id;
-    const sessionExp = sessionSnapshot.session?.expires_at;
 
     // Always run migration first — prevents race condition with profile creation
     await runMigrationIfNeeded();
@@ -42,7 +41,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     try { await migrateDataToAuthUser(); } catch (e) { console.error('[ProfileContext] migrateDataToAuthUser threw:', e); }
 
     // Pass token directly — avoids race where migration/refresh clears the session
-    const { profiles: loaded, error: profilesError, hadToken } = await getProfiles(accessToken);
+    const { profiles: loaded, error: profilesError } = await getProfiles(accessToken);
     let activeId = await getActiveProfileId();
 
     if (profilesError) {
@@ -52,8 +51,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     if (loaded.length === 0) {
       if (sessionUid) {
-        // Authenticated but 0 rows → RLS or data issue
-        setLoadError(`0 rows | uid:${sessionUid.slice(0,8)} | token:${hadToken ? 'yes' : 'NO'} | exp:${sessionExp}`);
+        // Authenticated but 0 rows — unexpected, show error
+        setLoadError(`No se pudieron cargar los perfiles. Intenta cerrar sesión y volver a entrar.`);
         return;
       }
       // Not authenticated: genuine first launch → create default
