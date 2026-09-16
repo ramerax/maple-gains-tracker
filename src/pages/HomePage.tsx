@@ -51,7 +51,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className={`mx-auto max-w-[1100px] p-4 md:p-6 ${openSession ? 'pb-48 lg:pb-6' : ''}`}>
+    <div className={`mx-auto max-w-[1100px] p-4 md:p-6 ${openSession ? 'pb-48 lg:pb-28' : ''}`}>
       {/* Mobile header */}
       <div className="mb-4 flex items-center justify-between lg:hidden">
         <div>

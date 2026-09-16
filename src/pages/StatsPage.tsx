@@ -188,9 +188,9 @@ export default function StatsPage() {
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
+            <div className="flex flex-col">
               <p className="mb-2 text-[10px] font-bold tracking-widest text-text-faint">MEJORES DÍAS</p>
-              <div className="rounded-2xl border border-border bg-panel p-4">
+              <div className="flex-1 rounded-2xl border border-border bg-panel p-4">
                 <div className="grid grid-cols-2 gap-2">
                   {BEST_DAY_CATEGORIES.map(({ label, getValue, fmt, color }) => (
                     <BestDay key={label} label={label} sessions={allSessions} getValue={getValue} fmt={fmt} color={color} />
@@ -199,9 +199,9 @@ export default function StatsPage() {
               </div>
             </div>
 
-            <div>
+            <div className="flex flex-col">
               <p className="mb-2 text-[10px] font-bold tracking-widest text-text-faint">TOTALES HISTÓRICOS</p>
-              <div className="rounded-2xl border border-border bg-panel p-4">
+              <div className="flex-1 rounded-2xl border border-border bg-panel p-4">
                 {STAT_TILES.map(({ key, label, color, fmt }) => (
                   <div key={key} className="flex items-center justify-between border-b border-white/5 py-1.5 text-sm last:border-b-0">
                     <span className="text-text-muted">{label}</span>

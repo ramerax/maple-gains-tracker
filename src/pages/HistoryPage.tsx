@@ -5,7 +5,7 @@ import { useHistoryData, useTodayCursor, periodRange, shiftCursor, type HistoryM
 import { useOpenModal } from '@/hooks/useOpenModal';
 import { SessionRow } from '@/components/SessionRow';
 import { ROUTES } from '@/routes';
-import { formatDateLong, formatWeekRange, formatMonthDisplay, formatExp, formatNumber } from '@/utils/formatters';
+import { formatDateLong, formatWeekRange, formatMonthDisplay, formatExp, formatSignedGain } from '@/utils/formatters';
 
 const MODES: { key: HistoryMode; label: string }[] = [
   { key: 'day', label: 'Día' },
@@ -15,9 +15,11 @@ const MODES: { key: HistoryMode; label: string }[] = [
 
 const TOTAL_TILES = [
   { key: 'totalExpGained' as const, label: 'EXP', color: 'text-exp', fmt: formatExp },
-  { key: 'totalFragsGained' as const, label: 'Fragmentos', color: 'text-frags', fmt: (n: number) => `+${formatNumber(n)}` },
-  { key: 'totalNodesGained' as const, label: 'Nodos', color: 'text-nodes', fmt: (n: number) => `+${formatNumber(n)}` },
+  { key: 'totalFragsGained' as const, label: 'Fragmentos', color: 'text-frags', fmt: (n: number) => formatSignedGain(n) },
+  { key: 'totalNodesGained' as const, label: 'Nodos', color: 'text-nodes', fmt: (n: number) => formatSignedGain(n) },
   { key: 'totalMesosGained' as const, label: 'Mesos', color: 'text-mesos', fmt: formatExp },
+  { key: 'totalCommonFamiliarsGained' as const, label: 'Fam. Comunes', color: 'text-common', fmt: (n: number) => formatSignedGain(n) },
+  { key: 'totalRareFamiliarsGained' as const, label: 'Fam. Raros', color: 'text-rare', fmt: (n: number) => formatSignedGain(n) },
 ];
 
 export default function HistoryPage() {
@@ -81,11 +83,11 @@ export default function HistoryPage() {
 
       {/* Stats summary */}
       {loading ? (
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {TOTAL_TILES.map(({ key }) => <div key={key} className="h-[72px] animate-pulse rounded-xl bg-white/[0.04]" />)}
         </div>
       ) : stats ? (
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {TOTAL_TILES.map(({ key, label, color, fmt }) => (
             <div key={key} className="rounded-xl border border-border bg-panel px-3 py-3.5 text-center">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">{label}</p>
