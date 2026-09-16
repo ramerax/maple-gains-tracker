@@ -75,6 +75,7 @@ interface Props {
   monthStats: PeriodStats | null;
   recentSessions: Session[];
   openSession: OpenSession | null;
+  openSessionNumber: number | null;
   onFinishSession: () => void;
   onCancelSession: () => void;
   onEditSession: () => void;
@@ -89,6 +90,7 @@ export default function HomeScreenDesktop({
   weekStats,
   recentSessions,
   openSession,
+  openSessionNumber,
   onFinishSession,
   onCancelSession,
   onEditSession,
@@ -193,6 +195,11 @@ export default function HomeScreenDesktop({
         <View style={styles.sessionPill}>
           <View style={styles.pillLeft}>
             <View style={styles.pillDot} />
+            {openSessionNumber !== null && (
+              <View style={styles.pillNumberBadge}>
+                <Text style={styles.pillNumberText}>#{openSessionNumber}</Text>
+              </View>
+            )}
             <View>
               <Text style={styles.pillTitle}>Sesión en Progreso</Text>
               <Text style={styles.pillSub}>
@@ -480,6 +487,15 @@ const styles = StyleSheet.create({
     backgroundColor: WC.exp,
     shadowColor: WC.exp, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8,
   },
+  pillNumberBadge: {
+    backgroundColor: WC.primaryDim,
+    borderWidth: 1,
+    borderColor: WC.primaryBorder,
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  pillNumberText: { fontSize: 11, fontWeight: '800', color: WC.primary },
   pillTitle: { fontSize: 13, fontWeight: '800', color: WC.primary },
   pillSub: { fontSize: 10, color: WC.textMuted, marginTop: 1 },
   pillActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },

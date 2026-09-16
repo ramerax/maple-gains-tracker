@@ -177,6 +177,7 @@ export default function HomeScreen() {
         monthStats={monthStats}
         recentSessions={recentSessions}
         openSession={openSession}
+        openSessionNumber={openSession ? allSessions.length + 1 : null}
         onFinishSession={() => navigation.navigate('FinishSession')}
         onCancelSession={handleCancelOpenSession}
         onEditSession={() => navigation.navigate('StartSession', { editing: true })}
@@ -326,7 +327,9 @@ export default function HomeScreen() {
               onPress={() => navigation.navigate('StartSession', { editing: true })}
               activeOpacity={0.7}
             >
-              <Text style={styles.openSessionTitle}>⚡ Sesión en Progreso</Text>
+              <Text style={styles.openSessionTitle}>
+                ⚡ Sesión en Progreso #{allSessions.length + 1}
+              </Text>
               <Text style={styles.openSessionSub}>
                 {formatDateShort(openSession.date)}  ·  Lv {openSession.lvStart}  ({formatPercent(openSession.expStart)}%)  ·  {formatNumber(openSession.fragsStart)} frags
               </Text>
