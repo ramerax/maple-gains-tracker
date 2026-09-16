@@ -155,23 +155,6 @@ export default function WebLayout() {
 
         <View style={styles.divider} />
 
-        {/* Auth footer — email + sign out */}
-        {user && (
-          <View style={styles.authFooter}>
-            <Text style={styles.authEmail} numberOfLines={1}>{user.email}</Text>
-            <Pressable
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              style={(state: any) => [styles.signOutBtn, state.hovered && styles.signOutBtnHover]}
-              onPress={signOut}
-            >
-              <Ionicons name="log-out-outline" size={13} color={WC.textMuted} />
-              <Text style={styles.signOutText}>Cerrar sesión</Text>
-            </Pressable>
-          </View>
-        )}
-
-        <View style={styles.divider} />
-
         {/* Profile footer */}
         <Pressable
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -197,6 +180,24 @@ export default function WebLayout() {
           </View>
           <Ionicons name="chevron-forward" size={12} color={WC.textFaint} />
         </Pressable>
+
+        {/* Auth footer — email + sign out */}
+        {user && (
+          <>
+            <View style={styles.divider} />
+            <View style={styles.authFooter}>
+              <Text style={styles.authEmail} numberOfLines={1}>{user.email}</Text>
+              <Pressable
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                style={(state: any) => [styles.signOutBtn, state.hovered && styles.signOutBtnHover]}
+                onPress={signOut}
+              >
+                <Ionicons name="log-out-outline" size={13} color={WC.textMuted} />
+                <Text style={styles.signOutText}>Cerrar sesión</Text>
+              </Pressable>
+            </View>
+          </>
+        )}
       </View>
 
       {/* ── Content ──────────────────────────────────────────── */}
