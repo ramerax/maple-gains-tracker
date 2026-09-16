@@ -38,7 +38,7 @@ export default function HomePage() {
   const { activeProfile, activeProfileId } = useProfile();
   const { openSession } = useOutletContext<AppShellContext>();
   const {
-    today, allTimeStats, weekStats, recentSessions, latestSession, loading, cancelOpenSession,
+    today, weekStats, recentSessions, latestSession, loading, cancelOpenSession,
   } = useHomeData(activeProfileId);
 
   const profileLevel = latestSession?.lvEnd ?? 1;
@@ -51,7 +51,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className={`mx-auto max-w-[1100px] p-4 md:p-6 ${openSession ? 'pb-48 lg:pb-28' : ''}`}>
+    <div className="mx-auto max-w-[1100px] p-4 md:p-6">
       {/* Mobile header */}
       <div className="mb-4 flex items-center justify-between lg:hidden">
         <div>
@@ -87,7 +87,7 @@ export default function HomePage() {
 
       <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
         {/* Desktop left panel */}
-        <div className="hidden flex-col items-center rounded-2xl border border-border-strong bg-panel p-6 lg:flex">
+        <div className="hidden flex-col items-center self-start rounded-2xl border border-border-strong bg-panel p-6 lg:flex">
           <XPRing level={profileLevel} xpPercent={profileXpPct} />
           <p className="mt-3 text-lg font-black text-text">{activeProfile?.name ?? 'Personaje'}</p>
           {activeProfile?.gameClass && (
@@ -126,9 +126,6 @@ export default function HomePage() {
                   <div key={key} className={`rounded-xl ${bg} px-3 py-3.5 text-center ${big ? 'col-span-2 sm:col-span-1' : ''}`}>
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">{label}</p>
                     <p className={`mt-1 font-black ${color} ${big ? 'text-xl' : 'text-sm'}`}>{statValue(key, weekStats)}</p>
-                    {allTimeStats && (
-                      <p className="mt-1 text-[10px] text-text-faint">Total {statValue(key, allTimeStats)}</p>
-                    )}
                   </div>
                 ))}
               </div>
@@ -173,43 +170,45 @@ export default function HomePage() {
               recentSessions.map((s) => <SessionRow key={s.id} session={s} />)
             )}
           </div>
+
+          {/* Open session pill — sticky within the main column so it can never
+              overlap the desktop left panel (a fixed pill with a hardcoded
+              left offset drifted out of sync with that column's real width). */}
+          {openSession && (
+            <div className="sticky z-30 flex flex-col gap-2 rounded-2xl border border-primary-border bg-bg-deep/95 p-3 shadow-glow backdrop-blur-md [bottom:calc(76px+env(safe-area-inset-bottom))] lg:bottom-6 lg:flex-row lg:items-center lg:justify-between lg:px-5 lg:py-3">
+              <div className="flex items-center gap-2.5">
+                <Flame size={16} className="text-exp" />
+                <div>
+                  <p className="text-sm font-extrabold text-primary">Sesión en Progreso</p>
+                  <p className="text-xs text-text-muted">
+                    {formatDateShort(openSession.date)} · Lv {openSession.lvStart} · {formatPercent(openSession.expStart)}% EXP
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleCancelOpenSession}
+                  className="min-h-[44px] rounded-lg px-3 py-2 text-xs font-semibold text-text-muted hover:bg-white/[0.06]"
+                >
+                  <X size={14} className="inline" /> Cancelar
+                </button>
+                <button
+                  onClick={() => openModal(ROUTES.sessionStartEdit)}
+                  className="flex min-h-[44px] items-center gap-1.5 rounded-lg border border-primary-border bg-primary-dim px-3 py-2 text-xs font-bold text-primary"
+                >
+                  <Pencil size={13} /> Editar Inicio
+                </button>
+                <button
+                  onClick={() => openModal(ROUTES.sessionFinish)}
+                  className="flex min-h-[44px] items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-extrabold text-bg-deep"
+                >
+                  <CheckCircle2 size={14} /> Finalizar Sesión
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Open session floating pill */}
-      {openSession && (
-        <div className="fixed inset-x-3 z-30 flex flex-col gap-2 rounded-2xl border border-primary-border bg-bg-deep/95 p-3 shadow-glow backdrop-blur-md [bottom:calc(76px+env(safe-area-inset-bottom))] lg:inset-x-6 lg:bottom-6 lg:left-[236px] lg:flex-row lg:items-center lg:justify-between lg:px-5 lg:py-3">
-          <div className="flex items-center gap-2.5">
-            <Flame size={16} className="text-exp" />
-            <div>
-              <p className="text-sm font-extrabold text-primary">Sesión en Progreso</p>
-              <p className="text-xs text-text-muted">
-                {formatDateShort(openSession.date)} · Lv {openSession.lvStart} · {formatPercent(openSession.expStart)}% EXP
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleCancelOpenSession}
-              className="min-h-[44px] rounded-lg px-3 py-2 text-xs font-semibold text-text-muted hover:bg-white/[0.06]"
-            >
-              <X size={14} className="inline" /> Cancelar
-            </button>
-            <button
-              onClick={() => openModal(ROUTES.sessionStartEdit)}
-              className="flex min-h-[44px] items-center gap-1.5 rounded-lg border border-primary-border bg-primary-dim px-3 py-2 text-xs font-bold text-primary"
-            >
-              <Pencil size={13} /> Editar Inicio
-            </button>
-            <button
-              onClick={() => openModal(ROUTES.sessionFinish)}
-              className="flex min-h-[44px] items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-extrabold text-bg-deep"
-            >
-              <CheckCircle2 size={14} /> Finalizar Sesión
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

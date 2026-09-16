@@ -41,7 +41,7 @@ export default function FinishSessionPage() {
 
   const lvEndN = pi(lvEnd) || open?.lvStart || 260;
   const expEndN = pf(expEnd);
-  const expGained = open ? calculateExpGained(open.lvStart, open.expStart, lvEndN, expEndN) : 0;
+  const expGained = open && expEnd ? calculateExpGained(open.lvStart, open.expStart, lvEndN, expEndN) : 0;
   const fragsGained = fragsEnd ? pi(fragsEnd) - (open?.fragsStart ?? 0) : 0;
   const nodesGained = nodesEnd ? pi(nodesEnd) - (open?.nodesStart ?? 0) : 0;
   const mesosGained = mesosEnd ? (Number(mesosEnd) || 0) - (open?.mesosStart ?? 0) : 0;
@@ -132,7 +132,7 @@ export default function FinishSessionPage() {
   }
 
   return (
-    <Modal>
+    <Modal maxWidthClassName="max-w-2xl md:max-w-4xl">
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <h1 className="text-lg font-bold text-text">Finalizar Sesión</h1>
         <button onClick={() => navigate(-1)} aria-label="Cerrar" className="-mr-2 flex h-10 w-10 items-center justify-center rounded-lg text-text-muted hover:bg-white/[0.06] hover:text-text-dim">
@@ -140,8 +140,8 @@ export default function FinishSessionPage() {
         </button>
       </div>
 
-      <div className="md:max-h-[75vh] md:overflow-y-auto pb-6">
-        <div className="border-l-[3px] border-primary bg-primary-dim px-5 py-4">
+      <div className="md:grid md:max-h-[75vh] md:grid-cols-[220px_1fr] md:overflow-y-auto">
+        <div className="border-b-[3px] border-primary bg-primary-dim px-5 py-4 md:sticky md:top-0 md:self-start md:border-b-0 md:border-r-[3px]">
           <p className="mb-2 text-xs font-bold uppercase tracking-wide text-primary">📌 Datos de Inicio</p>
           {[
             ['Nivel', `${open.lvStart} (${formatPercent(open.expStart)}%)`],
@@ -158,53 +158,55 @@ export default function FinishSessionPage() {
           ))}
         </div>
 
-        <StatSectionGrid
-          color={STAT_COLORS.exp} icon="⚔️" title="Nivel y EXP — Fin"
-          fields={[
-            { label: 'Nivel', value: lvEnd, onChange: setLvEnd, placeholder: String(open.lvStart) },
-            { label: '% EXP', value: expEnd, onChange: setExpEnd, placeholder: String(open.expStart), decimal: true },
-          ]}
-          gains={[
-            { label: 'EXP Ganada', value: formatExp(expGained) },
-            ...(lvEndN > open.lvStart ? [{ label: 'Niveles', value: `+${lvEndN - open.lvStart}` }] : []),
-          ]}
-        />
-        <StatSectionGrid
-          color={STAT_COLORS.frags} icon="💎" title="Fragmentos — Fin"
-          fields={[{ label: 'Fragmentos', value: fragsEnd, onChange: setFragsEnd, placeholder: String(open.fragsStart) }]}
-          gains={[{ label: 'Ganados', value: formatSignedGain(fragsGained) }]}
-        />
-        <StatSectionGrid
-          color={STAT_COLORS.nodes} icon="🔮" title="Nodos — Fin"
-          fields={[{ label: 'Nodos', value: nodesEnd, onChange: setNodesEnd, placeholder: String(open.nodesStart) }]}
-          gains={[{ label: 'Ganados', value: formatSignedGain(nodesGained) }]}
-        />
-        <StatSectionGrid
-          color={STAT_COLORS.mesos} icon="💰" title="Mesos — Fin"
-          fields={[{ label: 'Mesos', value: mesosEnd, onChange: setMesosEnd, placeholder: String(open.mesosStart) }]}
-          gains={[{ label: 'Ganados', value: formatSignedGain(mesosGained, formatExp) }]}
-        />
-        <StatSectionGrid
-          color={STAT_COLORS.common} icon="👾" title="Fam. Comunes — Fin"
-          fields={[{ label: 'Familiares Comunes', value: commonEnd, onChange: setCommonEnd, placeholder: String(open.commonFamiliarsStart) }]}
-          gains={[{ label: 'Ganados', value: formatSignedGain(commonGained) }]}
-        />
-        <StatSectionGrid
-          color={STAT_COLORS.rare} icon="✨" title="Fam. Raros — Fin"
-          fields={[{ label: 'Familiares Raros', value: rareEnd, onChange: setRareEnd, placeholder: String(open.rareFamiliarsStart) }]}
-          gains={[{ label: 'Ganados', value: formatSignedGain(rareGained) }]}
-        />
+        <div className="pb-6">
+          <StatSectionGrid
+            color={STAT_COLORS.exp} icon="⚔️" title="Nivel y EXP — Fin"
+            fields={[
+              { label: 'Nivel', value: lvEnd, onChange: setLvEnd, placeholder: String(open.lvStart) },
+              { label: '% EXP', value: expEnd, onChange: setExpEnd, placeholder: String(open.expStart), decimal: true },
+            ]}
+            gains={[
+              { label: 'EXP Ganada', value: expEnd ? formatExp(expGained) : '—' },
+              ...(lvEndN > open.lvStart ? [{ label: 'Niveles', value: `+${lvEndN - open.lvStart}` }] : []),
+            ]}
+          />
+          <StatSectionGrid
+            color={STAT_COLORS.frags} icon="💎" title="Fragmentos — Fin"
+            fields={[{ label: 'Fragmentos', value: fragsEnd, onChange: setFragsEnd, placeholder: String(open.fragsStart) }]}
+            gains={[{ label: 'Ganados', value: formatSignedGain(fragsGained) }]}
+          />
+          <StatSectionGrid
+            color={STAT_COLORS.nodes} icon="🔮" title="Nodos — Fin"
+            fields={[{ label: 'Nodos', value: nodesEnd, onChange: setNodesEnd, placeholder: String(open.nodesStart) }]}
+            gains={[{ label: 'Ganados', value: formatSignedGain(nodesGained) }]}
+          />
+          <StatSectionGrid
+            color={STAT_COLORS.mesos} icon="💰" title="Mesos — Fin"
+            fields={[{ label: 'Mesos', value: mesosEnd, onChange: setMesosEnd, placeholder: String(open.mesosStart) }]}
+            gains={[{ label: 'Ganados', value: formatSignedGain(mesosGained, formatExp) }]}
+          />
+          <StatSectionGrid
+            color={STAT_COLORS.common} icon="👾" title="Fam. Comunes — Fin"
+            fields={[{ label: 'Familiares Comunes', value: commonEnd, onChange: setCommonEnd, placeholder: String(open.commonFamiliarsStart) }]}
+            gains={[{ label: 'Ganados', value: formatSignedGain(commonGained) }]}
+          />
+          <StatSectionGrid
+            color={STAT_COLORS.rare} icon="✨" title="Fam. Raros — Fin"
+            fields={[{ label: 'Familiares Raros', value: rareEnd, onChange: setRareEnd, placeholder: String(open.rareFamiliarsStart) }]}
+            gains={[{ label: 'Ganados', value: formatSignedGain(rareGained) }]}
+          />
 
-        {error && <p className="mx-5 mt-3 text-sm text-danger">{error}</p>}
+          {error && <p className="mx-5 mt-3 text-sm text-danger">{error}</p>}
 
-        <div className="px-5 pt-5">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex min-h-[52px] w-full items-center justify-center rounded-xl bg-primary text-base font-extrabold text-bg-deep shadow-glow disabled:opacity-60"
-          >
-            {saving ? 'Guardando…' : '✅  Guardar Sesión'}
-          </button>
+          <div className="px-5 pt-5">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex min-h-[52px] w-full items-center justify-center rounded-xl bg-primary text-base font-extrabold text-bg-deep shadow-glow disabled:opacity-60"
+            >
+              {saving ? 'Guardando…' : '✅  Guardar Sesión'}
+            </button>
+          </div>
         </div>
       </div>
     </Modal>
