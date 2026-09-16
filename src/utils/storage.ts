@@ -232,16 +232,33 @@ export function generateId(): string {
 // ── Profile CRUD ───────────────────────────────────────────────────────────────
 
 export async function getProfiles(): Promise<{ profiles: Profile[]; error: string | null }> {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .order('created_at', { ascending: true });
-  if (error) {
-    console.error('[getProfiles] error:', error.message, '| code:', error.code, '| hint:', (error as any).hint);
-    return { profiles: [], error: `${error.message} (code: ${error.code})` };
+  // Use direct fetch to bypass Supabase JS client auth state issues
+  const SUPABASE_URL = (process.env.EXPO_PUBLIC_SUPABASE_URL ?? '').trim();
+  const ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+
+  const { data: sd } = await supabase.auth.getSession();
+  const token = sd.session?.access_token;
+
+  const headers: Record<string, string> = { apikey: ANON_KEY, Accept: 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?select=*&order=created_at.asc`,
+      { headers }
+    );
+    if (!r.ok) {
+      const body = await r.text();
+      console.error('[getProfiles] HTTP error:', r.status, body);
+      return { profiles: [], error: `HTTP ${r.status}: ${body.slice(0, 200)}` };
+    }
+    const data = await r.json();
+    console.log('[getProfiles] loaded:', data?.length ?? 0, 'profiles (direct fetch, token:', token ? 'yes' : 'no', ')');
+    return { profiles: (data ?? []).map(rowToProfile), error: null };
+  } catch (e: any) {
+    console.error('[getProfiles] fetch threw:', e.message);
+    return { profiles: [], error: e.message };
   }
-  console.log('[getProfiles] loaded:', data?.length ?? 0, 'profiles');
-  return { profiles: (data ?? []).map(rowToProfile), error: null };
 }
 
 
