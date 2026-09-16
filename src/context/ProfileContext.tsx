@@ -30,15 +30,19 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const refreshProfiles = useCallback(async () => {
-    // Force token refresh so the JWT is always fresh before any DB query
-    try { await supabase.auth.refreshSession(); } catch (_) { /* non-fatal */ }
+    // Capture session FIRST — before any migration/refresh that could mutate auth state
+    const { data: sessionSnapshot } = await supabase.auth.getSession();
+    const accessToken = sessionSnapshot.session?.access_token ?? undefined;
+    const sessionUid = sessionSnapshot.session?.user?.id;
+    const sessionExp = sessionSnapshot.session?.expires_at;
 
     // Always run migration first — prevents race condition with profile creation
     await runMigrationIfNeeded();
     // Assign user_id to any rows created before auth was added (runs fast if already done)
     try { await migrateDataToAuthUser(); } catch (e) { console.error('[ProfileContext] migrateDataToAuthUser threw:', e); }
 
-    const { profiles: loaded, error: profilesError } = await getProfiles();
+    // Pass token directly — avoids race where migration/refresh clears the session
+    const { profiles: loaded, error: profilesError, hadToken } = await getProfiles(accessToken);
     let activeId = await getActiveProfileId();
 
     if (profilesError) {
@@ -47,11 +51,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (loaded.length === 0) {
-      // Check if user is authenticated — if yes, something is wrong (not first launch)
-      const { data: sd } = await supabase.auth.getSession();
-      if (sd.session) {
-        const uid = sd.session.user.id;
-        setLoadError(`getProfiles() returned 0 rows. uid=${uid.slice(0,8)} JWT_exp=${sd.session.expires_at}`);
+      if (sessionUid) {
+        // Authenticated but 0 rows → RLS or data issue
+        setLoadError(`0 rows | uid:${sessionUid.slice(0,8)} | token:${hadToken ? 'yes' : 'NO'} | exp:${sessionExp}`);
         return;
       }
       // Not authenticated: genuine first launch → create default
