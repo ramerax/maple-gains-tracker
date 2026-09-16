@@ -2,7 +2,8 @@ name: Weekly Database Backup
 
 on:
   schedule:
-    - cron: '0 6 * * 0'  # Sunday 06:00 UTC
+    # 02:30 UTC Monday = 23:30 Sunday in GMT-3 (Argentina/Chile/Uruguay)
+    - cron: '30 2 * * 1'
   workflow_dispatch: {}   # allows manual "Run workflow" from the Actions tab
 
 jobs:
@@ -25,6 +26,13 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     steps:
+      - name: Compute backup path (organized by year)
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          YEAR=$(date -u +%Y)
+          echo "DATE=$DATE" >> "$GITHUB_ENV"
+          echo "OBJECT_PATH=$YEAR/backup-$DATE.dump" >> "$GITHUB_ENV"
+
       - name: Install PostgreSQL 17 client (matches Supabase server version)
         run: |
           sudo install -d /usr/share/postgresql-common/pgdg
@@ -75,6 +83,12 @@ jobs:
           echo "Restored from this backup:"
           echo "$RESTORED_COUNTS"
 
+          {
+            echo "SOURCE_COUNTS<<BACKUP_EOF"
+            echo "$SOURCE_COUNTS"
+            echo "BACKUP_EOF"
+          } >> "$GITHUB_ENV"
+
           if [ "$SOURCE_COUNTS" != "$RESTORED_COUNTS" ]; then
             echo ""
             echo "MISMATCH — the backup does not restore to the same row counts as the live database."
@@ -88,12 +102,12 @@ jobs:
         env:
           SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          FILENAME="backup-$(date -u +%Y-%m-%d).dump"
           HTTP_STATUS=$(curl -s -o response.json -w "%{http_code}" -X POST \
-            "$SUPABASE_URL/storage/v1/object/backups/$FILENAME" \
+            "$SUPABASE_URL/storage/v1/object/backups/$OBJECT_PATH" \
             -H "apikey: $SERVICE_ROLE_KEY" \
             -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
             -H "Content-Type: application/octet-stream" \
+            -H "x-upsert: true" \
             --data-binary @backup.dump)
           echo "HTTP status: $HTTP_STATUS"
           cat response.json
@@ -101,7 +115,47 @@ jobs:
             echo "Upload failed"
             exit 1
           fi
-          echo "Uploaded $FILENAME (verified good before upload)"
-          # No rotation step by design — every backup is kept forever.
+          echo "Uploaded $OBJECT_PATH (verified good before upload)"
+          # No rotation step by design — every dated backup is kept forever.
           # Compressed dumps of this DB are tiny (KBs), so decades of
           # weekly backups stay well under Supabase's free storage tier.
+
+      # Always-current status file at a fixed path — check this one file
+      # any time instead of digging through run history.
+      - name: Write success status marker
+        if: success()
+        env:
+          SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          {
+            echo "OK"
+            echo "date: $DATE"
+            echo "file: $OBJECT_PATH"
+            echo "row_counts:"
+            echo "$SOURCE_COUNTS"
+          } > status.txt
+          curl -s -X POST \
+            "$SUPABASE_URL/storage/v1/object/backups/_status/last-run.txt" \
+            -H "apikey: $SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
+            -H "Content-Type: text/plain" \
+            -H "x-upsert: true" \
+            --data-binary @status.txt
+
+      - name: Write failure status marker
+        if: failure()
+        env:
+          SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          {
+            echo "FAILED"
+            echo "date: $DATE"
+            echo "run log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > status.txt
+          curl -s -X POST \
+            "$SUPABASE_URL/storage/v1/object/backups/_status/last-run.txt" \
+            -H "apikey: $SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
+            -H "Content-Type: text/plain" \
+            -H "x-upsert: true" \
+            --data-binary @status.txt || true
