@@ -8,7 +8,7 @@ import { WC } from '../constants/themeWeb';
 import { RootStackParamList } from '../types';
 import { useProfile } from '../context/ProfileContext';
 import { useAuth } from '../context/AuthContext';
-import { getOpenSession } from '../utils/storage';
+import { getOpenSession, getSessionCount } from '../utils/storage';
 import HomeScreen from '../screens/HomeScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import StatsScreen from '../screens/StatsScreen';
@@ -47,6 +47,7 @@ export default function WebLayout() {
   const [mountedTabs, setMountedTabs] = useState<Set<TabId>>(new Set(['home']));
   const [refreshKey, setRefreshKey] = useState(0);
   const [hasOpenSession, setHasOpenSession] = useState(false);
+  const [totalSessions, setTotalSessions] = useState<number | null>(null);
   const { activeProfile, activeProfileId, loadError, refreshProfiles } = useProfile();
   const { user, signOut } = useAuth();
   const navigation = useNavigation<Nav>();
@@ -57,8 +58,11 @@ export default function WebLayout() {
   }, []);
 
   useFocusEffect(useCallback(() => {
+    let cancelled = false;
     setRefreshKey((k) => k + 1);
-    getOpenSession(activeProfileId ?? undefined).then((s) => setHasOpenSession(!!s));
+    getOpenSession(activeProfileId ?? undefined).then((s) => { if (!cancelled) setHasOpenSession(!!s); });
+    getSessionCount(activeProfileId ?? undefined).then((n) => { if (!cancelled) setTotalSessions(n); });
+    return () => { cancelled = true; };
   }, [activeProfileId]));
 
   useEffect(() => {
@@ -180,6 +184,16 @@ export default function WebLayout() {
           </View>
           <Ionicons name="chevron-forward" size={12} color={WC.textFaint} />
         </Pressable>
+
+        {/* Total sessions saved — quick reference to compare against backup logs */}
+        {totalSessions !== null && (
+          <View style={styles.sessionCountRow}>
+            <Ionicons name="layers-outline" size={12} color={WC.textFaint} />
+            <Text style={styles.sessionCountText}>
+              {totalSessions} sesión{totalSessions !== 1 ? 'es' : ''} guardada{totalSessions !== 1 ? 's' : ''}
+            </Text>
+          </View>
+        )}
 
         {/* Profile load error — shown when DB call fails */}
         {loadError && (
@@ -447,6 +461,21 @@ const styles = StyleSheet.create({
     color: WC.textMuted,
     fontSize: 10,
     marginTop: 1,
+  },
+
+  // Session count
+  sessionCountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 20,
+    paddingTop: 2,
+    paddingBottom: 6,
+  },
+  sessionCountText: {
+    color: WC.textFaint,
+    fontSize: 10,
+    fontWeight: '500',
   },
 
   // Auth footer

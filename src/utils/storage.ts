@@ -168,6 +168,15 @@ export async function getSessionById(id: string): Promise<Session | null> {
   return data ? rowToSession(data) : null;
 }
 
+// Lightweight count-only query (head: true → no rows transferred, just the count header)
+export async function getSessionCount(profileId?: string): Promise<number> {
+  let query = supabase.from('sessions').select('*', { count: 'exact', head: true });
+  if (profileId) query = query.eq('profile_id', profileId);
+  const { count, error } = await query;
+  if (error) { if (__DEV__) console.error('getSessionCount:', error.message); return 0; }
+  return count ?? 0;
+}
+
 export async function addSession(session: Session): Promise<{ error: string | null }> {
   const { error } = await supabase.from('sessions').insert(sessionToRow(session));
   if (error) { if (__DEV__) console.error('addSession:', error.message); return { error: error.message }; }
