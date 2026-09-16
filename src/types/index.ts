@@ -77,17 +77,3 @@ export interface OpenSession {
   notes?: string;
 }
 
-export type RootStackParamList = {
-  MainTabs: undefined;
-  AddSession: { sessionId?: string } | undefined;
-  SessionDetail: { sessionId: string };
-  Profiles: undefined;
-  StartSession: { editing?: boolean } | undefined;
-  FinishSession: undefined;
-};
-
-export type TabParamList = {
-  Home: undefined;
-  History: undefined;
-  Stats: undefined;
-};

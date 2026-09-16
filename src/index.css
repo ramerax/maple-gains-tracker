@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Structural */
+  --color-bg: 220 26% 6%;
+  --color-bg-deep: 220 33% 3%;
+
+  /* Brand / primary accent — teal-cyan "aurora" */
+  --color-primary: 172 66% 50%;
+
+  /* Text ramp */
+  --color-text: 210 40% 98%;
+  --color-text-dim: 213 27% 84%;
+  --color-text-muted: 215 20% 65%;
+  --color-text-faint: 215 16% 47%;
+
+  /* Stat category colors — one per gameplay stat, kept visually distinct */
+  --color-exp: 292 91% 73%;      /* fuchsia */
+  --color-frags: 234 89% 74%;    /* indigo */
+  --color-nodes: 213 94% 68%;    /* blue */
+  --color-mesos: 43 96% 56%;     /* amber/gold */
+  --color-common: 215 20% 65%;   /* slate */
+  --color-rare: 255 92% 76%;     /* violet */
+
+  --color-danger: 0 84% 65%;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: hsl(var(--color-bg));
+  color: hsl(var(--color-text));
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}

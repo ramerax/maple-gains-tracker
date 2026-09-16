@@ -8,7 +8,6 @@ import {
   generateId,
   migrateDataToAuthUser,
 } from '../utils/storage';
-import { runMigrationIfNeeded } from '../utils/migration';
 import { supabase } from '../lib/supabase';
 
 interface ProfileContextValue {
@@ -34,8 +33,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     const { data: sessionSnapshot } = await supabase.auth.getSession();
     const accessToken = sessionSnapshot.session?.access_token ?? undefined;
 
-    await runMigrationIfNeeded();
-    try { await migrateDataToAuthUser(); } catch (e) { if (__DEV__) console.error('migrateDataToAuthUser:', e); }
+    try { await migrateDataToAuthUser(); } catch (e) { if (import.meta.env.DEV) console.error('migrateDataToAuthUser:', e); }
 
     const { profiles: loaded, error: profilesError } = await getProfiles(accessToken);
     let activeId = await getActiveProfileId();

@@ -1,6 +1,6 @@
 /**
  * generate-favicon.js
- * Converts assets/favicon.svg → PNG sizes for Expo web export.
+ * Converts assets/favicon.svg → PNG sizes, output to public/ for Vite.
  * Run: node scripts/generate-favicon.js
  */
 const sharp = require('sharp');
@@ -8,7 +8,7 @@ const path = require('path');
 const fs = require('fs');
 
 const SRC = path.join(__dirname, '..', 'assets', 'favicon.svg');
-const OUT = path.join(__dirname, '..', 'assets');
+const OUT = path.join(__dirname, '..', 'public');
 
 if (!fs.existsSync(SRC)) {
   console.error('favicon.svg not found at', SRC);
