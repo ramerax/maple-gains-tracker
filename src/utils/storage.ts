@@ -231,11 +231,10 @@ export function generateId(): string {
 
 // ── Profile CRUD ───────────────────────────────────────────────────────────────
 
-export async function getProfiles(accessToken?: string): Promise<{ profiles: Profile[]; error: string | null; hadToken: boolean }> {
+export async function getProfiles(accessToken?: string): Promise<{ profiles: Profile[]; error: string | null }> {
   const SUPABASE_URL = (process.env.EXPO_PUBLIC_SUPABASE_URL ?? '').trim();
   const ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
-  // Use caller-supplied token (preferred) or fall back to current session
   let token = accessToken;
   if (!token) {
     const { data: sd } = await supabase.auth.getSession();
@@ -252,15 +251,12 @@ export async function getProfiles(accessToken?: string): Promise<{ profiles: Pro
     );
     if (!r.ok) {
       const body = await r.text();
-      console.error('[getProfiles] HTTP error:', r.status, body);
-      return { profiles: [], error: `HTTP ${r.status}: ${body.slice(0, 200)}`, hadToken: !!token };
+      return { profiles: [], error: `HTTP ${r.status}: ${body.slice(0, 200)}` };
     }
     const data = await r.json();
-    console.log('[getProfiles] loaded:', data?.length ?? 0, 'profiles | token:', token ? 'yes' : 'NO');
-    return { profiles: (data ?? []).map(rowToProfile), error: null, hadToken: !!token };
+    return { profiles: (data ?? []).map(rowToProfile), error: null };
   } catch (e: any) {
-    console.error('[getProfiles] fetch threw:', e.message);
-    return { profiles: [], error: e.message, hadToken: !!token };
+    return { profiles: [], error: e.message };
   }
 }
 
