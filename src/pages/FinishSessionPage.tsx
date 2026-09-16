@@ -141,7 +141,7 @@ export default function FinishSessionPage() {
       </div>
 
       <div className="md:grid md:max-h-[75vh] md:grid-cols-[220px_1fr] md:overflow-y-auto">
-        <div className="border-b-[3px] border-primary bg-primary-dim px-5 py-4 md:sticky md:top-0 md:self-start md:border-b-0 md:border-r-[3px]">
+        <div className="sticky top-0 z-10 self-start border-b-[3px] border-primary bg-primary-dim px-5 py-4 md:border-b-0 md:border-r-[3px]">
           <p className="mb-2 text-xs font-bold uppercase tracking-wide text-primary">📌 Datos de Inicio</p>
           {[
             ['Nivel', `${open.lvStart} (${formatPercent(open.expStart)}%)`],
