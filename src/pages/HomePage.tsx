@@ -124,7 +124,7 @@ export default function HomePage() {
               <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                 {STAT_TILES.map(({ key, label, color, bg, big }) => (
                   <div key={key} className={`rounded-xl ${bg} px-3 py-3.5 text-center ${big ? 'col-span-2 sm:col-span-1' : ''}`}>
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">{label}</p>
+                    <p className="text-[10px] font-semibold uppercase text-text-muted">{label}</p>
                     <p className={`mt-1 font-black ${color} ${big ? 'text-xl' : 'text-sm'}`}>{statValue(key, weekStats)}</p>
                   </div>
                 ))}

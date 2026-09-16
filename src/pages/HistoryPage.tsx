@@ -90,7 +90,7 @@ export default function HistoryPage() {
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {TOTAL_TILES.map(({ key, label, color, fmt }) => (
             <div key={key} className="rounded-xl border border-border bg-panel px-3 py-3.5 text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">{label}</p>
+              <p className="text-[10px] font-semibold uppercase text-text-muted">{label}</p>
               <p className={`mt-1 text-sm font-black ${color}`}>{fmt(stats[key])}</p>
             </div>
           ))}
