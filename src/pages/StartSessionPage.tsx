@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { X } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { StatSectionGrid } from '@/components/session-form/StatSectionGrid';
 import { useProfile } from '@/context/ProfileContext';
@@ -88,10 +89,12 @@ export default function StartSessionPage() {
     <Modal>
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <h1 className="text-lg font-bold text-text">{editing ? 'Editar Sesión' : 'Iniciar Sesión'}</h1>
-        <button onClick={() => navigate(-1)} className="text-sm text-text-muted hover:text-text-dim">✕</button>
+        <button onClick={() => navigate(-1)} aria-label="Cerrar" className="-mr-2 flex h-10 w-10 items-center justify-center rounded-lg text-text-muted hover:bg-white/[0.06] hover:text-text-dim">
+          <X size={18} />
+        </button>
       </div>
 
-      <div className="max-h-[75vh] overflow-y-auto pb-6">
+      <div className="md:max-h-[75vh] md:overflow-y-auto pb-6">
         <div className="flex items-center justify-between bg-panel px-5 py-3">
           <span className="text-sm text-text-dim">Fecha</span>
           <span className="text-sm font-bold text-primary">{formatDateShort(date)}</span>

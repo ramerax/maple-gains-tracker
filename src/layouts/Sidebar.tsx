@@ -6,6 +6,7 @@ import { useProfile } from '@/context/ProfileContext';
 import { getSessionCount } from '@/utils/storage';
 import { ROUTES } from '@/routes';
 import { PulsingDot } from '@/components/ui/PulsingDot';
+import { useOpenModal } from '@/hooks/useOpenModal';
 import type { OpenSession } from '@/types';
 
 const NAV_ITEMS = [
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
 
 export function Sidebar({ openSession }: { openSession: OpenSession | null }) {
   const navigate = useNavigate();
+  const openModal = useOpenModal();
   const { user, signOut } = useAuth();
   const { activeProfile, activeProfileId, loadError, refreshProfiles } = useProfile();
   const [totalSessions, setTotalSessions] = useState<number | null>(null);
@@ -26,7 +28,10 @@ export function Sidebar({ openSession }: { openSession: OpenSession | null }) {
       if (!cancelled) setTotalSessions(n);
     });
     return () => { cancelled = true; };
-  }, [activeProfileId, openSession]);
+    // openSession is a fresh object every 3s poll tick — depend on its id
+    // (or null/undefined) instead, so this doesn't refetch every tick.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProfileId, openSession?.id]);
 
   return (
     <aside className="flex h-full w-[212px] flex-shrink-0 flex-col border-r border-border bg-bg-deep py-5">
@@ -78,7 +83,7 @@ export function Sidebar({ openSession }: { openSession: OpenSession | null }) {
       {/* CTA */}
       {!openSession ? (
         <button
-          onClick={() => navigate(ROUTES.sessionStart)}
+          onClick={() => openModal(ROUTES.sessionStart)}
           className="mx-2.5 mb-2 flex items-center justify-center gap-1.5 rounded-[10px] bg-primary py-2.5 text-[13px] font-extrabold text-bg-deep shadow-glow transition-transform hover:scale-[1.02]"
         >
           <Zap size={14} />

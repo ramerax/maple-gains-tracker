@@ -18,24 +18,26 @@ export function BarChart({ sessions, days = 14 }: { sessions: Session[]; days?: 
 
   return (
     <div className="rounded-2xl border border-border bg-panel p-5">
-      <p className="text-sm font-bold text-text">📈 EXP por día (últimos {sorted.length})</p>
-      <div className="mt-4 flex items-end gap-1.5 overflow-x-auto pb-1">
-        {sorted.map(([date, val]) => {
-          const pct = maxVal > 0 ? (val / maxVal) * 100 : 0;
-          const isMax = val === maxVal && val > 0;
-          return (
-            <div key={date} className="flex min-w-[36px] flex-1 flex-col items-center gap-1.5">
-              <span className="text-[9px] font-semibold text-text-faint">{val > 0 ? formatExp(val) : ''}</span>
-              <div className="flex h-24 w-full items-end rounded-md bg-white/[0.04]">
-                <div
-                  className={`w-full rounded-md transition-all ${isMax ? 'bg-exp shadow-glow' : 'bg-exp/50'}`}
-                  style={{ height: `${Math.max(pct, val > 0 ? 4 : 0)}%` }}
-                />
+      <p className="text-sm font-bold text-text">📈 EXP por día — últimos {sorted.length} días</p>
+      <div className="relative mt-4">
+        <div className="flex items-end gap-1.5 overflow-x-auto pb-1 [mask-image:linear-gradient(to_right,#000_92%,transparent)] sm:[mask-image:none]">
+          {sorted.map(([date, val]) => {
+            const pct = maxVal > 0 ? (val / maxVal) * 100 : 0;
+            const isMax = val === maxVal && val > 0;
+            return (
+              <div key={date} className="flex min-w-[36px] flex-1 flex-col items-center gap-1.5">
+                <span className="text-[10px] font-semibold text-text-faint">{val > 0 ? formatExp(val) : ''}</span>
+                <div className="flex h-24 w-full items-end rounded-md bg-white/[0.04]">
+                  <div
+                    className={`w-full rounded-md transition-all ${isMax ? 'bg-exp shadow-glow' : 'bg-exp/50'}`}
+                    style={{ height: `${Math.max(pct, val > 0 ? 4 : 0)}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-text-faint">{formatDateShortEs(date)}</span>
               </div>
-              <span className="text-[9px] text-text-faint">{formatDateShortEs(date)}</span>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getSessionsByDate, getSessionsByDateRange, aggregateStats } from '@/utils/storage';
 import { getTodayString, getWeekRange, getMonthRange, addDays } from '@/utils/formatters';
 import type { Session, PeriodStats } from '@/types';
@@ -23,12 +23,15 @@ export function useHistoryData(mode: HistoryMode, cursor: string, profileId: str
   const [sessions, setSessions] = useState<Session[]>([]);
   const [stats, setStats] = useState<PeriodStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
+  useEffect(() => () => { mountedRef.current = false; }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
     const loaded = mode === 'day'
       ? await getSessionsByDate(cursor, profileId ?? undefined)
       : await getSessionsByDateRange(periodRange(mode, cursor).start, periodRange(mode, cursor).end, profileId ?? undefined);
+    if (!mountedRef.current) return;
     setSessions(loaded);
     setStats(aggregateStats(loaded));
     setLoading(false);

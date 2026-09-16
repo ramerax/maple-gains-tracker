@@ -54,7 +54,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
             autoComplete="email"
-            className="rounded-xl border border-border bg-white/[0.06] px-4 py-3 text-sm text-text placeholder:text-text-faint focus:border-primary-border focus:outline-none"
+            className="rounded-xl border border-border bg-white/[0.06] px-4 py-3 text-base text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50"
           />
           <input
             type="password"
@@ -62,11 +62,11 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contraseña"
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            className="rounded-xl border border-border bg-white/[0.06] px-4 py-3 text-sm text-text placeholder:text-text-faint focus:border-primary-border focus:outline-none"
+            className="rounded-xl border border-border bg-white/[0.06] px-4 py-3 text-base text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50"
           />
 
           {error && <p className="text-sm text-danger">{error}</p>}
-          {info && <p className="text-sm text-nodes">{info}</p>}
+          {info && <p className="text-sm text-primary">{info}</p>}
 
           <button
             type="submit"

@@ -27,11 +27,12 @@ interface StatSectionGridProps {
  *  so the 6 repeated EXP/Frags/Nodes/Mesos/Common/Rare blocks per form screen
  *  collapse into a config array instead of copy-pasted JSX. */
 export function StatSectionGrid({ color, icon, title, fields, gains }: StatSectionGridProps) {
+  const singleField = fields.length === 1;
   return (
     <>
       <SectionHeader color={color} title={`${icon}  ${title}`} />
       <div className="bg-panel px-4 pb-4">
-        <div className="flex gap-3 pt-4">
+        <div className={`grid gap-3 pt-4 ${fields.length > 2 ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'} ${singleField ? 'md:max-w-[280px]' : ''}`}>
           {fields.map((f) => (
             <NumInput key={f.label} {...f} />
           ))}

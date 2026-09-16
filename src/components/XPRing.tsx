@@ -37,8 +37,8 @@ export function XPRing({ level, xpPercent, size = 148, strokeWidth = 8 }: XPRing
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-black text-text">{level}</span>
-        <span className="text-[10px] font-bold tracking-widest text-text-faint">NIVEL</span>
+        <span className="font-black text-text" style={{ fontSize: size * 0.28 }}>{level}</span>
+        <span className="font-bold tracking-widest text-text-faint" style={{ fontSize: Math.max(size * 0.068, 8) }}>NIVEL</span>
       </div>
     </div>
   );

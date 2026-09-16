@@ -3,7 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { getSessionById, deleteSession } from '@/utils/storage';
 import { formatDateLong, formatExp, formatNumber, formatPercent } from '@/utils/formatters';
+import { calculateTotalExpPercent } from '@/utils/expCalculator';
 import { STAT_COLORS } from '@/constants/statColors';
+import { useOpenModal } from '@/hooks/useOpenModal';
 import { ROUTES } from '@/routes';
 import type { Session } from '@/types';
 
@@ -19,6 +21,7 @@ const CATEGORIES: { key: string; icon: string; title: string; color: string; sta
 export default function SessionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const openModal = useOpenModal();
   const [session, setSession] = useState<Session | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -51,32 +54,48 @@ export default function SessionDetailPage() {
     return (
       <div className="p-6 text-center text-text-muted">
         Sesión no encontrada.
-        <button onClick={() => navigate(ROUTES.history)} className="mt-3 block w-full text-primary">Volver al historial</button>
+        <button onClick={() => navigate(ROUTES.history)} className="mt-3 block min-h-[44px] w-full rounded-lg bg-primary-dim text-primary">
+          Volver al historial
+        </button>
       </div>
     );
   }
 
   if (!session) {
-    return <div className="p-6 text-center text-text-muted">Cargando…</div>;
+    return (
+      <div className="mx-auto max-w-[700px] p-4 md:p-6">
+        <div className="h-6 w-24 animate-pulse rounded bg-white/[0.04]" />
+        <div className="mt-4 h-6 w-48 animate-pulse rounded bg-white/[0.04]" />
+        <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-panel">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="border-b border-border px-5 py-4 last:border-b-0">
+              <div className="h-16 animate-pulse rounded-lg bg-white/[0.04]" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
+
+  const totalExpPct = calculateTotalExpPercent(session.lvStart, session.expStart, session.lvEnd, session.expEnd);
 
   return (
     <div className="mx-auto max-w-[700px] p-4 md:p-6">
       <div className="flex items-center justify-between">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text-dim">
+        <button onClick={() => navigate(-1)} className="-ml-2 flex min-h-[44px] items-center gap-1.5 rounded-lg px-2 text-sm text-text-muted hover:bg-white/[0.06] hover:text-text-dim">
           <ArrowLeft size={16} /> Volver
         </button>
         <div className="flex gap-2">
           <button
-            onClick={() => navigate(ROUTES.sessionEdit(session.id))}
-            className="flex items-center gap-1.5 rounded-lg border border-primary-border bg-primary-dim px-3 py-1.5 text-xs font-bold text-primary"
+            onClick={() => openModal(ROUTES.sessionEdit(session.id))}
+            className="flex min-h-[44px] items-center gap-1.5 rounded-lg border border-primary-border bg-primary-dim px-4 py-2 text-sm font-bold text-primary"
           >
             <Pencil size={13} /> Editar
           </button>
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="flex items-center gap-1.5 rounded-lg border border-danger/30 bg-danger/10 px-3 py-1.5 text-xs font-bold text-danger disabled:opacity-50"
+            className="flex min-h-[44px] items-center gap-1.5 rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-sm font-bold text-danger disabled:opacity-50"
           >
             <Trash2 size={13} /> Eliminar
           </button>
@@ -86,29 +105,39 @@ export default function SessionDetailPage() {
       <h1 className="mt-4 text-lg font-black capitalize text-text">{formatDateLong(session.date)}</h1>
 
       <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-panel">
-        {CATEGORIES.map(({ key, icon, title, color, start, end, gained, fmt }) => (
-          <div key={key} className="border-b border-border px-5 py-4 last:border-b-0">
-            <p className="text-sm font-bold text-text">{icon} {title}</p>
-            <div className="mt-2 grid grid-cols-3 gap-2 text-center">
-              <div>
-                <p className="text-[10px] text-text-muted">Inicio</p>
-                <p className="mt-0.5 text-sm font-semibold text-text-dim">
-                  {key === 'exp' ? `Lv ${session[start]} (${formatPercent(session.expStart)}%)` : fmt(session[start] as number)}
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] text-text-muted">Fin</p>
-                <p className="mt-0.5 text-sm font-semibold text-text-dim">
-                  {key === 'exp' ? `Lv ${session[end]} (${formatPercent(session.expEnd)}%)` : fmt(session[end] as number)}
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] text-text-muted">Ganado</p>
-                <p className="mt-0.5 text-sm font-black" style={{ color }}>+{fmt(session[gained] as number)}</p>
+        {CATEGORIES.map(({ key, icon, title, color, start, end, gained, fmt }) => {
+          const isExp = key === 'exp';
+          return (
+            <div key={key} className="border-b border-border px-5 py-4 last:border-b-0">
+              <p className="text-sm font-bold text-text">{icon} {title}</p>
+              <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+                <div>
+                  <p className="text-[10px] text-text-muted">Inicio</p>
+                  <p className="mt-0.5 text-sm font-semibold text-text-dim">
+                    {isExp ? `Lv ${session[start]} (${formatPercent(session.expStart)}%)` : fmt(session[start] as number)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-text-muted">Fin</p>
+                  <p className="mt-0.5 text-sm font-semibold text-text-dim">
+                    {isExp ? `Lv ${session[end]} (${formatPercent(session.expEnd)}%)` : fmt(session[end] as number)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-text-muted">Ganado</p>
+                  <p className={`mt-0.5 font-black ${isExp ? 'text-xl' : 'text-sm'}`} style={{ color }}>
+                    +{fmt(session[gained] as number)}
+                  </p>
+                  {isExp && (
+                    <p className="text-xs font-semibold" style={{ color }}>
+                      ({totalExpPct >= 0 ? '+' : ''}{formatPercent(totalExpPct)}%)
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {session.notes && (
           <div className="px-5 py-4">

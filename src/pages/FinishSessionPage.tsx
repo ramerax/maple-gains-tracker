@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { X } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { StatSectionGrid } from '@/components/session-form/StatSectionGrid';
 import { useProfile } from '@/context/ProfileContext';
 import { calculateExpGained } from '@/utils/expCalculator';
 import { addSession, getOpenSession, deleteOpenSession, generateId } from '@/utils/storage';
-import { formatExp, formatNumber, formatPercent } from '@/utils/formatters';
+import { formatExp, formatNumber, formatPercent, formatSignedGain } from '@/utils/formatters';
 import { STAT_COLORS } from '@/constants/statColors';
 import type { OpenSession, Session } from '@/types';
 
@@ -99,8 +100,15 @@ export default function FinishSessionPage() {
       setError('No se pudo guardar la sesión. Intenta de nuevo.');
       return;
     }
-    await deleteOpenSession(open.profileId);
+    // The session is saved at this point — a cleanup failure below must not
+    // block navigation, but it also must not be silent: an un-cleared open
+    // session would let the user "finish" the same session again and create
+    // a duplicate. Warn explicitly instead of discarding the error.
+    const { error: cleanupError } = await deleteOpenSession(open.profileId);
     setSaving(false);
+    if (cleanupError) {
+      alert('La sesión se guardó, pero no se pudo limpiar el estado de "sesión activa". Si sigue apareciendo como activa, recargá la página.');
+    }
     navigate(-1);
   }, [open, lvEndN, expEnd, expEndN, fragsEnd, nodesEnd, mesosEnd, commonEnd, rareEnd, expGained, fragsGained, nodesGained, mesosGained, commonGained, rareGained, navigate]);
 
@@ -109,7 +117,7 @@ export default function FinishSessionPage() {
       <Modal>
         <div className="flex flex-col items-center gap-3 p-8 text-center">
           <p className="text-text">No hay ninguna sesión en progreso.</p>
-          <button onClick={() => navigate(-1)} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-bg-deep">OK</button>
+          <button onClick={() => navigate(-1)} className="min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-bold text-bg-deep">OK</button>
         </div>
       </Modal>
     );
@@ -127,10 +135,12 @@ export default function FinishSessionPage() {
     <Modal>
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <h1 className="text-lg font-bold text-text">Finalizar Sesión</h1>
-        <button onClick={() => navigate(-1)} className="text-sm text-text-muted hover:text-text-dim">✕</button>
+        <button onClick={() => navigate(-1)} aria-label="Cerrar" className="-mr-2 flex h-10 w-10 items-center justify-center rounded-lg text-text-muted hover:bg-white/[0.06] hover:text-text-dim">
+          <X size={18} />
+        </button>
       </div>
 
-      <div className="max-h-[75vh] overflow-y-auto pb-6">
+      <div className="md:max-h-[75vh] md:overflow-y-auto pb-6">
         <div className="border-l-[3px] border-primary bg-primary-dim px-5 py-4">
           <p className="mb-2 text-xs font-bold uppercase tracking-wide text-primary">📌 Datos de Inicio</p>
           {[
@@ -162,27 +172,27 @@ export default function FinishSessionPage() {
         <StatSectionGrid
           color={STAT_COLORS.frags} icon="💎" title="Fragmentos — Fin"
           fields={[{ label: 'Fragmentos', value: fragsEnd, onChange: setFragsEnd, placeholder: String(open.fragsStart) }]}
-          gains={[{ label: 'Ganados', value: `+${formatNumber(fragsGained)}` }]}
+          gains={[{ label: 'Ganados', value: formatSignedGain(fragsGained) }]}
         />
         <StatSectionGrid
           color={STAT_COLORS.nodes} icon="🔮" title="Nodos — Fin"
           fields={[{ label: 'Nodos', value: nodesEnd, onChange: setNodesEnd, placeholder: String(open.nodesStart) }]}
-          gains={[{ label: 'Ganados', value: `+${formatNumber(nodesGained)}` }]}
+          gains={[{ label: 'Ganados', value: formatSignedGain(nodesGained) }]}
         />
         <StatSectionGrid
           color={STAT_COLORS.mesos} icon="💰" title="Mesos — Fin"
           fields={[{ label: 'Mesos', value: mesosEnd, onChange: setMesosEnd, placeholder: String(open.mesosStart) }]}
-          gains={[{ label: 'Ganados', value: `+${formatExp(mesosGained)}` }]}
+          gains={[{ label: 'Ganados', value: formatSignedGain(mesosGained, formatExp) }]}
         />
         <StatSectionGrid
           color={STAT_COLORS.common} icon="👾" title="Fam. Comunes — Fin"
           fields={[{ label: 'Familiares Comunes', value: commonEnd, onChange: setCommonEnd, placeholder: String(open.commonFamiliarsStart) }]}
-          gains={[{ label: 'Ganados', value: `+${commonGained}` }]}
+          gains={[{ label: 'Ganados', value: formatSignedGain(commonGained) }]}
         />
         <StatSectionGrid
           color={STAT_COLORS.rare} icon="✨" title="Fam. Raros — Fin"
           fields={[{ label: 'Familiares Raros', value: rareEnd, onChange: setRareEnd, placeholder: String(open.rareFamiliarsStart) }]}
-          gains={[{ label: 'Ganados', value: `+${rareGained}` }]}
+          gains={[{ label: 'Ganados', value: formatSignedGain(rareGained) }]}
         />
 
         {error && <p className="mx-5 mt-3 text-sm text-danger">{error}</p>}

@@ -14,7 +14,7 @@ export function AppShell() {
         <Sidebar openSession={openSession} />
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-16 md:pb-0">
+      <div className="flex-1 overflow-y-auto pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
         <Outlet context={{ openSession } satisfies AppShellContext} />
       </div>
 

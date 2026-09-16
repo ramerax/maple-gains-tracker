@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { ROUTES } from '@/routes';
-import { formatExp, formatNumber, formatPercent, formatDateShortEs } from '@/utils/formatters';
+import { formatExp, formatPercent, formatDateShortEs, formatSignedGain } from '@/utils/formatters';
 import { calculateTotalExpPercent } from '@/utils/expCalculator';
 import type { Session } from '@/types';
 
@@ -41,14 +41,14 @@ export function SessionRow({ session, showDate }: { session: Session; showDate?:
 
       {/* Other stats, full words, wraps on narrow screens */}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">
-        <span>Fragmentos <span className="font-semibold text-frags">+{formatNumber(session.fragsGained)}</span></span>
-        <span>Nodos <span className="font-semibold text-nodes">+{formatNumber(session.nodesGained)}</span></span>
-        <span>Mesos <span className="font-semibold text-mesos">{formatExp(session.mesosGained)}</span></span>
-        {session.commonFamiliarsGained > 0 && (
-          <span>Fam. Comunes <span className="font-semibold text-common">+{session.commonFamiliarsGained}</span></span>
+        <span>Fragmentos <span className="font-semibold text-frags">{formatSignedGain(session.fragsGained)}</span></span>
+        <span>Nodos <span className="font-semibold text-nodes">{formatSignedGain(session.nodesGained)}</span></span>
+        <span>Mesos <span className="font-semibold text-mesos">{formatSignedGain(session.mesosGained, formatExp)}</span></span>
+        {session.commonFamiliarsGained !== 0 && (
+          <span>Fam. Comunes <span className="font-semibold text-common">{formatSignedGain(session.commonFamiliarsGained)}</span></span>
         )}
-        {session.rareFamiliarsGained > 0 && (
-          <span>Fam. Raros <span className="font-semibold text-rare">+{session.rareFamiliarsGained}</span></span>
+        {session.rareFamiliarsGained !== 0 && (
+          <span>Fam. Raros <span className="font-semibold text-rare">{formatSignedGain(session.rareFamiliarsGained)}</span></span>
         )}
       </div>
     </button>

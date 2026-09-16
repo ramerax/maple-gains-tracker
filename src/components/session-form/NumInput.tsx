@@ -17,7 +17,7 @@ export function NumInput({ label, value, onChange, placeholder, decimal }: NumIn
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder ?? '0'}
         onFocus={(e) => e.target.select()}
-        className="w-full rounded-lg border border-border bg-white/[0.06] px-3.5 py-2.5 text-base text-text placeholder:text-text-faint focus:border-primary-border focus:outline-none"
+        className="w-full rounded-lg border border-border bg-white/[0.06] px-3.5 py-2.5 text-base text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50"
       />
     </div>
   );

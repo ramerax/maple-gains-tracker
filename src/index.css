@@ -14,17 +14,21 @@
   --color-text: 210 40% 98%;
   --color-text-dim: 213 27% 84%;
   --color-text-muted: 215 20% 65%;
-  --color-text-faint: 215 16% 47%;
+  --color-text-faint: 215 16% 58%;
 
   /* Stat category colors — one per gameplay stat, kept visually distinct */
   --color-exp: 292 91% 73%;      /* fuchsia */
   --color-frags: 234 89% 74%;    /* indigo */
-  --color-nodes: 213 94% 68%;    /* blue */
+  --color-nodes: 199 89% 60%;    /* sky blue — separated from frags/rare */
   --color-mesos: 43 96% 56%;     /* amber/gold */
-  --color-common: 215 20% 65%;   /* slate */
-  --color-rare: 255 92% 76%;     /* violet */
+  --color-common: 152 47% 62%;   /* mint — was identical to text-muted */
+  --color-rare: 270 95% 78%;     /* violet — pushed away from frags */
 
   --color-danger: 0 84% 65%;
+}
+
+:root {
+  color-scheme: dark;
 }
 
 html, body, #root {
@@ -39,4 +43,9 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+:focus-visible {
+  outline: 2px solid hsl(var(--color-primary));
+  outline-offset: 2px;
 }
