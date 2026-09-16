@@ -33,6 +33,34 @@ jobs:
             --schema=public \
             --file=backup.dump
 
+      - name: Verify backup integrity
+        run: |
+          echo "File size:"
+          ls -la backup.dump
+
+          echo ""
+          echo "Contents (table of contents):"
+          /usr/lib/postgresql/17/bin/pg_restore --list backup.dump
+
+          echo ""
+          echo "Checking expected tables are present..."
+          TOC=$(/usr/lib/postgresql/17/bin/pg_restore --list backup.dump)
+          for TABLE in profiles sessions open_sessions; do
+            if ! echo "$TOC" | grep -q "TABLE DATA public $TABLE "; then
+              echo "MISSING: $TABLE — dump is incomplete or corrupt, aborting."
+              exit 1
+            fi
+          done
+          echo "All expected tables present. Backup looks valid."
+
+      - name: Row counts (sanity check — compare against what you expect)
+        run: |
+          /usr/lib/postgresql/17/bin/psql "${{ secrets.SUPABASE_DB_URL }}" -c "
+            SELECT 'profiles' AS table_name, COUNT(*) FROM profiles
+            UNION ALL SELECT 'sessions', COUNT(*) FROM sessions
+            UNION ALL SELECT 'open_sessions', COUNT(*) FROM open_sessions;
+          "
+
       - name: Upload to Supabase Storage
         env:
           SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
