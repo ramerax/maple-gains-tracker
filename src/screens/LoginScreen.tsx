@@ -25,19 +25,23 @@ export default function LoginScreen() {
     setError(null);
     setInfo(null);
 
-    if (mode === 'login') {
-      const err = await signIn(email.trim(), password);
-      setLoading(false);
-      if (err) setError(err);
-    } else {
-      const err = await signUp(email.trim(), password);
-      setLoading(false);
-      if (err) {
-        setError(err);
+    try {
+      if (mode === 'login') {
+        const err = await signIn(email.trim(), password);
+        if (err) setError(err);
       } else {
-        setInfo('Cuenta creada. Revisa tu email para confirmar, luego inicia sesión.');
-        setMode('login');
+        const err = await signUp(email.trim(), password);
+        if (err) {
+          setError(err);
+        } else {
+          setInfo('Cuenta creada. Revisa tu email para confirmar, luego inicia sesión.');
+          setMode('login');
+        }
       }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error de conexión. Intenta de nuevo.');
+    } finally {
+      setLoading(false);
     }
   };
 

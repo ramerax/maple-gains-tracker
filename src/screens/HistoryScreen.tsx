@@ -7,7 +7,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Session, PeriodStats } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
-import { WC } from '../constants/themeWeb';
 import { getSessionsByDateRange, aggregateStats } from '../utils/storage';
 import {
   getTodayString, formatDateLong, formatDateMedium, formatWeekRange,

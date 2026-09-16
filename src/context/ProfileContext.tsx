@@ -33,7 +33,6 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     // Snapshot session token before migrations run so auth state stays stable
     const { data: sessionSnapshot } = await supabase.auth.getSession();
     const accessToken = sessionSnapshot.session?.access_token ?? undefined;
-    const sessionUid = sessionSnapshot.session?.user?.id;
 
     await runMigrationIfNeeded();
     try { await migrateDataToAuthUser(); } catch (e) { if (__DEV__) console.error('migrateDataToAuthUser:', e); }
@@ -47,18 +46,19 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (loaded.length === 0) {
-      if (sessionUid) {
-        setLoadError(`No se pudieron cargar los perfiles. Intenta cerrar sesión y volver a entrar.`);
-        return;
-      }
-      // Not authenticated: first launch → create default profile
+      // ProfileProvider only mounts once authenticated (see AuthGate in App.tsx),
+      // so 0 rows here always means a genuinely new account — create the default profile.
       const defaultProfile: Profile = {
         id: generateId(),
         name: 'Mi Personaje',
         color: DEFAULT_PROFILE_COLOR,
         createdAt: Date.now(),
       };
-      await addProfile(defaultProfile);
+      const { error: createError } = await addProfile(defaultProfile);
+      if (createError) {
+        setLoadError('No se pudo crear tu perfil inicial. Intenta recargar la página.');
+        return;
+      }
       await setActiveProfileId(defaultProfile.id);
       setProfiles([defaultProfile]);
       setActiveProfileIdState(defaultProfile.id);

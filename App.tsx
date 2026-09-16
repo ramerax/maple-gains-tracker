@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,19 +27,19 @@ import StartSessionScreen from './src/screens/StartSessionScreen';
 import FinishSessionScreen from './src/screens/FinishSessionScreen';
 
 // ── Wrapped screens for desktop web (sidebar + content) ──────────────────────
-function AddSessionWrapped(props: any) {
+function AddSessionWrapped(props: NativeStackScreenProps<RootStackParamList, 'AddSession'>) {
   return <WebScreenWrapper><AddSessionScreen {...props} /></WebScreenWrapper>;
 }
-function SessionDetailWrapped(props: any) {
+function SessionDetailWrapped(props: NativeStackScreenProps<RootStackParamList, 'SessionDetail'>) {
   return <WebScreenWrapper><SessionDetailScreen {...props} /></WebScreenWrapper>;
 }
-function ProfilesWrapped(props: any) {
-  return <WebScreenWrapper><ProfilesScreen {...props} /></WebScreenWrapper>;
+function ProfilesWrapped() {
+  return <WebScreenWrapper><ProfilesScreen /></WebScreenWrapper>;
 }
-function StartSessionWrapped(props: any) {
+function StartSessionWrapped(props: NativeStackScreenProps<RootStackParamList, 'StartSession'>) {
   return <WebScreenWrapper><StartSessionScreen {...props} /></WebScreenWrapper>;
 }
-function FinishSessionWrapped(props: any) {
+function FinishSessionWrapped(props: NativeStackScreenProps<RootStackParamList, 'FinishSession'>) {
   return <WebScreenWrapper><FinishSessionScreen {...props} /></WebScreenWrapper>;
 }
 
@@ -54,19 +54,22 @@ const NAV_HEADER = {
 };
 
 // ── Error Boundary ─────────────────────────────────────────────────────────────
-interface ErrorState { error: Error | null }
+interface ErrorState { hasError: boolean }
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, ErrorState> {
-  state: ErrorState = { error: null };
-  static getDerivedStateFromError(error: Error) { return { error }; }
+  state: ErrorState = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: Error) {
+    if (__DEV__) console.error('ErrorBoundary caught:', error);
+  }
   render() {
-    if (this.state.error) {
+    if (this.state.hasError) {
       return (
         <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
           <Text style={{ color: WC.primary, fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
             ⚠️ Error al cargar
           </Text>
           <Text style={{ color: '#fff', fontSize: 13, textAlign: 'center' }}>
-            {this.state.error.message}
+            Algo salió mal. Intenta recargar la página.
           </Text>
         </View>
       );
@@ -188,9 +191,7 @@ function AppContent() {
               name="StartSession"
               component={isDesktopWeb ? StartSessionWrapped : StartSessionScreen}
               options={({ route }) => ({
-                title: (route.params as { editing?: boolean })?.editing
-                  ? 'Editar Sesión'
-                  : 'Iniciar Sesión',
+                title: route.params?.editing ? 'Editar Sesión' : 'Iniciar Sesión',
                 presentation: 'modal',
                 headerShown: !isDesktopWeb,
               })}

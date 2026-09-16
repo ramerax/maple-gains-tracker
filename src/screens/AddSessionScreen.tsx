@@ -75,27 +75,28 @@ export default function AddSessionScreen({ route, navigation }: Props) {
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
-    if (editId) {
-      getSessionById(editId).then((s) => {
-        if (!s) return;
-        setDate(s.date);
-        setLvStart(String(s.lvStart));
-        setExpStart(String(s.expStart));
-        setLvEnd(String(s.lvEnd));
-        setExpEnd(String(s.expEnd));
-        setFragsStart(String(s.fragsStart));
-        setFragsEnd(String(s.fragsEnd));
-        setNodesStart(String(s.nodesStart));
-        setNodesEnd(String(s.nodesEnd));
-        setMesosStart(String(s.mesosStart));
-        setMesosEnd(String(s.mesosEnd));
-        setCommonStart(String(s.commonFamiliarsStart));
-        setCommonEnd(String(s.commonFamiliarsEnd));
-        setRareStart(String(s.rareFamiliarsStart));
-        setRareEnd(String(s.rareFamiliarsEnd));
-        setNotes(s.notes ?? '');
-      });
-    }
+    if (!editId) return;
+    let cancelled = false;
+    getSessionById(editId).then((s) => {
+      if (cancelled || !s) return;
+      setDate(s.date);
+      setLvStart(String(s.lvStart));
+      setExpStart(String(s.expStart));
+      setLvEnd(String(s.lvEnd));
+      setExpEnd(String(s.expEnd));
+      setFragsStart(String(s.fragsStart));
+      setFragsEnd(String(s.fragsEnd));
+      setNodesStart(String(s.nodesStart));
+      setNodesEnd(String(s.nodesEnd));
+      setMesosStart(String(s.mesosStart));
+      setMesosEnd(String(s.mesosEnd));
+      setCommonStart(String(s.commonFamiliarsStart));
+      setCommonEnd(String(s.commonFamiliarsEnd));
+      setRareStart(String(s.rareFamiliarsStart));
+      setRareEnd(String(s.rareFamiliarsEnd));
+      setNotes(s.notes ?? '');
+    });
+    return () => { cancelled = true; };
   }, [editId]);
 
   const p = (v: string, fallback = 0) => parseFloat(v.replace(',', '.')) || fallback;
@@ -173,10 +174,10 @@ export default function AddSessionScreen({ route, navigation }: Props) {
       notes: notes.trim() || undefined,
     };
 
-    if (isEdit) {
-      await updateSession(session);
-    } else {
-      await addSession(session);
+    const { error } = isEdit ? await updateSession(session) : await addSession(session);
+    if (error) {
+      Alert.alert('Error al guardar', 'No se pudo guardar la sesión. Intenta de nuevo.');
+      return;
     }
     navigation.goBack();
   }, [
@@ -185,7 +186,7 @@ export default function AddSessionScreen({ route, navigation }: Props) {
     mesosStart, mesosEnd, commonStart, commonEnd,
     rareStart, rareEnd, notes,
     expGained, fragsGained, nodesGained, mesosGained, commonGained, rareGained,
-    isEdit, editId, activeProfile,
+    isEdit, editId, activeProfile, navigation,
   ]);
 
   useEffect(() => {
@@ -197,7 +198,7 @@ export default function AddSessionScreen({ route, navigation }: Props) {
         </TouchableOpacity>
       ),
     });
-  }, [handleSave, isEdit]);
+  }, [handleSave, isEdit, navigation]);
 
   return (
     <KeyboardAvoidingView

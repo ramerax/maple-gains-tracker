@@ -75,7 +75,9 @@ export default function FinishSessionScreen({ navigation }: Props) {
   const [rareEnd, setRareEnd] = useState('');
 
   useEffect(() => {
+    let cancelled = false;
     getOpenSession(activeProfileId ?? undefined).then((s) => {
+      if (cancelled) return;
       if (!s) {
         Alert.alert('Sin sesión activa', 'No hay ninguna sesión en progreso.', [
           { text: 'OK', onPress: () => navigation.goBack() },
@@ -84,6 +86,7 @@ export default function FinishSessionScreen({ navigation }: Props) {
       }
       setOpen(s);
     });
+    return () => { cancelled = true; };
   }, [activeProfileId, navigation]);
 
   const pi = (v: string) => parseInt(v) || 0;
@@ -145,13 +148,17 @@ export default function FinishSessionScreen({ navigation }: Props) {
       notes: notes.trim() || open.notes || undefined,
     };
 
-    await addSession(session);
+    const { error } = await addSession(session);
+    if (error) {
+      Alert.alert('Error al guardar', 'No se pudo guardar la sesión. Intenta de nuevo.');
+      return;
+    }
     await deleteOpenSession(open.profileId);
     navigation.goBack();
   }, [
     open, lvEnd, expEnd, fragsEnd, nodesEnd, mesosEnd,
     commonEnd, rareEnd, expGained, fragsGained, nodesGained,
-    mesosGained, commonGained, rareGained, notes,
+    mesosGained, commonGained, rareGained, notes, navigation,
   ]);
 
   if (!open) {

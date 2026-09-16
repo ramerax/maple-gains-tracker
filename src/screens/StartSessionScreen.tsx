@@ -56,8 +56,9 @@ export default function StartSessionScreen({ navigation, route }: Props) {
   const [rareStart, setRareStart] = useState('');
   useEffect(() => {
     if (!editing) return;
+    let cancelled = false;
     getOpenSession(activeProfile?.id).then((open) => {
-      if (!open) return;
+      if (cancelled || !open) return;
       setExistingSession(open);
       setDate(open.date);
       setLvStart(String(open.lvStart));
@@ -68,6 +69,7 @@ export default function StartSessionScreen({ navigation, route }: Props) {
       setCommonStart(open.commonFamiliarsStart > 0 ? String(open.commonFamiliarsStart) : '');
       setRareStart(open.rareFamiliarsStart > 0 ? String(open.rareFamiliarsStart) : '');
     });
+    return () => { cancelled = true; };
   }, [editing, activeProfile?.id]);
 
   const pi = (v: string) => parseInt(v) || 0;
@@ -98,12 +100,16 @@ export default function StartSessionScreen({ navigation, route }: Props) {
       notes: existingSession?.notes,
     };
 
-    await saveOpenSession(open);
+    const { error } = await saveOpenSession(open);
+    if (error) {
+      Alert.alert('Error al guardar', 'No se pudo guardar la sesión. Intenta de nuevo.');
+      return;
+    }
     navigation.goBack();
   }, [
     date, lvStart, expStart, fragsStart, nodesStart,
     mesosStart, commonStart, rareStart, activeProfile,
-    existingSession,
+    existingSession, navigation,
   ]);
 
   return (
