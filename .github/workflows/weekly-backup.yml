@@ -56,7 +56,39 @@ jobs:
           echo "Dump file size:"
           ls -la backup.dump
 
-      - name: Restore dump into a throwaway DB to prove it actually works
+      - name: Bootstrap Supabase-compatible schema in the throwaway DB
+        env:
+          PGPASSWORD: verify_pw
+        run: |
+          # Our dump references Supabase-managed objects (auth.uid(), and the
+          # anon/authenticated roles used in RLS policies) that don't exist on
+          # a plain postgres:17 image. Stub out just enough for the restore
+          # to succeed structurally — this is only testing restorability and
+          # row counts, not RLS behavior.
+          cat > bootstrap.sql <<'SQL'
+          DROP SCHEMA IF EXISTS public CASCADE;
+
+          DO $$
+          BEGIN
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
+              CREATE ROLE anon;
+            END IF;
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'authenticated') THEN
+              CREATE ROLE authenticated;
+            END IF;
+          END
+          $$;
+
+          CREATE SCHEMA IF NOT EXISTS auth;
+
+          CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
+          LANGUAGE sql STABLE
+          AS $$ SELECT NULL::uuid $$;
+          SQL
+
+          /usr/lib/postgresql/17/bin/psql -h localhost -p 5433 -U postgres -d verify -f bootstrap.sql
+
+      - name: Restore dump into the throwaway DB to prove it actually works
         env:
           PGPASSWORD: verify_pw
         run: |
