@@ -236,7 +236,11 @@ export async function getProfiles(): Promise<Profile[]> {
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: true });
-  if (error) { if (__DEV__) console.error('getProfiles:', error.message); return []; }
+  if (error) {
+    console.error('[getProfiles] error:', error.message, '| code:', error.code, '| hint:', (error as any).hint);
+    return [];
+  }
+  console.log('[getProfiles] loaded:', data?.length ?? 0, 'profiles');
   return (data ?? []).map(rowToProfile);
 }
 
