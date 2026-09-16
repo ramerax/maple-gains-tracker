@@ -38,11 +38,18 @@ jobs:
           SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           FILENAME="backup-$(date -u +%Y-%m-%d).dump"
-          curl -sf -X POST \
+          HTTP_STATUS=$(curl -s -o response.json -w "%{http_code}" -X POST \
             "$SUPABASE_URL/storage/v1/object/backups/$FILENAME" \
+            -H "apikey: $SERVICE_ROLE_KEY" \
             -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
             -H "Content-Type: application/octet-stream" \
-            --data-binary @backup.dump
+            --data-binary @backup.dump)
+          echo "HTTP status: $HTTP_STATUS"
+          cat response.json
+          if [ "$HTTP_STATUS" -ge 400 ]; then
+            echo "Upload failed"
+            exit 1
+          fi
           echo "Uploaded $FILENAME"
           # No rotation step by design — every backup is kept forever.
           # Compressed dumps of this DB are tiny (KBs), so decades of
