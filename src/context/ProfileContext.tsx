@@ -14,6 +14,7 @@ interface ProfileContextValue {
   profiles: Profile[];
   activeProfile: Profile | null;
   activeProfileId: string | null;
+  loadError: string | null;
   setActiveProfile: (id: string) => Promise<void>;
   refreshProfiles: () => Promise<void>;
 }
@@ -25,14 +26,22 @@ const DEFAULT_PROFILE_COLOR = '#FF8C00';
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfileId, setActiveProfileIdState] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const refreshProfiles = useCallback(async () => {
     // Always run migration first — prevents race condition with profile creation
     await runMigrationIfNeeded();
     // Assign user_id to any rows created before auth was added (runs fast if already done)
     try { await migrateDataToAuthUser(); } catch (e) { console.error('[ProfileContext] migrateDataToAuthUser threw:', e); }
-    let loaded = await getProfiles();
+
+    const { profiles: loaded, error: profilesError } = await getProfiles();
     let activeId = await getActiveProfileId();
+
+    if (profilesError) {
+      setLoadError(profilesError);
+      // Don't create a default profile on DB error — show the error instead
+      return;
+    }
 
     // First launch: create a default profile
     if (loaded.length === 0) {
@@ -44,8 +53,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       };
       await addProfile(defaultProfile);
       await setActiveProfileId(defaultProfile.id);
-      loaded = [defaultProfile];
-      activeId = defaultProfile.id;
+      setProfiles([defaultProfile]);
+      setActiveProfileIdState(defaultProfile.id);
+      setLoadError(null);
+      return;
     }
 
     // If stored activeId is not in the list, fall back to first profile
@@ -56,6 +67,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     setProfiles(loaded);
     setActiveProfileIdState(activeId);
+    setLoadError(null);
   }, []);
 
   useEffect(() => {
@@ -71,7 +83,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ProfileContext.Provider
-      value={{ profiles, activeProfile, activeProfileId, setActiveProfile, refreshProfiles }}
+      value={{ profiles, activeProfile, activeProfileId, loadError, setActiveProfile, refreshProfiles }}
     >
       {children}
     </ProfileContext.Provider>

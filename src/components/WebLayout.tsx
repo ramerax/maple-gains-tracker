@@ -47,7 +47,7 @@ export default function WebLayout() {
   const [mountedTabs, setMountedTabs] = useState<Set<TabId>>(new Set(['home']));
   const [refreshKey, setRefreshKey] = useState(0);
   const [hasOpenSession, setHasOpenSession] = useState(false);
-  const { activeProfile, activeProfileId } = useProfile();
+  const { activeProfile, activeProfileId, loadError, refreshProfiles } = useProfile();
   const { user, signOut } = useAuth();
   const navigation = useNavigation<Nav>();
 
@@ -180,6 +180,20 @@ export default function WebLayout() {
           </View>
           <Ionicons name="chevron-forward" size={12} color={WC.textFaint} />
         </Pressable>
+
+        {/* Profile load error — shown when DB call fails */}
+        {loadError && (
+          <>
+            <View style={styles.divider} />
+            <View style={styles.errorBox}>
+              <Text style={styles.errorTitle}>⚠ Error cargando datos</Text>
+              <Text style={styles.errorMsg} numberOfLines={3}>{loadError}</Text>
+              <Pressable style={styles.retryBtn} onPress={refreshProfiles}>
+                <Text style={styles.retryText}>Reintentar</Text>
+              </Pressable>
+            </View>
+          </>
+        )}
 
         {/* Auth footer — email + sign out */}
         {user && (
@@ -463,6 +477,36 @@ const styles = StyleSheet.create({
     color: WC.textMuted,
     fontSize: 11,
     fontWeight: '500',
+  },
+
+  // Error box
+  errorBox: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 4,
+  },
+  errorTitle: {
+    color: '#FF6B6B',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  errorMsg: {
+    color: WC.textMuted,
+    fontSize: 9,
+    lineHeight: 13,
+  },
+  retryBtn: {
+    marginTop: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255,107,107,0.15)',
+    alignSelf: 'flex-start',
+  },
+  retryText: {
+    color: '#FF6B6B',
+    fontSize: 11,
+    fontWeight: '600',
   },
 
   // Content

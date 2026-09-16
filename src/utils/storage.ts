@@ -231,17 +231,17 @@ export function generateId(): string {
 
 // ── Profile CRUD ───────────────────────────────────────────────────────────────
 
-export async function getProfiles(): Promise<Profile[]> {
+export async function getProfiles(): Promise<{ profiles: Profile[]; error: string | null }> {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: true });
   if (error) {
     console.error('[getProfiles] error:', error.message, '| code:', error.code, '| hint:', (error as any).hint);
-    return [];
+    return { profiles: [], error: `${error.message} (code: ${error.code})` };
   }
   console.log('[getProfiles] loaded:', data?.length ?? 0, 'profiles');
-  return (data ?? []).map(rowToProfile);
+  return { profiles: (data ?? []).map(rowToProfile), error: null };
 }
 
 

@@ -15,6 +15,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     autoRefreshToken: true,
     detectSessionInUrl: false,
     // Bypass navigator.locks — broken in Firefox with certain extensions (e.g. MetaMask)
-    lock: async (_name: string, _acquireTimeout: number, fn: () => Promise<unknown>) => fn(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    lock: (async (_name: any, _acquireTimeout: any, fn: any) => fn()) as any,
   },
 });
