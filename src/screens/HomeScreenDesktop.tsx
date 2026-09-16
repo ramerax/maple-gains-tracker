@@ -36,6 +36,7 @@ function StatRow({ label, value, color, bg, icon }: {
 function SessionRow({ session, index }: { session: Session; index: number }) {
   const navigation = useNavigation<Nav>();
   const levelsGained = session.lvEnd - session.lvStart;
+  const pctGained = levelsGained * 100 + (session.expEnd - session.expStart);
   const isEven = index % 2 === 0;
   return (
     <TouchableOpacity
@@ -51,7 +52,10 @@ function SessionRow({ session, index }: { session: Session; index: number }) {
           ? `Lv ${session.lvStart}→${session.lvEnd}`
           : `Lv ${session.lvStart}`}
       </Text>
-      <Text style={[styles.sessRowExp, { color: WC.exp }]}>{formatExp(session.expGainedActual)}</Text>
+      <View style={styles.sessRowExp}>
+        <Text style={[styles.sessRowExpValue, { color: WC.exp }]}>{formatExp(session.expGainedActual)}</Text>
+        <Text style={styles.sessRowExpPct}>+{pctGained.toFixed(2)}%</Text>
+      </View>
       <Text style={[styles.sessRowMesos, { color: WC.mesos }]}>{formatExp(session.mesosGained)}</Text>
       <Text style={[styles.sessRowFrags, { color: WC.frags }]}>{formatNumber(session.fragsGained)}</Text>
       <Text style={[styles.sessRowNodes, { color: WC.nodes }]}>{formatNumber(session.nodesGained)}</Text>
@@ -159,7 +163,7 @@ export default function HomeScreenDesktop({
           <View style={styles.tableHeader}>
             <Text style={[styles.thCell, styles.sessDateWrap]}>FECHA</Text>
             <Text style={[styles.thCell, styles.sessRowLevel]}>NIVEL</Text>
-            <Text style={[styles.thCell, styles.sessRowExp]}>EXP</Text>
+            <View style={styles.sessRowExp}><Text style={styles.thCell}>EXP / %</Text></View>
             <Text style={[styles.thCell, styles.sessRowMesos]}>MESOS</Text>
             <Text style={[styles.thCell, styles.sessRowFrags]}>FRAGS</Text>
             <Text style={[styles.thCell, styles.sessRowNodes]}>NODOS</Text>
@@ -436,7 +440,9 @@ const styles = StyleSheet.create({
   sessDateWrap:  { width: 70 },
   sessRowDate:   { color: WC.textDim, fontWeight: '800', fontSize: 12, textTransform: 'uppercase' },
   sessRowLevel:  { flex: 1, color: WC.textMuted, fontWeight: '500', fontSize: 12 },
-  sessRowExp:    { width: 92,  fontWeight: '900', fontSize: 14, letterSpacing: -0.5, textAlign: 'right' },
+  sessRowExp:    { width: 92,  alignItems: 'flex-end' },
+  sessRowExpValue: { fontWeight: '900', fontSize: 14, letterSpacing: -0.5 },
+  sessRowExpPct:   { fontSize: 10, color: WC.textFaint, marginTop: 1 },
   sessRowMesos:  { width: 82,  fontWeight: '700', fontSize: 12, textAlign: 'right' },
   sessRowFrags:  { width: 62,  fontWeight: '700', fontSize: 12, textAlign: 'right' },
   sessRowNodes:  { width: 62,  fontWeight: '700', fontSize: 12, textAlign: 'right' },
