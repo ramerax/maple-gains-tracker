@@ -231,13 +231,16 @@ export function generateId(): string {
 
 // ── Profile CRUD ───────────────────────────────────────────────────────────────
 
-export async function getProfiles(): Promise<{ profiles: Profile[]; error: string | null }> {
-  // Use direct fetch to bypass Supabase JS client auth state issues
+export async function getProfiles(accessToken?: string): Promise<{ profiles: Profile[]; error: string | null; hadToken: boolean }> {
   const SUPABASE_URL = (process.env.EXPO_PUBLIC_SUPABASE_URL ?? '').trim();
   const ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
-  const { data: sd } = await supabase.auth.getSession();
-  const token = sd.session?.access_token;
+  // Use caller-supplied token (preferred) or fall back to current session
+  let token = accessToken;
+  if (!token) {
+    const { data: sd } = await supabase.auth.getSession();
+    token = sd.session?.access_token;
+  }
 
   const headers: Record<string, string> = { apikey: ANON_KEY, Accept: 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -250,14 +253,14 @@ export async function getProfiles(): Promise<{ profiles: Profile[]; error: strin
     if (!r.ok) {
       const body = await r.text();
       console.error('[getProfiles] HTTP error:', r.status, body);
-      return { profiles: [], error: `HTTP ${r.status}: ${body.slice(0, 200)}` };
+      return { profiles: [], error: `HTTP ${r.status}: ${body.slice(0, 200)}`, hadToken: !!token };
     }
     const data = await r.json();
-    console.log('[getProfiles] loaded:', data?.length ?? 0, 'profiles (direct fetch, token:', token ? 'yes' : 'no', ')');
-    return { profiles: (data ?? []).map(rowToProfile), error: null };
+    console.log('[getProfiles] loaded:', data?.length ?? 0, 'profiles | token:', token ? 'yes' : 'NO');
+    return { profiles: (data ?? []).map(rowToProfile), error: null, hadToken: !!token };
   } catch (e: any) {
     console.error('[getProfiles] fetch threw:', e.message);
-    return { profiles: [], error: e.message };
+    return { profiles: [], error: e.message, hadToken: !!token };
   }
 }
 
