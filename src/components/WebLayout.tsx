@@ -152,7 +152,9 @@ export default function WebLayout() {
             onPress={() => handleTabChange('home')}
           >
             <PulsingDot />
-            <Text style={styles.sidebarSessionText}>Sesión activa</Text>
+            <Text style={styles.sidebarSessionText}>
+              Sesión activa{totalSessions !== null ? ` #${totalSessions + 1}` : ''}
+            </Text>
             <Ionicons name="chevron-forward" size={11} color={WC.primary} />
           </Pressable>
         )}
