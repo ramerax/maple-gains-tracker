@@ -10,6 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SUPABASE_URL: https://iqgpbzvyyywflluqhpqj.supabase.co
+    # Ephemeral throwaway Postgres, only used to prove the dump actually restores
+    services:
+      verify_db:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: verify_pw
+          POSTGRES_DB: verify
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Install PostgreSQL 17 client (matches Supabase server version)
         run: |
@@ -19,7 +33,6 @@ jobs:
           sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
           sudo apt-get update
           sudo apt-get install -y postgresql-client-17
-          ls /usr/lib/postgresql/
           /usr/lib/postgresql/17/bin/pg_dump --version
 
       - name: Dump database (compressed custom format)
@@ -32,34 +45,44 @@ jobs:
             --no-privileges \
             --schema=public \
             --file=backup.dump
-
-      - name: Verify backup integrity
-        run: |
-          echo "File size:"
+          echo "Dump file size:"
           ls -la backup.dump
 
-          echo ""
-          echo "Contents (table of contents):"
-          /usr/lib/postgresql/17/bin/pg_restore --list backup.dump
-
-          echo ""
-          echo "Checking expected tables are present..."
-          TOC=$(/usr/lib/postgresql/17/bin/pg_restore --list backup.dump)
-          for TABLE in profiles sessions open_sessions; do
-            if ! echo "$TOC" | grep -q "TABLE DATA public $TABLE "; then
-              echo "MISSING: $TABLE — dump is incomplete or corrupt, aborting."
-              exit 1
-            fi
-          done
-          echo "All expected tables present. Backup looks valid."
-
-      - name: Row counts (sanity check — compare against what you expect)
+      - name: Restore dump into a throwaway DB to prove it actually works
+        env:
+          PGPASSWORD: verify_pw
         run: |
-          /usr/lib/postgresql/17/bin/psql "${{ secrets.SUPABASE_DB_URL }}" -c "
-            SELECT 'profiles' AS table_name, COUNT(*) FROM profiles
+          /usr/lib/postgresql/17/bin/pg_restore \
+            --no-owner --no-privileges \
+            -h localhost -p 5433 -U postgres -d verify \
+            backup.dump
+
+      - name: Verify row counts match exactly (source vs restored dump)
+        env:
+          PGPASSWORD: verify_pw
+        run: |
+          COUNT_SQL="SELECT 'profiles', COUNT(*) FROM profiles
             UNION ALL SELECT 'sessions', COUNT(*) FROM sessions
-            UNION ALL SELECT 'open_sessions', COUNT(*) FROM open_sessions;
-          "
+            UNION ALL SELECT 'open_sessions', COUNT(*) FROM open_sessions
+            ORDER BY 1;"
+
+          SOURCE_COUNTS=$(/usr/lib/postgresql/17/bin/psql "${{ secrets.SUPABASE_DB_URL }}" -t -A -c "$COUNT_SQL")
+          RESTORED_COUNTS=$(/usr/lib/postgresql/17/bin/psql -h localhost -p 5433 -U postgres -d verify -t -A -c "$COUNT_SQL")
+
+          echo "Live source DB:"
+          echo "$SOURCE_COUNTS"
+          echo ""
+          echo "Restored from this backup:"
+          echo "$RESTORED_COUNTS"
+
+          if [ "$SOURCE_COUNTS" != "$RESTORED_COUNTS" ]; then
+            echo ""
+            echo "MISMATCH — the backup does not restore to the same row counts as the live database."
+            echo "Not uploading a backup that failed verification."
+            exit 1
+          fi
+          echo ""
+          echo "Row counts match exactly. Backup is verified good — restorable and complete."
 
       - name: Upload to Supabase Storage
         env:
@@ -78,7 +101,7 @@ jobs:
             echo "Upload failed"
             exit 1
           fi
-          echo "Uploaded $FILENAME"
+          echo "Uploaded $FILENAME (verified good before upload)"
           # No rotation step by design — every backup is kept forever.
           # Compressed dumps of this DB are tiny (KBs), so decades of
           # weekly backups stay well under Supabase's free storage tier.
