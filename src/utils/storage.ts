@@ -310,3 +310,21 @@ export async function deleteOpenSession(profileId: string): Promise<void> {
     .eq('profile_id', profileId);
   if (error) { if (__DEV__) console.error('deleteOpenSession:', error.message); }
 }
+
+// ── Auth data migration ────────────────────────────────────────────────────────
+// Runs once after first login: assigns user_id to all existing rows that lack it.
+// Safe to call multiple times (no-op if all rows already have user_id).
+export async function migrateDataToAuthUser(): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const uid = user.id;
+
+  const [r1, r2, r3] = await Promise.all([
+    supabase.from('profiles').update({ user_id: uid }).is('user_id', null),
+    supabase.from('sessions').update({ user_id: uid }).is('user_id', null),
+    supabase.from('open_sessions').update({ user_id: uid }).is('user_id', null),
+  ]);
+  if (r1.error) console.error('migrateDataToAuthUser profiles:', r1.error.message);
+  if (r2.error) console.error('migrateDataToAuthUser sessions:', r2.error.message);
+  if (r3.error) console.error('migrateDataToAuthUser open_sessions:', r3.error.message);
+}

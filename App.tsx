@@ -11,9 +11,11 @@ import { COLORS, FONTS } from './src/constants/theme';
 import { WC } from './src/constants/themeWeb';
 import { RootStackParamList, TabParamList } from './src/types';
 import { ProfileProvider } from './src/context/ProfileContext';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { useIsDesktopWeb } from './src/hooks/useIsDesktopWeb';
 import WebLayout from './src/components/WebLayout';
 import WebScreenWrapper from './src/components/WebScreenWrapper';
+import LoginScreen from './src/screens/LoginScreen';
 
 import HomeScreen from './src/screens/HomeScreen';
 import AddSessionScreen from './src/screens/AddSessionScreen';
@@ -205,13 +207,36 @@ function AppContent() {
   );
 }
 
+// ── AuthGate — shows Login until user is authenticated ────────────────────────
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: WC.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ color: WC.textMuted, fontSize: FONTS.md }}>Cargando...</Text>
+      </View>
+    );
+  }
+
+  if (!user) {
+    return <LoginScreen />;
+  }
+
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
-        <ProfileProvider>
-          <AppContent />
-        </ProfileProvider>
+        <AuthProvider>
+          <AuthGate>
+            <ProfileProvider>
+              <AppContent />
+            </ProfileProvider>
+          </AuthGate>
+        </AuthProvider>
       </SafeAreaProvider>
     </ErrorBoundary>
   );

@@ -6,6 +6,7 @@ import {
   getActiveProfileId,
   setActiveProfileId,
   generateId,
+  migrateDataToAuthUser,
 } from '../utils/storage';
 import { runMigrationIfNeeded } from '../utils/migration';
 
@@ -28,6 +29,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const refreshProfiles = useCallback(async () => {
     // Always run migration first — prevents race condition with profile creation
     await runMigrationIfNeeded();
+    // Assign user_id to any rows created before auth was added (runs fast if already done)
+    await migrateDataToAuthUser();
     let loaded = await getProfiles();
     let activeId = await getActiveProfileId();
 
