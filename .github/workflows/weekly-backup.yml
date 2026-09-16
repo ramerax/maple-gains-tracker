@@ -36,25 +36,6 @@ jobs:
             -H "Content-Type: application/octet-stream" \
             --data-binary @backup.dump
           echo "Uploaded $FILENAME"
-
-      - name: Rotate old backups (keep last 8 weeks)
-        env:
-          SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
-          curl -sf -X POST \
-            "$SUPABASE_URL/storage/v1/object/list/backups" \
-            -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"limit": 1000, "sortBy": {"column": "name", "order": "asc"}}' \
-            -o list.json
-
-          TO_DELETE=$(jq -c '[.[].name] | sort | .[:-8]' list.json)
-          echo "Deleting: $TO_DELETE"
-
-          if [ "$TO_DELETE" != "[]" ]; then
-            curl -sf -X DELETE \
-              "$SUPABASE_URL/storage/v1/object/backups" \
-              -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
-              -H "Content-Type: application/json" \
-              -d "{\"prefixes\": $TO_DELETE}"
-          fi
+          # No rotation step by design — every backup is kept forever.
+          # Compressed dumps of this DB are tiny (KBs), so decades of
+          # weekly backups stay well under Supabase's free storage tier.
