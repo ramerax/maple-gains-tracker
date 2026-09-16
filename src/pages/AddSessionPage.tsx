@@ -153,7 +153,7 @@ export default function AddSessionPage() {
             { label: '% EXP Inicio', value: expStart, onChange: setExpStart, placeholder: '0.00', decimal: true },
             { label: '% EXP Fin', value: expEnd, onChange: setExpEnd, placeholder: '0.00', decimal: true },
           ]}
-          gains={(lvStart || lvEnd) && (expStart || expEnd) ? [
+          gains={lvEnd && expEnd ? [
             { label: 'EXP Ganada', value: formatExp(expGained) },
             { label: '% Total', value: `${formatPercent(totalExpPct)}%` },
           ] : undefined}
@@ -165,7 +165,7 @@ export default function AddSessionPage() {
             { label: 'Inicio', value: fragsStart, onChange: setFragsStart },
             { label: 'Fin', value: fragsEnd, onChange: setFragsEnd },
           ]}
-          gains={fragsStart || fragsEnd ? [{ label: 'Ganados', value: formatSignedGain(fragsGained) }] : undefined}
+          gains={fragsStart && fragsEnd ? [{ label: 'Ganados', value: formatSignedGain(fragsGained) }] : undefined}
         />
         <StatSectionGrid
           color={STAT_COLORS.nodes} icon="🔮" title="Nodos"
@@ -173,7 +173,7 @@ export default function AddSessionPage() {
             { label: 'Inicio', value: nodesStart, onChange: setNodesStart },
             { label: 'Fin', value: nodesEnd, onChange: setNodesEnd },
           ]}
-          gains={nodesStart || nodesEnd ? [{ label: 'Ganados', value: formatSignedGain(nodesGained) }] : undefined}
+          gains={nodesStart && nodesEnd ? [{ label: 'Ganados', value: formatSignedGain(nodesGained) }] : undefined}
         />
         <StatSectionGrid
           color={STAT_COLORS.mesos} icon="💰" title="Mesos"
@@ -181,7 +181,7 @@ export default function AddSessionPage() {
             { label: 'Mesos Inicio', value: mesosStart, onChange: setMesosStart },
             { label: 'Mesos Fin', value: mesosEnd, onChange: setMesosEnd },
           ]}
-          gains={mesosStart || mesosEnd ? [{ label: 'Ganados', value: formatSignedGain(mesosGained, formatExp) }] : undefined}
+          gains={mesosStart && mesosEnd ? [{ label: 'Ganados', value: formatSignedGain(mesosGained, formatExp) }] : undefined}
         />
         <StatSectionGrid
           color={STAT_COLORS.common} icon="👾" title="Familiares Comunes"
@@ -189,7 +189,7 @@ export default function AddSessionPage() {
             { label: 'Inicio', value: commonStart, onChange: setCommonStart },
             { label: 'Fin', value: commonEnd, onChange: setCommonEnd },
           ]}
-          gains={commonStart || commonEnd ? [{ label: 'Ganados', value: formatSignedGain(commonGained) }] : undefined}
+          gains={commonStart && commonEnd ? [{ label: 'Ganados', value: formatSignedGain(commonGained) }] : undefined}
         />
         <StatSectionGrid
           color={STAT_COLORS.rare} icon="✨" title="Familiares Raros"
@@ -197,7 +197,7 @@ export default function AddSessionPage() {
             { label: 'Inicio', value: rareStart, onChange: setRareStart },
             { label: 'Fin', value: rareEnd, onChange: setRareEnd },
           ]}
-          gains={rareStart || rareEnd ? [{ label: 'Ganados', value: formatSignedGain(rareGained) }] : undefined}
+          gains={rareStart && rareEnd ? [{ label: 'Ganados', value: formatSignedGain(rareGained) }] : undefined}
         />
 
         <div className="mt-5 border-l-[3px] border-border-strong bg-white/[0.03] px-4 py-2.5">

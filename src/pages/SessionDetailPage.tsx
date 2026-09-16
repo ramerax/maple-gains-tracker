@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { getSessionById, deleteSession } from '@/utils/storage';
-import { formatDateLong, formatExp, formatNumber, formatPercent } from '@/utils/formatters';
+import { formatDateLong, formatExp, formatNumber, formatPercent, formatSignedGain } from '@/utils/formatters';
 import { calculateTotalExpPercent } from '@/utils/expCalculator';
 import { STAT_COLORS } from '@/constants/statColors';
 import { useOpenModal } from '@/hooks/useOpenModal';
@@ -126,7 +126,7 @@ export default function SessionDetailPage() {
                 <div>
                   <p className="text-[10px] text-text-muted">Ganado</p>
                   <p className={`mt-0.5 font-black ${isExp ? 'text-xl' : 'text-sm'}`} style={{ color }}>
-                    +{fmt(session[gained] as number)}
+                    {formatSignedGain(session[gained] as number, fmt)}
                   </p>
                   {isExp && (
                     <p className="text-xs font-semibold" style={{ color }}>
