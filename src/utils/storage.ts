@@ -7,6 +7,26 @@ import { Session, PeriodStats, Profile, OpenSession } from '../types';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DbRow = Record<string, any>;
 
+function errMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
+
+const SESSION_COLUMNS =
+  'id, profile_id, date, created_at, lv_start, exp_start, lv_end, exp_end, ' +
+  'exp_gained_actual, frags_start, frags_end, frags_gained, nodes_start, nodes_end, ' +
+  'nodes_gained, mesos_start, mesos_end, mesos_gained, common_familiars_start, ' +
+  'common_familiars_end, common_familiars_gained, rare_familiars_start, ' +
+  'rare_familiars_end, rare_familiars_gained, notes';
+
+const PROFILE_COLUMNS = 'id, name, game_class, server, color, created_at';
+
+const OPEN_SESSION_COLUMNS =
+  'id, profile_id, date, started_at, lv_start, exp_start, frags_start, nodes_start, ' +
+  'mesos_start, common_familiars_start, rare_familiars_start, notes';
+
+// Guards against unbounded growth for a single-user tracker (~150 sessions/year of daily use)
+const MAX_SESSIONS = 3000;
+
 function rowToSession(row: DbRow): Session {
   return {
     id: row.id,
@@ -37,7 +57,7 @@ function rowToSession(row: DbRow): Session {
   };
 }
 
-function sessionToRow(session: Session): Record<string, unknown> {
+export function sessionToRow(session: Session): Record<string, unknown> {
   return {
     id: session.id,
     profile_id: session.profileId ?? null,
@@ -57,12 +77,12 @@ function sessionToRow(session: Session): Record<string, unknown> {
     mesos_start: session.mesosStart,
     mesos_end: session.mesosEnd,
     mesos_gained: session.mesosGained,
-    common_familiars_start: session.commonFamiliarsStart,
-    common_familiars_end: session.commonFamiliarsEnd,
-    common_familiars_gained: session.commonFamiliarsGained,
-    rare_familiars_start: session.rareFamiliarsStart,
-    rare_familiars_end: session.rareFamiliarsEnd,
-    rare_familiars_gained: session.rareFamiliarsGained,
+    common_familiars_start: session.commonFamiliarsStart ?? 0,
+    common_familiars_end: session.commonFamiliarsEnd ?? 0,
+    common_familiars_gained: session.commonFamiliarsGained ?? 0,
+    rare_familiars_start: session.rareFamiliarsStart ?? 0,
+    rare_familiars_end: session.rareFamiliarsEnd ?? 0,
+    rare_familiars_gained: session.rareFamiliarsGained ?? 0,
     notes: session.notes ?? null,
   };
 }
@@ -78,7 +98,7 @@ function rowToProfile(row: DbRow): Profile {
   };
 }
 
-function profileToRow(profile: Profile): Record<string, unknown> {
+export function profileToRow(profile: Profile): Record<string, unknown> {
   return {
     id: profile.id,
     name: profile.name,
@@ -106,7 +126,7 @@ function rowToOpenSession(row: DbRow): OpenSession {
   };
 }
 
-function openSessionToRow(session: OpenSession): Record<string, unknown> {
+export function openSessionToRow(session: OpenSession): Record<string, unknown> {
   return {
     id: session.id,
     profile_id: session.profileId,
@@ -117,8 +137,8 @@ function openSessionToRow(session: OpenSession): Record<string, unknown> {
     frags_start: session.fragsStart,
     nodes_start: session.nodesStart,
     mesos_start: session.mesosStart,
-    common_familiars_start: session.commonFamiliarsStart,
-    rare_familiars_start: session.rareFamiliarsStart,
+    common_familiars_start: session.commonFamiliarsStart ?? 0,
+    rare_familiars_start: session.rareFamiliarsStart ?? 0,
     notes: session.notes ?? null,
   };
 }
@@ -128,9 +148,10 @@ function openSessionToRow(session: OpenSession): Record<string, unknown> {
 export async function getAllSessions(profileId?: string): Promise<Session[]> {
   let query = supabase
     .from('sessions')
-    .select('*')
+    .select(SESSION_COLUMNS)
     .order('date', { ascending: false })
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(MAX_SESSIONS);
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query;
   if (error) { if (__DEV__) console.error('getAllSessions:', error.message); return []; }
@@ -140,35 +161,38 @@ export async function getAllSessions(profileId?: string): Promise<Session[]> {
 export async function getSessionById(id: string): Promise<Session | null> {
   const { data, error } = await supabase
     .from('sessions')
-    .select('*')
+    .select(SESSION_COLUMNS)
     .eq('id', id)
     .single();
   if (error) { if (__DEV__) console.error('getSessionById:', error.message); return null; }
   return data ? rowToSession(data) : null;
 }
 
-export async function addSession(session: Session): Promise<void> {
+export async function addSession(session: Session): Promise<{ error: string | null }> {
   const { error } = await supabase.from('sessions').insert(sessionToRow(session));
-  if (error) { if (__DEV__) console.error('addSession:', error.message); }
+  if (error) { if (__DEV__) console.error('addSession:', error.message); return { error: error.message }; }
+  return { error: null };
 }
 
-export async function updateSession(updated: Session): Promise<void> {
+export async function updateSession(updated: Session): Promise<{ error: string | null }> {
   const { error } = await supabase
     .from('sessions')
     .update(sessionToRow(updated))
     .eq('id', updated.id);
-  if (error) { if (__DEV__) console.error('updateSession:', error.message); }
+  if (error) { if (__DEV__) console.error('updateSession:', error.message); return { error: error.message }; }
+  return { error: null };
 }
 
-export async function deleteSession(id: string): Promise<void> {
+export async function deleteSession(id: string): Promise<{ error: string | null }> {
   const { error } = await supabase.from('sessions').delete().eq('id', id);
-  if (error) { if (__DEV__) console.error('deleteSession:', error.message); }
+  if (error) { if (__DEV__) console.error('deleteSession:', error.message); return { error: error.message }; }
+  return { error: null };
 }
 
 export async function getSessionsByDate(date: string, profileId?: string): Promise<Session[]> {
   let query = supabase
     .from('sessions')
-    .select('*')
+    .select(SESSION_COLUMNS)
     .eq('date', date)
     .order('created_at', { ascending: true });
   if (profileId) query = query.eq('profile_id', profileId);
@@ -184,7 +208,7 @@ export async function getSessionsByDateRange(
 ): Promise<Session[]> {
   let query = supabase
     .from('sessions')
-    .select('*')
+    .select(SESSION_COLUMNS)
     .gte('date', startDate)
     .lte('date', endDate)
     .order('date', { ascending: true })
@@ -246,37 +270,41 @@ export async function getProfiles(accessToken?: string): Promise<{ profiles: Pro
 
   try {
     const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?select=*&order=created_at.asc`,
+      `${SUPABASE_URL}/rest/v1/profiles?select=${encodeURIComponent(PROFILE_COLUMNS)}&order=created_at.asc`,
       { headers }
     );
     if (!r.ok) {
       const body = await r.text();
-      return { profiles: [], error: `HTTP ${r.status}: ${body.slice(0, 200)}` };
+      if (__DEV__) console.error('getProfiles HTTP error:', r.status, body);
+      return { profiles: [], error: 'No se pudieron cargar los perfiles. Intenta de nuevo.' };
     }
     const data = await r.json();
     return { profiles: (data ?? []).map(rowToProfile), error: null };
-  } catch (e: any) {
-    return { profiles: [], error: e.message };
+  } catch (e: unknown) {
+    if (__DEV__) console.error('getProfiles fetch threw:', errMessage(e));
+    return { profiles: [], error: 'No se pudo conectar. Revisa tu conexión e intenta de nuevo.' };
   }
 }
 
-
-export async function addProfile(profile: Profile): Promise<void> {
+export async function addProfile(profile: Profile): Promise<{ error: string | null }> {
   const { error } = await supabase.from('profiles').insert(profileToRow(profile));
-  if (error) { if (__DEV__) console.error('addProfile:', error.message); }
+  if (error) { if (__DEV__) console.error('addProfile:', error.message); return { error: error.message }; }
+  return { error: null };
 }
 
-export async function updateProfile(profile: Profile): Promise<void> {
+export async function updateProfile(profile: Profile): Promise<{ error: string | null }> {
   const { error } = await supabase
     .from('profiles')
     .update(profileToRow(profile))
     .eq('id', profile.id);
-  if (error) { if (__DEV__) console.error('updateProfile:', error.message); }
+  if (error) { if (__DEV__) console.error('updateProfile:', error.message); return { error: error.message }; }
+  return { error: null };
 }
 
-export async function deleteProfile(id: string): Promise<void> {
+export async function deleteProfile(id: string): Promise<{ error: string | null }> {
   const { error } = await supabase.from('profiles').delete().eq('id', id);
-  if (error) { if (__DEV__) console.error('deleteProfile:', error.message); }
+  if (error) { if (__DEV__) console.error('deleteProfile:', error.message); return { error: error.message }; }
+  return { error: null };
 }
 
 // ── Active Profile (stays local — device preference) ──────────────────────────
@@ -295,14 +323,17 @@ export async function setActiveProfileId(id: string): Promise<void> {
 // ── Open Session ───────────────────────────────────────────────────────────────
 
 export async function getOpenSession(profileId?: string): Promise<OpenSession | null> {
-  let query = supabase.from('open_sessions').select('*');
+  let query = supabase
+    .from('open_sessions')
+    .select(OPEN_SESSION_COLUMNS)
+    .order('started_at', { ascending: false });
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query.limit(1);
   if (error) { if (__DEV__) console.error('getOpenSession:', error.message); return null; }
   return data && data.length > 0 ? rowToOpenSession(data[0]) : null;
 }
 
-export async function saveOpenSession(session: OpenSession): Promise<void> {
+export async function saveOpenSession(session: OpenSession): Promise<{ error: string | null }> {
   // Step 1: INSERT/UPDATE this session first (safe — data exists before old row removed)
   const { error: upsertErr } = await supabase
     .from('open_sessions')
@@ -311,30 +342,40 @@ export async function saveOpenSession(session: OpenSession): Promise<void> {
   if (upsertErr) {
     // Always surface this — losing an open session silently is unacceptable
     console.error('saveOpenSession upsert error:', upsertErr.message);
-    return; // Do NOT delete old rows if the write failed
+    return { error: upsertErr.message }; // Do NOT delete old rows if the write failed
   }
 
   // Step 2: Only after the new row is confirmed saved, remove any stale
   // open sessions for this profile that have a different id
-  await supabase
+  const { error: cleanupErr } = await supabase
     .from('open_sessions')
     .delete()
     .eq('profile_id', session.profileId)
     .neq('id', session.id);
+  if (cleanupErr && __DEV__) console.error('saveOpenSession cleanup error:', cleanupErr.message);
+
+  return { error: null };
 }
 
-export async function deleteOpenSession(profileId: string): Promise<void> {
+export async function deleteOpenSession(profileId: string): Promise<{ error: string | null }> {
   const { error } = await supabase
     .from('open_sessions')
     .delete()
     .eq('profile_id', profileId);
-  if (error) { if (__DEV__) console.error('deleteOpenSession:', error.message); }
+  if (error) { if (__DEV__) console.error('deleteOpenSession:', error.message); return { error: error.message }; }
+  return { error: null };
 }
 
 // ── Auth data migration ────────────────────────────────────────────────────────
 // Runs once after first login: assigns user_id to all existing rows that lack it.
-// Safe to call multiple times (no-op if all rows already have user_id).
+const USER_ID_MIGRATION_FLAG = '@maple_user_id_migrated';
+
 export async function migrateDataToAuthUser(): Promise<void> {
+  try {
+    const done = await AsyncStorage.getItem(USER_ID_MIGRATION_FLAG);
+    if (done === 'true') return;
+  } catch { /* AsyncStorage unavailable — fall through and attempt migration anyway */ }
+
   const { data, error: authError } = await supabase.auth.getUser();
   if (authError || !data?.user) return;
   const uid = data.user.id;
@@ -348,5 +389,8 @@ export async function migrateDataToAuthUser(): Promise<void> {
     if (r1.error) console.error('migrateDataToAuthUser profiles:', r1.error.message);
     if (r2.error) console.error('migrateDataToAuthUser sessions:', r2.error.message);
     if (r3.error) console.error('migrateDataToAuthUser open_sessions:', r3.error.message);
+  }
+  if (!r1.error && !r2.error && !r3.error) {
+    try { await AsyncStorage.setItem(USER_ID_MIGRATION_FLAG, 'true'); } catch { /* non-fatal */ }
   }
 }

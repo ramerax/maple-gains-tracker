@@ -11,6 +11,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Session, PeriodStats, OpenSession } from '../types';
 import { formatExp, formatNumber, formatPercent, formatDateShortEs, formatDateShort } from '../utils/formatters';
+import { calculateTotalExpPercent } from '../utils/expCalculator';
 import { WC } from '../constants/themeWeb';
 import XPRing from '../components/XPRing';
 
@@ -36,7 +37,7 @@ function StatRow({ label, value, color, bg, icon }: {
 function SessionRow({ session, index }: { session: Session; index: number }) {
   const navigation = useNavigation<Nav>();
   const levelsGained = session.lvEnd - session.lvStart;
-  const pctGained = levelsGained * 100 + (session.expEnd - session.expStart);
+  const pctGained = calculateTotalExpPercent(session.lvStart, session.expStart, session.lvEnd, session.expEnd);
   const isEven = index % 2 === 0;
   return (
     <TouchableOpacity

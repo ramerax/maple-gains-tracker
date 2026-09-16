@@ -16,6 +16,7 @@ import { RootStackParamList, Session, PeriodStats, OpenSession } from '../types'
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
 import { getSessionsByDate, getAllSessions, getSessionsByDateRange, aggregateStats, getOpenSession, deleteOpenSession } from '../utils/storage';
 import { getTodayString, formatDateLong, formatDateShort, formatExp, formatNumber, formatPercent, getWeekRange, getMonthRange } from '../utils/formatters';
+import { calculateTotalExpPercent } from '../utils/expCalculator';
 import { useProfile } from '../context/ProfileContext';
 import { useIsDesktopWeb } from '../hooks/useIsDesktopWeb';
 import HomeScreenDesktop from './HomeScreenDesktop';
@@ -53,7 +54,7 @@ function StatPill({ label, value, color, sub, total }: {
 
 function SessionCard({ session, onPress }: { session: Session; onPress: () => void }) {
   const levelsGained = session.lvEnd - session.lvStart;
-  const pctGained = levelsGained * 100 + (session.expEnd - session.expStart);
+  const pctGained = calculateTotalExpPercent(session.lvStart, session.expStart, session.lvEnd, session.expEnd);
   return (
     <TouchableOpacity style={styles.sessionCard} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.sessionCardLeft}>
@@ -139,7 +140,13 @@ export default function HomeScreen() {
           text: 'Sí, cancelar',
           style: 'destructive',
           onPress: async () => {
-            if (activeProfileId) await deleteOpenSession(activeProfileId);
+            if (activeProfileId) {
+              const { error } = await deleteOpenSession(activeProfileId);
+              if (error) {
+                Alert.alert('Error', 'No se pudo cancelar la sesión. Intenta de nuevo.');
+                return;
+              }
+            }
             setOpenSession(null);
           },
         },
@@ -247,7 +254,7 @@ export default function HomeScreen() {
               {/* Stat pills row 1 */}
               {(() => {
                 const levelsUp = stats.lvEnd - stats.lvStart;
-                const pctGained = levelsUp * 100 + (stats.expEnd - stats.expStart);
+                const pctGained = calculateTotalExpPercent(stats.lvStart, stats.expStart, stats.lvEnd, stats.expEnd);
                 const expSub = levelsUp > 0
                   ? `+${levelsUp} lv · +${formatPercent(stats.expEnd)}%`
                   : `${pctGained >= 0 ? '+' : ''}${formatPercent(pctGained)}%`;

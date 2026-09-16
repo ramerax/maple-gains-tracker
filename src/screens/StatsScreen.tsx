@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl,
 } from 'react-native';
@@ -8,7 +8,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Session, OpenSession } from '../types';
 // Note: Ionicons, NativeStackNavigationProp, RootStackParamList used below in mobile layout + Nav type
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
-import { WC } from '../constants/themeWeb';
 import { getAllSessions, getOpenSession } from '../utils/storage';
 import {
   getTodayString, getWeekRange, getMonthRange,
@@ -175,19 +174,22 @@ export default function StatsScreen() {
   }, [load]);
 
   const today = getTodayString();
-  const { start: wS, end: wE } = getWeekRange(today);
-  const { start: mS, end: mE } = getMonthRange(today);
+  const { start: wS, end: wE } = useMemo(() => getWeekRange(today), [today]);
+  const { start: mS, end: mE } = useMemo(() => getMonthRange(today), [today]);
 
-  const todaySessions = allSessions.filter((s) => s.date === today);
-  const weekSessions  = allSessions.filter((s) => s.date >= wS && s.date <= wE);
-  const monthSessions = allSessions.filter((s) => s.date >= mS && s.date <= mE);
+  const todaySessions = useMemo(() => allSessions.filter((s) => s.date === today), [allSessions, today]);
+  const weekSessions  = useMemo(() => allSessions.filter((s) => s.date >= wS && s.date <= wE), [allSessions, wS, wE]);
+  const monthSessions = useMemo(() => allSessions.filter((s) => s.date >= mS && s.date <= mE), [allSessions, mS, mE]);
 
-  const totalExp    = allSessions.reduce((s, r) => s + r.expGainedActual, 0);
-  const totalFrags  = allSessions.reduce((s, r) => s + r.fragsGained, 0);
-  const totalNodes  = allSessions.reduce((s, r) => s + r.nodesGained, 0);
-  const totalMesos  = allSessions.reduce((s, r) => s + r.mesosGained, 0);
-  const totalCommon = allSessions.reduce((s, r) => s + r.commonFamiliarsGained, 0);
-  const totalRare   = allSessions.reduce((s, r) => s + r.rareFamiliarsGained, 0);
+  const totals = useMemo(() => ({
+    totalExp:    allSessions.reduce((s, r) => s + r.expGainedActual, 0),
+    totalFrags:  allSessions.reduce((s, r) => s + r.fragsGained, 0),
+    totalNodes:  allSessions.reduce((s, r) => s + r.nodesGained, 0),
+    totalMesos:  allSessions.reduce((s, r) => s + r.mesosGained, 0),
+    totalCommon: allSessions.reduce((s, r) => s + r.commonFamiliarsGained, 0),
+    totalRare:   allSessions.reduce((s, r) => s + r.rareFamiliarsGained, 0),
+  }), [allSessions]);
+  const { totalExp, totalFrags, totalNodes, totalMesos, totalCommon, totalRare } = totals;
 
   // ── Desktop layout ───────────────────────────────────────────────────
   if (isDesktop) {

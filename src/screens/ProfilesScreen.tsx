@@ -88,6 +88,7 @@ export default function ProfilesScreen() {
       return;
     }
 
+    let error: string | null;
     if (editingProfile) {
       const updated: Profile = {
         ...editingProfile,
@@ -96,7 +97,7 @@ export default function ProfilesScreen() {
         server: form.server.trim() || undefined,
         color: form.color,
       };
-      await updateProfile(updated);
+      ({ error } = await updateProfile(updated));
     } else {
       const newProfile: Profile = {
         id: generateId(),
@@ -106,7 +107,12 @@ export default function ProfilesScreen() {
         color: form.color,
         createdAt: Date.now(),
       };
-      await addProfile(newProfile);
+      ({ error } = await addProfile(newProfile));
+    }
+
+    if (error) {
+      Alert.alert('Error al guardar', 'No se pudo guardar el perfil. Intenta de nuevo.');
+      return;
     }
 
     await refreshProfiles();
@@ -128,7 +134,11 @@ export default function ProfilesScreen() {
             text: 'Eliminar',
             style: 'destructive',
             onPress: async () => {
-              await deleteProfile(profile.id);
+              const { error } = await deleteProfile(profile.id);
+              if (error) {
+                Alert.alert('Error', 'No se pudo eliminar el perfil. Intenta de nuevo.');
+                return;
+              }
               // If deleted the active profile, switch to first remaining
               if (profile.id === activeProfileId) {
                 const remaining = profiles.filter((p) => p.id !== profile.id);

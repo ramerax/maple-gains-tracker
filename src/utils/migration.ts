@@ -5,67 +5,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { Session, Profile, OpenSession } from '../types';
+import { sessionToRow, profileToRow, openSessionToRow } from './storage';
 
 const MIGRATION_FLAG = '@maple_migrated_v3';
 const ACTIVE_PROFILE_KEY = '@maple_active_profile';
-
-function sessionToRow(s: Session) {
-  return {
-    id: s.id,
-    profile_id: s.profileId ?? null,
-    date: s.date,
-    created_at: s.createdAt,
-    lv_start: s.lvStart,
-    exp_start: s.expStart,
-    lv_end: s.lvEnd,
-    exp_end: s.expEnd,
-    exp_gained_actual: s.expGainedActual,
-    frags_start: s.fragsStart,
-    frags_end: s.fragsEnd,
-    frags_gained: s.fragsGained,
-    nodes_start: s.nodesStart,
-    nodes_end: s.nodesEnd,
-    nodes_gained: s.nodesGained,
-    mesos_start: s.mesosStart,
-    mesos_end: s.mesosEnd,
-    mesos_gained: s.mesosGained,
-    common_familiars_start: s.commonFamiliarsStart ?? 0,
-    common_familiars_end: s.commonFamiliarsEnd ?? 0,
-    common_familiars_gained: s.commonFamiliarsGained ?? 0,
-    rare_familiars_start: s.rareFamiliarsStart ?? 0,
-    rare_familiars_end: s.rareFamiliarsEnd ?? 0,
-    rare_familiars_gained: s.rareFamiliarsGained ?? 0,
-    notes: s.notes ?? null,
-  };
-}
-
-function profileToRow(p: Profile) {
-  return {
-    id: p.id,
-    name: p.name,
-    game_class: p.gameClass ?? null,
-    server: p.server ?? null,
-    color: p.color,
-    created_at: p.createdAt,
-  };
-}
-
-function openSessionToRow(o: OpenSession) {
-  return {
-    id: o.id,
-    profile_id: o.profileId,
-    date: o.date,
-    started_at: o.startedAt,
-    lv_start: o.lvStart,
-    exp_start: o.expStart,
-    frags_start: o.fragsStart,
-    nodes_start: o.nodesStart,
-    mesos_start: o.mesosStart,
-    common_familiars_start: o.commonFamiliarsStart ?? 0,
-    rare_familiars_start: o.rareFamiliarsStart ?? 0,
-    notes: o.notes ?? null,
-  };
-}
 
 export async function runMigrationIfNeeded(): Promise<void> {
   try {
