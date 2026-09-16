@@ -12,31 +12,45 @@ export function SessionRow({ session, showDate }: { session: Session; showDate?:
   return (
     <button
       onClick={() => navigate(ROUTES.sessionDetail(session.id))}
-      className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-white/[0.03]"
+      className="flex w-full flex-col gap-2.5 border-b border-border px-5 py-4 text-left transition-colors last:border-b-0 hover:bg-white/[0.03]"
     >
-      {showDate && (
-        <span className="hidden w-14 shrink-0 text-xs font-semibold text-text-faint sm:block">
-          {formatDateShortEs(session.date)}
-        </span>
-      )}
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-text">
-          Lv {session.lvStart}{levelsGained > 0 ? ` → ${session.lvEnd}` : ''}
-        </p>
-        <p className="mt-0.5 text-xs text-text-muted">
-          {formatPercent(session.expStart)}% → {formatPercent(session.expEnd)}%
-        </p>
+      {/* Level + date + chevron */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {showDate && (
+            <span className="rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-semibold text-text-faint">
+              {formatDateShortEs(session.date)}
+            </span>
+          )}
+          <span className="text-sm font-bold text-text">
+            Lv {session.lvStart}{levelsGained > 0 ? ` → ${session.lvEnd}` : ''}
+          </span>
+          <span className="text-xs text-text-muted">
+            {formatPercent(session.expStart)}% → {formatPercent(session.expEnd)}%
+          </span>
+        </div>
+        <ChevronRight size={15} className="shrink-0 text-text-faint" />
       </div>
-      <div className="text-right">
-        <p className="text-sm font-bold text-exp">+{formatExp(session.expGainedActual)}</p>
-        <p className="text-xs text-text-muted">{pct >= 0 ? '+' : ''}{formatPercent(pct)}%</p>
+
+      {/* EXP total + percent, side by side */}
+      <div className="flex items-baseline gap-2">
+        <span className="text-lg font-black text-exp">+{formatExp(session.expGainedActual)}</span>
+        <span className="text-xs font-semibold text-text-muted">EXP</span>
+        <span className="text-sm font-bold text-exp/80">({pct >= 0 ? '+' : ''}{formatPercent(pct)}%)</span>
       </div>
-      <div className="hidden shrink-0 gap-3 text-xs text-text-muted sm:flex">
-        <span>F <span className="text-frags">+{formatNumber(session.fragsGained)}</span></span>
-        <span>N <span className="text-nodes">+{formatNumber(session.nodesGained)}</span></span>
-        <span>M <span className="text-mesos">{formatExp(session.mesosGained)}</span></span>
+
+      {/* Other stats, full words, wraps on narrow screens */}
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">
+        <span>Fragmentos <span className="font-semibold text-frags">+{formatNumber(session.fragsGained)}</span></span>
+        <span>Nodos <span className="font-semibold text-nodes">+{formatNumber(session.nodesGained)}</span></span>
+        <span>Mesos <span className="font-semibold text-mesos">{formatExp(session.mesosGained)}</span></span>
+        {session.commonFamiliarsGained > 0 && (
+          <span>Fam. Comunes <span className="font-semibold text-common">+{session.commonFamiliarsGained}</span></span>
+        )}
+        {session.rareFamiliarsGained > 0 && (
+          <span>Fam. Raros <span className="font-semibold text-rare">+{session.rareFamiliarsGained}</span></span>
+        )}
       </div>
-      <ChevronRight size={14} className="shrink-0 text-text-faint" />
     </button>
   );
 }

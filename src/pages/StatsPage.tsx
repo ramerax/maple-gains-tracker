@@ -1,9 +1,10 @@
-import { Layers } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Layers, CalendarRange } from 'lucide-react';
 import { useProfile } from '@/context/ProfileContext';
 import { useStatsData } from './stats/useStatsData';
 import { BarChart } from '@/components/stats/BarChart';
-import { aggregateStats } from '@/utils/storage';
-import { formatExp, formatNumber, formatDateMedium } from '@/utils/formatters';
+import { aggregateStats, getSessionsByDateRange } from '@/utils/storage';
+import { formatExp, formatNumber, formatDateMedium, getTodayString, addDays } from '@/utils/formatters';
 import type { Session } from '@/types';
 
 const STAT_TILES = [
@@ -62,6 +63,84 @@ function BestDay({ label, sessions, getValue, fmt, color }: {
   );
 }
 
+function CustomRangeCard({ profileId }: { profileId: string | null }) {
+  const today = getTodayString();
+  const [from, setFrom] = useState(addDays(today, -6));
+  const [to, setTo] = useState(today);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!from || !to || from > to) return;
+    let cancelled = false;
+    setLoading(true);
+    getSessionsByDateRange(from, to, profileId ?? undefined).then((s) => {
+      if (!cancelled) { setSessions(s); setLoading(false); }
+    });
+    return () => { cancelled = true; };
+  }, [from, to, profileId]);
+
+  const stats = aggregateStats(sessions);
+
+  return (
+    <div className="mt-4 rounded-2xl border border-border bg-panel p-4">
+      <div className="flex items-center gap-2">
+        <CalendarRange size={15} className="text-primary" />
+        <p className="text-sm font-bold text-text">Rango personalizado</p>
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div>
+          <label className="mb-1 block text-[10px] text-text-muted">Desde</label>
+          <input
+            type="date"
+            value={from}
+            max={to}
+            onChange={(e) => setFrom(e.target.value)}
+            className="rounded-lg border border-border bg-white/[0.06] px-2.5 py-1.5 text-xs text-text focus:border-primary-border focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-[10px] text-text-muted">Hasta</label>
+          <input
+            type="date"
+            value={to}
+            min={from}
+            max={today}
+            onChange={(e) => setTo(e.target.value)}
+            className="rounded-lg border border-border bg-white/[0.06] px-2.5 py-1.5 text-xs text-text focus:border-primary-border focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {loading ? (
+        <p className="mt-4 text-center text-xs text-text-faint">Cargando…</p>
+      ) : stats ? (
+        <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {STAT_TILES.map(({ key, label, color, fmt }) => {
+            const map: Record<string, number> = {
+              exp: stats.totalExpGained, frags: stats.totalFragsGained, nodes: stats.totalNodesGained,
+              mesos: stats.totalMesosGained, common: stats.totalCommonFamiliarsGained, rare: stats.totalRareFamiliarsGained,
+            };
+            return (
+              <div key={key} className="rounded-lg bg-white/[0.03] px-1.5 py-2 text-center">
+                <p className="text-[9px] text-text-muted">{label}</p>
+                <p className={`mt-0.5 text-xs font-bold ${color}`}>{fmt(map[key])}</p>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="mt-4 text-center text-xs text-text-faint">Sin sesiones en este rango</p>
+      )}
+      {stats && (
+        <p className="mt-3 text-center text-xs text-text-muted">
+          {stats.sessionCount} sesión{stats.sessionCount !== 1 ? 'es' : ''} en el rango
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function StatsPage() {
   const { activeProfileId } = useProfile();
   const { allSessions, todaySessions, weekSessions, monthSessions, totals } = useStatsData(activeProfileId);
@@ -82,6 +161,8 @@ export default function StatsPage() {
         <PeriodCard title="📅 Esta Semana" sessions={weekSessions} />
         <PeriodCard title="🗓️ Este Mes" sessions={monthSessions} />
       </div>
+
+      <CustomRangeCard profileId={activeProfileId} />
 
       {allSessions.length > 0 && (
         <>

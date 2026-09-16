@@ -7,6 +7,7 @@ import { SessionRow } from '@/components/SessionRow';
 import { ROUTES } from '@/routes';
 import { formatDateLong, formatDateShort, formatExp, formatNumber, formatPercent } from '@/utils/formatters';
 import type { AppShellContext } from '@/layouts/AppShell';
+import type { PeriodStats } from '@/types';
 
 const STAT_TILES = [
   { key: 'exp' as const, label: 'EXP', color: 'text-exp', bg: 'bg-exp-bg' },
@@ -17,7 +18,7 @@ const STAT_TILES = [
   { key: 'rare' as const, label: 'Fam. Raros', color: 'text-rare', bg: 'bg-rare-bg' },
 ];
 
-function statValue(key: string, stats: ReturnType<typeof useHomeData>['todayStats']): string {
+function statValue(key: string, stats: PeriodStats | null): string {
   if (!stats) return '—';
   switch (key) {
     case 'exp': return formatExp(stats.totalExpGained);
@@ -35,7 +36,7 @@ export default function HomePage() {
   const { activeProfile, activeProfileId } = useProfile();
   const { openSession } = useOutletContext<AppShellContext>();
   const {
-    today, todayStats, allTimeStats, weekStats, recentSessions, latestSession, cancelOpenSession,
+    today, allTimeStats, weekStats, recentSessions, latestSession, cancelOpenSession,
   } = useHomeData(activeProfileId);
 
   const profileLevel = latestSession?.lvEnd ?? 1;
@@ -69,40 +70,27 @@ export default function HomePage() {
           </div>
           <p className="mt-1.5 text-xs text-text-muted">{formatPercent(profileXpPct)}% → Lv {profileLevel + 1}</p>
 
-          <div className="my-4 h-px w-full bg-border" />
-
-          <p className="w-full text-left text-[10px] font-bold tracking-widest text-text-faint">ESTA SEMANA</p>
-          <div className="mt-2 flex w-full flex-col gap-1.5">
-            {STAT_TILES.slice(0, 4).map(({ key, label, color, bg }) => (
-              <div key={key} className={`flex items-center justify-between rounded-lg ${bg} px-2.5 py-1.5`}>
-                <span className="text-xs text-text-muted">{label}</span>
-                <span className={`text-xs font-bold ${color}`}>{statValue(key, weekStats)}</span>
-              </div>
-            ))}
-          </div>
-          <p className="mt-3 text-xs text-text-muted">
-            {weekStats?.sessionCount ?? 0} sesión{(weekStats?.sessionCount ?? 0) !== 1 ? 'es' : ''} esta semana
-          </p>
         </div>
 
         {/* Main column */}
         <div className="flex flex-col gap-4">
-          {/* Today summary */}
+          {/* Week summary — main card. Most days are a single session, so "today"
+              is nearly always empty; weekly is almost always meaningful. */}
           <div className="rounded-2xl border border-border bg-panel p-5">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-text">Resumen de Hoy</h2>
-              {todayStats && (
+              <h2 className="text-base font-bold text-text">Resumen de la Semana</h2>
+              {weekStats && (
                 <span className="rounded-full border border-primary-border bg-primary-dim px-2.5 py-0.5 text-xs font-bold text-primary">
-                  {todayStats.sessionCount} sesión{todayStats.sessionCount !== 1 ? 'es' : ''}
+                  {weekStats.sessionCount} sesión{weekStats.sessionCount !== 1 ? 'es' : ''}
                 </span>
               )}
             </div>
-            {todayStats ? (
+            {weekStats ? (
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {STAT_TILES.map(({ key, label, color, bg }) => (
                   <div key={key} className={`rounded-xl ${bg} px-2 py-3 text-center`}>
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">{label}</p>
-                    <p className={`mt-1 text-sm font-black ${color}`}>{statValue(key, todayStats)}</p>
+                    <p className={`mt-1 text-sm font-black ${color}`}>{statValue(key, weekStats)}</p>
                     {allTimeStats && (
                       <p className="mt-1 text-[10px] text-text-faint">Tot: {statValue(key, allTimeStats)}</p>
                     )}
@@ -112,7 +100,7 @@ export default function HomePage() {
             ) : (
               <div className="mt-4 flex flex-col items-center py-8 text-center">
                 <p className="text-4xl">🌙</p>
-                <p className="mt-3 font-semibold text-text">Sin sesiones hoy</p>
+                <p className="mt-3 font-semibold text-text">Sin sesiones esta semana</p>
                 <p className="mt-1 text-sm text-text-muted">Iniciá una nueva sesión para trackear tu progreso</p>
               </div>
             )}
