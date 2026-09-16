@@ -19,10 +19,14 @@ jobs:
           sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
           sudo apt-get update
           sudo apt-get install -y postgresql-client-17
+          ls /usr/lib/postgresql/
+          /usr/lib/postgresql/17/bin/pg_dump --version
 
       - name: Dump database (compressed custom format)
         run: |
-          pg_dump "${{ secrets.SUPABASE_DB_URL }}" \
+          # Call the v17 binary directly — the runner's preinstalled pg_dump 16
+          # still wins on PATH even after installing postgresql-client-17.
+          /usr/lib/postgresql/17/bin/pg_dump "${{ secrets.SUPABASE_DB_URL }}" \
             --format=custom \
             --no-owner \
             --no-privileges \
