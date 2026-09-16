@@ -30,7 +30,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     // Always run migration first — prevents race condition with profile creation
     await runMigrationIfNeeded();
     // Assign user_id to any rows created before auth was added (runs fast if already done)
-    await migrateDataToAuthUser();
+    try { await migrateDataToAuthUser(); } catch (e) { console.error('[ProfileContext] migrateDataToAuthUser threw:', e); }
     let loaded = await getProfiles();
     let activeId = await getActiveProfileId();
 
