@@ -7,6 +7,7 @@ import { FONTS, SPACING, RADIUS } from '../constants/theme';
 import { WC } from '../constants/themeWeb';
 import { RootStackParamList } from '../types';
 import { useProfile } from '../context/ProfileContext';
+import { useAuth } from '../context/AuthContext';
 import { getOpenSession } from '../utils/storage';
 import HomeScreen from '../screens/HomeScreen';
 import HistoryScreen from '../screens/HistoryScreen';
@@ -47,6 +48,7 @@ export default function WebLayout() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [hasOpenSession, setHasOpenSession] = useState(false);
   const { activeProfile, activeProfileId } = useProfile();
+  const { user, signOut } = useAuth();
   const navigation = useNavigation<Nav>();
 
   const handleTabChange = useCallback((tab: TabId) => {
@@ -149,6 +151,23 @@ export default function WebLayout() {
             <Text style={styles.sidebarSessionText}>Sesión activa</Text>
             <Ionicons name="chevron-forward" size={11} color={WC.primary} />
           </Pressable>
+        )}
+
+        <View style={styles.divider} />
+
+        {/* Auth footer — email + sign out */}
+        {user && (
+          <View style={styles.authFooter}>
+            <Text style={styles.authEmail} numberOfLines={1}>{user.email}</Text>
+            <Pressable
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              style={(state: any) => [styles.signOutBtn, state.hovered && styles.signOutBtnHover]}
+              onPress={signOut}
+            >
+              <Ionicons name="log-out-outline" size={13} color={WC.textMuted} />
+              <Text style={styles.signOutText}>Cerrar sesión</Text>
+            </Pressable>
+          </View>
         )}
 
         <View style={styles.divider} />
@@ -413,6 +432,36 @@ const styles = StyleSheet.create({
     color: WC.textMuted,
     fontSize: 10,
     marginTop: 1,
+  },
+
+  // Auth footer
+  authFooter: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    gap: 4,
+  },
+  authEmail: {
+    color: WC.textFaint,
+    fontSize: 10,
+    fontWeight: '500',
+    letterSpacing: 0.1,
+  },
+  signOutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  signOutBtnHover: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  signOutText: {
+    color: WC.textMuted,
+    fontSize: 11,
+    fontWeight: '500',
   },
 
   // Content
