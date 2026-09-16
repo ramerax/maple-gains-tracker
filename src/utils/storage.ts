@@ -336,17 +336,17 @@ export async function deleteOpenSession(profileId: string): Promise<void> {
 // Safe to call multiple times (no-op if all rows already have user_id).
 export async function migrateDataToAuthUser(): Promise<void> {
   const { data, error: authError } = await supabase.auth.getUser();
-  if (authError) { console.error('[migrateDataToAuthUser] getUser error:', authError.message); return; }
-  const user = data?.user;
-  if (!user) return;
-  const uid = user.id;
+  if (authError || !data?.user) return;
+  const uid = data.user.id;
 
   const [r1, r2, r3] = await Promise.all([
     supabase.from('profiles').update({ user_id: uid }).is('user_id', null),
     supabase.from('sessions').update({ user_id: uid }).is('user_id', null),
     supabase.from('open_sessions').update({ user_id: uid }).is('user_id', null),
   ]);
-  if (r1.error) console.error('[migrateDataToAuthUser] profiles:', r1.error.message);
-  if (r2.error) console.error('[migrateDataToAuthUser] sessions:', r2.error.message);
-  if (r3.error) console.error('[migrateDataToAuthUser] open_sessions:', r3.error.message);
+  if (__DEV__) {
+    if (r1.error) console.error('migrateDataToAuthUser profiles:', r1.error.message);
+    if (r2.error) console.error('migrateDataToAuthUser sessions:', r2.error.message);
+    if (r3.error) console.error('migrateDataToAuthUser open_sessions:', r3.error.message);
+  }
 }
