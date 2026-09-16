@@ -162,8 +162,8 @@ export default function FinishSessionPage() {
           <StatSectionGrid
             color={STAT_COLORS.exp} icon="⚔️" title="Nivel y EXP — Fin"
             fields={[
-              { label: 'Nivel', value: lvEnd, onChange: setLvEnd, placeholder: String(open.lvStart) },
-              { label: '% EXP', value: expEnd, onChange: setExpEnd, placeholder: String(open.expStart), decimal: true },
+              { label: 'Nivel', value: lvEnd, onChange: setLvEnd, startValue: String(open.lvStart) },
+              { label: '% EXP', value: expEnd, onChange: setExpEnd, decimal: true, startValue: `${formatPercent(open.expStart)}%` },
             ]}
             gains={[
               { label: 'EXP Ganada', value: expEnd ? formatExp(expGained) : '—' },
@@ -172,27 +172,27 @@ export default function FinishSessionPage() {
           />
           <StatSectionGrid
             color={STAT_COLORS.frags} icon="💎" title="Fragmentos — Fin"
-            fields={[{ label: 'Fragmentos', value: fragsEnd, onChange: setFragsEnd, placeholder: String(open.fragsStart) }]}
+            fields={[{ label: 'Fragmentos', value: fragsEnd, onChange: setFragsEnd, startValue: formatNumber(open.fragsStart) }]}
             gains={[{ label: 'Ganados', value: formatSignedGain(fragsGained) }]}
           />
           <StatSectionGrid
             color={STAT_COLORS.nodes} icon="🔮" title="Nodos — Fin"
-            fields={[{ label: 'Nodos', value: nodesEnd, onChange: setNodesEnd, placeholder: String(open.nodesStart) }]}
+            fields={[{ label: 'Nodos', value: nodesEnd, onChange: setNodesEnd, startValue: formatNumber(open.nodesStart) }]}
             gains={[{ label: 'Ganados', value: formatSignedGain(nodesGained) }]}
           />
           <StatSectionGrid
             color={STAT_COLORS.mesos} icon="💰" title="Mesos — Fin"
-            fields={[{ label: 'Mesos', value: mesosEnd, onChange: setMesosEnd, placeholder: String(open.mesosStart) }]}
+            fields={[{ label: 'Mesos', value: mesosEnd, onChange: setMesosEnd, startValue: formatExp(open.mesosStart) }]}
             gains={[{ label: 'Ganados', value: formatSignedGain(mesosGained, formatExp) }]}
           />
           <StatSectionGrid
             color={STAT_COLORS.common} icon="👾" title="Fam. Comunes — Fin"
-            fields={[{ label: 'Familiares Comunes', value: commonEnd, onChange: setCommonEnd, placeholder: String(open.commonFamiliarsStart) }]}
+            fields={[{ label: 'Familiares Comunes', value: commonEnd, onChange: setCommonEnd, startValue: formatNumber(open.commonFamiliarsStart) }]}
             gains={[{ label: 'Ganados', value: formatSignedGain(commonGained) }]}
           />
           <StatSectionGrid
             color={STAT_COLORS.rare} icon="✨" title="Fam. Raros — Fin"
-            fields={[{ label: 'Familiares Raros', value: rareEnd, onChange: setRareEnd, placeholder: String(open.rareFamiliarsStart) }]}
+            fields={[{ label: 'Familiares Raros', value: rareEnd, onChange: setRareEnd, startValue: formatNumber(open.rareFamiliarsStart) }]}
             gains={[{ label: 'Ganados', value: formatSignedGain(rareGained) }]}
           />
 
