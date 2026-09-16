@@ -26,12 +26,14 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     steps:
-      - name: Compute backup path (organized by year)
+      - name: Compute backup path (organized by year/month/day)
         run: |
           DATE=$(date -u +%Y-%m-%d)
           YEAR=$(date -u +%Y)
+          MONTH=$(date -u +%m)
+          DAY=$(date -u +%d)
           echo "DATE=$DATE" >> "$GITHUB_ENV"
-          echo "OBJECT_PATH=$YEAR/backup-$DATE.dump" >> "$GITHUB_ENV"
+          echo "OBJECT_PATH=$YEAR/$MONTH/$DAY/backup-$DATE.dump" >> "$GITHUB_ENV"
 
       - name: Install PostgreSQL 17 client (matches Supabase server version)
         run: |
