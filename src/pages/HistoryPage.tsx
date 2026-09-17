@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useProfile } from '@/context/ProfileContext';
 import { useHistoryData, useTodayCursor, periodRange, shiftCursor, type HistoryMode } from './history/useHistoryData';
 import { useOpenModal } from '@/hooks/useOpenModal';
-import { SessionRow } from '@/components/SessionRow';
+import { SessionRow, SessionTableHeader } from '@/components/SessionRow';
 import { ROUTES } from '@/routes';
 import { formatDateLong, formatWeekRange, formatMonthDisplay, formatExp, formatSignedGain } from '@/utils/formatters';
 
@@ -114,10 +114,13 @@ export default function HistoryPage() {
             <p className="mt-3 font-semibold text-text-dim">Sin sesiones en este período</p>
           </div>
         ) : (
-          sessions
-            .slice()
-            .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt)
-            .map((s) => <SessionRow key={s.id} session={s} showDate={mode !== 'day'} />)
+          <div className="overflow-x-auto [mask-image:linear-gradient(to_right,#000_88%,transparent)] sm:[mask-image:none]">
+            <SessionTableHeader showDate={mode !== 'day'} />
+            {sessions
+              .slice()
+              .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt)
+              .map((s) => <SessionRow key={s.id} session={s} showDate={mode !== 'day'} />)}
+          </div>
         )}
       </div>
     </div>

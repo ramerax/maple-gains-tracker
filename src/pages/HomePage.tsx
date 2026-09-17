@@ -4,7 +4,7 @@ import { useProfile } from '@/context/ProfileContext';
 import { useHomeData } from './home/useHomeData';
 import { useOpenModal } from '@/hooks/useOpenModal';
 import { XPRing } from '@/components/XPRing';
-import { SessionRow } from '@/components/SessionRow';
+import { SessionRow, SessionTableHeader } from '@/components/SessionRow';
 import { ROUTES } from '@/routes';
 import { formatDateLong, formatDateShort, formatExp, formatPercent, formatSignedGain } from '@/utils/formatters';
 import type { AppShellContext } from '@/layouts/AppShell';
@@ -204,7 +204,10 @@ export default function HomePage() {
                 <p className="mt-1 text-sm text-text-muted">Iniciá tu primera sesión desde el menú lateral</p>
               </div>
             ) : (
-              recentSessions.map((s) => <SessionRow key={s.id} session={s} />)
+              <div className="overflow-x-auto [mask-image:linear-gradient(to_right,#000_88%,transparent)] sm:[mask-image:none]">
+                <SessionTableHeader />
+                {recentSessions.map((s) => <SessionRow key={s.id} session={s} />)}
+              </div>
             )}
           </div>
         </div>
