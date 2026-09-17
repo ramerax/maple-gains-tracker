@@ -6,6 +6,7 @@ import type { Session } from '@/types';
 export function useStatsData(profileId: string | null) {
   const [allSessions, setAllSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   useEffect(() => () => { mountedRef.current = false; }, []);
 
@@ -13,7 +14,8 @@ export function useStatsData(profileId: string | null) {
     setLoading(true);
     const all = await getAllSessions(profileId ?? undefined);
     if (!mountedRef.current) return;
-    setAllSessions(all);
+    setError(all.error);
+    setAllSessions(all.sessions);
     setLoading(false);
   }, [profileId]);
 
@@ -42,5 +44,5 @@ export function useStatsData(profileId: string | null) {
     };
   }, [allSessions, today]);
 
-  return { allSessions, todaySessions, weekSessions, monthSessions, totals, loading, reload: load };
+  return { allSessions, todaySessions, weekSessions, monthSessions, totals, loading, error, reload: load };
 }

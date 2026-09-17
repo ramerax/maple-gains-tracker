@@ -23,6 +23,7 @@ export function useHistoryData(mode: HistoryMode, cursor: string, profileId: str
   const [sessions, setSessions] = useState<Session[]>([]);
   const [stats, setStats] = useState<PeriodStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   useEffect(() => () => { mountedRef.current = false; }, []);
 
@@ -32,14 +33,15 @@ export function useHistoryData(mode: HistoryMode, cursor: string, profileId: str
       ? await getSessionsByDate(cursor, profileId ?? undefined)
       : await getSessionsByDateRange(periodRange(mode, cursor).start, periodRange(mode, cursor).end, profileId ?? undefined);
     if (!mountedRef.current) return;
-    setSessions(loaded);
-    setStats(aggregateStats(loaded));
+    setError(loaded.error);
+    setSessions(loaded.sessions);
+    setStats(aggregateStats(loaded.sessions));
     setLoading(false);
   }, [mode, cursor, profileId]);
 
   useEffect(() => { load(); }, [load]);
 
-  return { sessions, stats, loading, reload: load };
+  return { sessions, stats, loading, error, reload: load };
 }
 
 export function useTodayCursor() {

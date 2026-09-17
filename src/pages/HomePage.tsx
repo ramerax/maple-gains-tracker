@@ -38,7 +38,7 @@ export default function HomePage() {
   const { activeProfile, activeProfileId } = useProfile();
   const { openSession } = useOutletContext<AppShellContext>();
   const {
-    today, weekStats, recentSessions, latestSession, loading, cancelOpenSession,
+    today, weekStats, recentSessions, latestSession, loading, error, reload, cancelOpenSession,
   } = useHomeData(activeProfileId);
 
   const profileLevel = latestSession?.lvEnd ?? 1;
@@ -84,6 +84,18 @@ export default function HomePage() {
           <p className="mt-1.5 text-xs text-text-muted">{formatPercent(profileXpPct)}% → Lv {profileLevel + 1}</p>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-4 flex flex-col items-center gap-2 rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-center sm:flex-row sm:justify-between sm:text-left">
+          <p className="text-sm text-danger">{error}</p>
+          <button
+            onClick={reload}
+            className="min-h-[36px] shrink-0 rounded-lg border border-danger/30 px-3 text-xs font-semibold text-danger hover:bg-danger/10"
+          >
+            Reintentar
+          </button>
+        </div>
+      )}
 
       {/* Open session banner — static, right under the character card, so it
           never floats over content while scrolling (it used to be a sticky

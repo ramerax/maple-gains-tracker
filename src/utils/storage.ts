@@ -144,7 +144,9 @@ export function openSessionToRow(session: OpenSession): Record<string, unknown> 
 
 // ── Session CRUD ───────────────────────────────────────────────────────────────
 
-export async function getAllSessions(profileId?: string): Promise<Session[]> {
+const SESSION_READ_ERROR = 'No se pudieron cargar las sesiones. Intenta de nuevo.';
+
+export async function getAllSessions(profileId?: string): Promise<{ sessions: Session[]; error: string | null }> {
   let query = supabase
     .from('sessions')
     .select(SESSION_COLUMNS)
@@ -153,8 +155,11 @@ export async function getAllSessions(profileId?: string): Promise<Session[]> {
     .limit(MAX_SESSIONS);
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query;
-  if (error) { if (import.meta.env.DEV) console.error('getAllSessions:', error.message); return []; }
-  return (data ?? []).map(rowToSession);
+  if (error) {
+    if (import.meta.env.DEV) console.error('getAllSessions:', error.message);
+    return { sessions: [], error: SESSION_READ_ERROR };
+  }
+  return { sessions: (data ?? []).map(rowToSession), error: null };
 }
 
 export async function getSessionById(id: string): Promise<Session | null> {
@@ -197,7 +202,7 @@ export async function deleteSession(id: string): Promise<{ error: string | null 
   return { error: null };
 }
 
-export async function getSessionsByDate(date: string, profileId?: string): Promise<Session[]> {
+export async function getSessionsByDate(date: string, profileId?: string): Promise<{ sessions: Session[]; error: string | null }> {
   let query = supabase
     .from('sessions')
     .select(SESSION_COLUMNS)
@@ -205,15 +210,18 @@ export async function getSessionsByDate(date: string, profileId?: string): Promi
     .order('created_at', { ascending: true });
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query;
-  if (error) { if (import.meta.env.DEV) console.error('getSessionsByDate:', error.message); return []; }
-  return (data ?? []).map(rowToSession);
+  if (error) {
+    if (import.meta.env.DEV) console.error('getSessionsByDate:', error.message);
+    return { sessions: [], error: SESSION_READ_ERROR };
+  }
+  return { sessions: (data ?? []).map(rowToSession), error: null };
 }
 
 export async function getSessionsByDateRange(
   startDate: string,
   endDate: string,
   profileId?: string
-): Promise<Session[]> {
+): Promise<{ sessions: Session[]; error: string | null }> {
   let query = supabase
     .from('sessions')
     .select(SESSION_COLUMNS)
@@ -223,8 +231,11 @@ export async function getSessionsByDateRange(
     .order('created_at', { ascending: true });
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query;
-  if (error) { if (import.meta.env.DEV) console.error('getSessionsByDateRange:', error.message); return []; }
-  return (data ?? []).map(rowToSession);
+  if (error) {
+    if (import.meta.env.DEV) console.error('getSessionsByDateRange:', error.message);
+    return { sessions: [], error: SESSION_READ_ERROR };
+  }
+  return { sessions: (data ?? []).map(rowToSession), error: null };
 }
 
 // ── Aggregate (pure function, unchanged) ──────────────────────────────────────
