@@ -47,3 +47,7 @@ export const EXP_TABLE: Record<number, number> = {
 
 export const MIN_LEVEL = 260;
 export const MAX_LEVEL = 299;
+
+// The actual current in-game level cap (reachable via the 299 table entry).
+// There's no level 301 yet — nothing beyond this is a valid character level.
+export const MAX_CHARACTER_LEVEL = 300;

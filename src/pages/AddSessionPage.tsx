@@ -5,6 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { StatSectionGrid } from '@/components/session-form/StatSectionGrid';
 import { useProfile } from '@/context/ProfileContext';
 import { calculateExpGained, calculateTotalExpPercent } from '@/utils/expCalculator';
+import { MAX_CHARACTER_LEVEL } from '@/constants/expTable';
 import { addSession, updateSession, getSessionById, generateId } from '@/utils/storage';
 import { getTodayString, formatExp, formatPercent, formatSignedGain } from '@/utils/formatters';
 import { STAT_COLORS } from '@/constants/statColors';
@@ -88,6 +89,7 @@ export default function AddSessionPage() {
     const lvE = pi(lvEnd, pi(lvStart, 260));
     if (lvS > lvE) { setError('El nivel final no puede ser menor al inicial.'); return; }
     if (lvS === lvE && p(expStart) > p(expEnd)) { setError('El % final no puede ser menor al inicial en el mismo nivel.'); return; }
+    if (lvE > MAX_CHARACTER_LEVEL || lvS > MAX_CHARACTER_LEVEL) { setError(`El nivel máximo actual es ${MAX_CHARACTER_LEVEL}.`); return; }
 
     const session: Session = {
       id: editId ?? generateId(),
@@ -154,7 +156,10 @@ export default function AddSessionPage() {
             { label: '% EXP Fin', value: expEnd, onChange: setExpEnd, placeholder: '0.00', decimal: true },
           ]}
           gains={lvEnd && expEnd ? [
-            { label: 'EXP Ganada', value: formatExp(expGained) },
+            {
+              label: 'EXP Ganada',
+              value: pi(lvEnd, 0) > MAX_CHARACTER_LEVEL ? `Máx. nivel ${MAX_CHARACTER_LEVEL}` : formatExp(expGained),
+            },
             { label: '% Total', value: `${formatPercent(totalExpPct)}%` },
           ] : undefined}
         />
