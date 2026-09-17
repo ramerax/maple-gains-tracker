@@ -23,6 +23,7 @@ export default function FinishSessionPage() {
   const [mesosEnd, setMesosEnd] = useState('');
   const [commonEnd, setCommonEnd] = useState('');
   const [rareEnd, setRareEnd] = useState('');
+  const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +33,7 @@ export default function FinishSessionPage() {
       if (cancelled) return;
       if (!s) { setNotFound(true); return; }
       setOpen(s);
+      setNotes(s.notes ?? '');
     });
     return () => { cancelled = true; };
   }, [activeProfileId]);
@@ -89,7 +91,7 @@ export default function FinishSessionPage() {
       rareFamiliarsStart: open.rareFamiliarsStart,
       rareFamiliarsEnd: rareEnd ? pi(rareEnd) : open.rareFamiliarsStart,
       rareFamiliarsGained: rareGained,
-      notes: open.notes || undefined,
+      notes: notes.trim() || undefined,
     };
 
     setSaving(true);
@@ -110,7 +112,7 @@ export default function FinishSessionPage() {
       alert('La sesión se guardó, pero no se pudo limpiar el estado de "sesión activa". Si sigue apareciendo como activa, recargá la página.');
     }
     navigate(-1);
-  }, [open, lvEndN, expEnd, expEndN, fragsEnd, nodesEnd, mesosEnd, commonEnd, rareEnd, expGained, fragsGained, nodesGained, mesosGained, commonGained, rareGained, navigate]);
+  }, [open, lvEndN, expEnd, expEndN, fragsEnd, nodesEnd, mesosEnd, commonEnd, rareEnd, notes, expGained, fragsGained, nodesGained, mesosGained, commonGained, rareGained, navigate]);
 
   if (notFound) {
     return (
@@ -178,6 +180,20 @@ export default function FinishSessionPage() {
             fields={[{ label: 'Familiares Raros', value: rareEnd, onChange: setRareEnd, startValue: formatNumber(open.rareFamiliarsStart) }]}
             gains={[{ label: 'Ganados', value: formatSignedGain(rareGained) }]}
           />
+
+          <div className="mt-5 border-l-[3px] border-border-strong bg-white/[0.03] px-4 py-2.5">
+            <p className="text-sm font-bold text-text">📝  Notas (opcional)</p>
+          </div>
+          <div className="bg-panel px-4 pb-4 pt-4">
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Agrega notas..."
+              maxLength={500}
+              rows={3}
+              className="w-full rounded-lg border border-border bg-white/[0.06] px-3.5 py-2.5 text-base text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50"
+            />
+          </div>
 
           {error && <p className="mx-5 mt-3 text-sm text-danger">{error}</p>}
 
