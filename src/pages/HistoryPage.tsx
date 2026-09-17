@@ -27,7 +27,7 @@ export default function HistoryPage() {
   const { activeProfileId } = useProfile();
   const [mode, setMode] = useState<HistoryMode>('day');
   const { cursor, setCursor, today } = useTodayCursor();
-  const { sessions, stats, loading } = useHistoryData(mode, cursor, activeProfileId);
+  const { sessions, stats, loading, error, reload } = useHistoryData(mode, cursor, activeProfileId);
 
   const periodLabel = mode === 'day'
     ? formatDateLong(cursor)
@@ -107,6 +107,17 @@ export default function HistoryPage() {
         {loading ? (
           <div className="flex flex-col gap-2 p-5 pt-0">
             {[0, 1, 2].map((i) => <div key={i} className="h-20 animate-pulse rounded-xl bg-white/[0.04]" />)}
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
+            <p className="text-3xl">⚠️</p>
+            <p className="font-semibold text-danger">{error}</p>
+            <button
+              onClick={reload}
+              className="min-h-[44px] rounded-lg border border-border-strong px-4 text-sm font-semibold text-text-dim hover:bg-white/[0.06]"
+            >
+              Reintentar
+            </button>
           </div>
         ) : sessions.length === 0 ? (
           <div className="flex flex-col items-center px-5 py-10 text-center">

@@ -78,16 +78,18 @@ function CustomRangeCard({ profileId }: { profileId: string | null }) {
   const [to, setTo] = useState(today);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     if (!from || !to || from > to) return;
     let cancelled = false;
     setLoading(true);
-    getSessionsByDateRange(from, to, profileId ?? undefined).then((s) => {
-      if (!cancelled) { setSessions(s); setLoading(false); }
+    getSessionsByDateRange(from, to, profileId ?? undefined).then((r) => {
+      if (!cancelled) { setSessions(r.sessions); setError(r.error); setLoading(false); }
     });
     return () => { cancelled = true; };
-  }, [from, to, profileId]);
+  }, [from, to, profileId, retryKey]);
 
   const stats = aggregateStats(sessions);
 
@@ -123,6 +125,16 @@ function CustomRangeCard({ profileId }: { profileId: string | null }) {
 
       {loading ? (
         <p className="mt-4 text-center text-xs text-text-faint">Cargando…</p>
+      ) : error ? (
+        <div className="mt-4 flex flex-col items-center gap-2 py-4 text-center">
+          <p className="text-sm text-danger">{error}</p>
+          <button
+            onClick={() => setRetryKey((k) => k + 1)}
+            className="min-h-[36px] rounded-lg border border-border px-3 text-xs font-semibold text-text-dim hover:bg-white/[0.06]"
+          >
+            Reintentar
+          </button>
+        </div>
       ) : stats ? (
         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {STAT_TILES.map(({ key, label, color, fmt }) => {
@@ -152,7 +164,7 @@ function CustomRangeCard({ profileId }: { profileId: string | null }) {
 
 export default function StatsPage() {
   const { activeProfileId } = useProfile();
-  const { allSessions, todaySessions, weekSessions, monthSessions, totals, loading } = useStatsData(activeProfileId);
+  const { allSessions, todaySessions, weekSessions, monthSessions, totals, loading, error, reload } = useStatsData(activeProfileId);
 
   return (
     <div className="mx-auto max-w-[1100px] p-4 md:p-6">
@@ -175,6 +187,17 @@ export default function StatsPage() {
 
       {loading ? (
         <div className="mt-4 h-64 animate-pulse rounded-2xl bg-white/[0.04]" />
+      ) : error ? (
+        <div className="mt-4 flex flex-col items-center gap-3 rounded-2xl border border-border bg-panel px-5 py-12 text-center">
+          <p className="text-3xl">⚠️</p>
+          <p className="font-semibold text-text-dim">{error}</p>
+          <button
+            onClick={reload}
+            className="min-h-[44px] rounded-lg border border-border-strong px-4 text-sm font-semibold text-text-dim hover:bg-white/[0.06]"
+          >
+            Reintentar
+          </button>
+        </div>
       ) : allSessions.length === 0 ? (
         <div className="mt-4 flex flex-col items-center rounded-2xl border border-border bg-panel px-5 py-12 text-center">
           <p className="text-3xl">📊</p>

@@ -9,20 +9,22 @@ export function useHomeData(activeProfileId: string | null) {
   const [weekStats, setWeekStats] = useState<PeriodStats | null>(null);
   const [allSessions, setAllSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   useEffect(() => () => { mountedRef.current = false; }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
     const { start: wS, end: wE } = getWeekRange(today);
-    const [all, weekSessions] = await Promise.all([
+    const [all, week] = await Promise.all([
       getAllSessions(activeProfileId ?? undefined),
       getSessionsByDateRange(wS, wE, activeProfileId ?? undefined),
     ]);
     if (!mountedRef.current) return;
-    setAllTimeStats(aggregateStats(all));
-    setWeekStats(aggregateStats(weekSessions));
-    setAllSessions(all);
+    setError(all.error ?? week.error);
+    setAllTimeStats(aggregateStats(all.sessions));
+    setWeekStats(aggregateStats(week.sessions));
+    setAllSessions(all.sessions);
     setLoading(false);
   }, [today, activeProfileId]);
 
@@ -41,6 +43,6 @@ export function useHomeData(activeProfileId: string | null) {
 
   return {
     today, allTimeStats, weekStats, allSessions,
-    recentSessions, latestSession, loading, reload: load, cancelOpenSession,
+    recentSessions, latestSession, loading, error, reload: load, cancelOpenSession,
   };
 }
