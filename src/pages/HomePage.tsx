@@ -85,6 +85,43 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Open session banner — static, right under the character card, so it
+          never floats over content while scrolling (it used to be a sticky
+          pill pinned to the bottom, which blocked the screen on mobile). */}
+      {openSession && (
+        <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-primary-border bg-bg-deep p-3 shadow-glow sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-3">
+          <div className="flex items-center gap-2.5">
+            <Flame size={16} className="text-exp" />
+            <div>
+              <p className="text-sm font-extrabold text-primary">Sesión en Progreso</p>
+              <p className="text-xs text-text-muted">
+                {formatDateShort(openSession.date)} · Lv {openSession.lvStart} · {formatPercent(openSession.expStart)}% EXP
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCancelOpenSession}
+              className="min-h-[44px] rounded-lg px-3 py-2 text-xs font-semibold text-text-muted hover:bg-white/[0.06]"
+            >
+              <X size={14} className="inline" /> Cancelar
+            </button>
+            <button
+              onClick={() => openModal(ROUTES.sessionStartEdit)}
+              className="flex min-h-[44px] items-center gap-1.5 rounded-lg border border-primary-border bg-primary-dim px-3 py-2 text-xs font-bold text-primary"
+            >
+              <Pencil size={13} /> Editar Inicio
+            </button>
+            <button
+              onClick={() => openModal(ROUTES.sessionFinish)}
+              className="flex min-h-[44px] items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-extrabold text-bg-deep"
+            >
+              <CheckCircle2 size={14} /> Finalizar Sesión
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
         {/* Desktop left panel */}
         <div className="hidden flex-col items-center self-start rounded-2xl border border-border-strong bg-panel p-6 lg:flex">
@@ -170,43 +207,6 @@ export default function HomePage() {
               recentSessions.map((s) => <SessionRow key={s.id} session={s} />)
             )}
           </div>
-
-          {/* Open session pill — sticky within the main column so it can never
-              overlap the desktop left panel (a fixed pill with a hardcoded
-              left offset drifted out of sync with that column's real width). */}
-          {openSession && (
-            <div className="sticky z-30 flex flex-col gap-2 rounded-2xl border border-primary-border bg-bg-deep/95 p-3 shadow-glow backdrop-blur-md [bottom:calc(76px+env(safe-area-inset-bottom))] lg:bottom-6 lg:flex-row lg:items-center lg:justify-between lg:px-5 lg:py-3">
-              <div className="flex items-center gap-2.5">
-                <Flame size={16} className="text-exp" />
-                <div>
-                  <p className="text-sm font-extrabold text-primary">Sesión en Progreso</p>
-                  <p className="text-xs text-text-muted">
-                    {formatDateShort(openSession.date)} · Lv {openSession.lvStart} · {formatPercent(openSession.expStart)}% EXP
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleCancelOpenSession}
-                  className="min-h-[44px] rounded-lg px-3 py-2 text-xs font-semibold text-text-muted hover:bg-white/[0.06]"
-                >
-                  <X size={14} className="inline" /> Cancelar
-                </button>
-                <button
-                  onClick={() => openModal(ROUTES.sessionStartEdit)}
-                  className="flex min-h-[44px] items-center gap-1.5 rounded-lg border border-primary-border bg-primary-dim px-3 py-2 text-xs font-bold text-primary"
-                >
-                  <Pencil size={13} /> Editar Inicio
-                </button>
-                <button
-                  onClick={() => openModal(ROUTES.sessionFinish)}
-                  className="flex min-h-[44px] items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-extrabold text-bg-deep"
-                >
-                  <CheckCircle2 size={14} /> Finalizar Sesión
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
