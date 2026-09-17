@@ -132,7 +132,7 @@ export default function FinishSessionPage() {
   }
 
   return (
-    <Modal maxWidthClassName="max-w-2xl md:max-w-4xl">
+    <Modal>
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <h1 className="text-lg font-bold text-text">Finalizar Sesión</h1>
         <button onClick={() => navigate(-1)} aria-label="Cerrar" className="-mr-2 flex h-10 w-10 items-center justify-center rounded-lg text-text-muted hover:bg-white/[0.06] hover:text-text-dim">
@@ -140,24 +140,7 @@ export default function FinishSessionPage() {
         </button>
       </div>
 
-      <div className="md:grid md:max-h-[75vh] md:grid-cols-[220px_1fr] md:overflow-y-auto">
-        <div className="sticky top-0 z-10 self-start border-b-[3px] border-primary bg-bg px-5 py-4 shadow-lg md:border-b-0 md:border-r-[3px]">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-primary">📌 Datos de Inicio</p>
-          {[
-            ['Nivel', `${open.lvStart} (${formatPercent(open.expStart)}%)`],
-            ['Fragmentos', formatNumber(open.fragsStart)],
-            ['Nodos', formatNumber(open.nodesStart)],
-            ['Mesos', formatExp(open.mesosStart)],
-            ['Fam. Comunes', formatNumber(open.commonFamiliarsStart)],
-            ['Fam. Raros', formatNumber(open.rareFamiliarsStart)],
-          ].map(([label, value]) => (
-            <div key={label} className="flex justify-between border-b border-white/5 py-1 text-sm text-text-dim last:border-b-0">
-              <span>{label}</span>
-              <span className="font-semibold">{value}</span>
-            </div>
-          ))}
-        </div>
-
+      <div className="md:max-h-[75vh] md:overflow-y-auto">
         <div className="pb-6">
           <StatSectionGrid
             color={STAT_COLORS.exp} icon="⚔️" title="Nivel y EXP — Fin"
