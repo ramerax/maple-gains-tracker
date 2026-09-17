@@ -35,6 +35,15 @@ html, body, #root {
   height: 100%;
 }
 
+html {
+  /* Some mobile browsers (Firefox Android, older Safari) auto-enlarge small
+     text in narrow columns ("font boosting") to aid readability — it breaks
+     any layout that fits fixed-width columns to a specific font size, like
+     the compact session table. Opt out; our type scale is deliberate. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   background-color: hsl(var(--color-bg));
   color: hsl(var(--color-text));

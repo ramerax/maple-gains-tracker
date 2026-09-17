@@ -34,15 +34,15 @@ export function SessionTableHeader({ showDate, compact }: { showDate?: boolean; 
   return (
     <>
       <div className={`grid ${COLS_COMPACT} gap-x-[3px] border-b border-border px-2 py-2 text-[8px] font-bold uppercase text-text-faint sm:hidden`}>
-        <span>Fecha</span>
-        <span>Nv</span>
-        <span className="text-right">Exp</span>
-        <span className="text-right">%</span>
-        <span className="text-right">Fr</span>
-        <span className="text-right">No</span>
-        <span className="text-right">Me</span>
-        <span className="text-right">Co</span>
-        <span className="text-right">Ra</span>
+        <span className="min-w-0 truncate">Fecha</span>
+        <span className="min-w-0 truncate">Nv</span>
+        <span className="min-w-0 truncate text-right">Exp</span>
+        <span className="min-w-0 truncate text-right">%</span>
+        <span className="min-w-0 truncate text-right">Fr</span>
+        <span className="min-w-0 truncate text-right">No</span>
+        <span className="min-w-0 truncate text-right">Me</span>
+        <span className="min-w-0 truncate text-right">Co</span>
+        <span className="min-w-0 truncate text-right">Ra</span>
       </div>
       <div className="hidden sm:block">{full}</div>
     </>
@@ -59,17 +59,17 @@ export function SessionRow({ session, showDate, compact }: { session: Session; s
       onClick={() => navigate(ROUTES.sessionDetail(session.id))}
       className={`grid ${showDate ? COLS_WITH_DATE : COLS} w-full items-center gap-x-2 border-b border-border px-5 py-3 text-left text-sm transition-colors last:border-b-0 hover:bg-white/[0.03]`}
     >
-      {showDate && <span className="truncate text-xs text-text-faint">{formatDateShortEs(session.date)}</span>}
-      <span className="truncate text-xs font-bold text-text">
+      {showDate && <span className="min-w-0 truncate text-xs text-text-faint">{formatDateShortEs(session.date)}</span>}
+      <span className="min-w-0 truncate text-xs font-bold text-text">
         {session.lvStart}{levelsGained > 0 ? `→${session.lvEnd}` : ''}
       </span>
-      <span className="truncate text-right font-black text-exp">{formatExp(session.expGainedActual)}</span>
-      <span className="truncate text-right text-xs font-semibold text-exp/70">{pct >= 0 ? '+' : ''}{formatPercent(pct)}%</span>
-      <span className="truncate text-right font-semibold text-frags">{formatSignedGain(session.fragsGained)}</span>
-      <span className="truncate text-right font-semibold text-nodes">{formatSignedGain(session.nodesGained)}</span>
-      <span className="truncate text-right font-semibold text-mesos">{formatSignedGain(session.mesosGained, formatExp)}</span>
-      <span className="truncate text-right font-semibold text-common">{formatSignedGain(session.commonFamiliarsGained)}</span>
-      <span className="truncate text-right font-semibold text-rare">{formatSignedGain(session.rareFamiliarsGained)}</span>
+      <span className="min-w-0 truncate text-right font-black text-exp">{formatExp(session.expGainedActual)}</span>
+      <span className="min-w-0 truncate text-right text-xs font-semibold text-exp/70">{pct >= 0 ? '+' : ''}{formatPercent(pct)}%</span>
+      <span className="min-w-0 truncate text-right font-semibold text-frags">{formatSignedGain(session.fragsGained)}</span>
+      <span className="min-w-0 truncate text-right font-semibold text-nodes">{formatSignedGain(session.nodesGained)}</span>
+      <span className="min-w-0 truncate text-right font-semibold text-mesos">{formatSignedGain(session.mesosGained, formatExp)}</span>
+      <span className="min-w-0 truncate text-right font-semibold text-common">{formatSignedGain(session.commonFamiliarsGained)}</span>
+      <span className="min-w-0 truncate text-right font-semibold text-rare">{formatSignedGain(session.rareFamiliarsGained)}</span>
     </button>
   );
 
@@ -81,15 +81,15 @@ export function SessionRow({ session, showDate, compact }: { session: Session; s
         onClick={() => navigate(ROUTES.sessionDetail(session.id))}
         className={`grid ${COLS_COMPACT} w-full items-center gap-x-[3px] border-b border-border px-2 py-2.5 text-left text-[10px] transition-colors last:border-b-0 hover:bg-white/[0.03] sm:hidden`}
       >
-        <span className="truncate text-text-faint">{formatDateShortEs(session.date)}</span>
-        <span className="truncate font-bold text-text">{session.lvEnd}</span>
-        <span className="truncate text-right font-black text-exp">{formatExp(session.expGainedActual)}</span>
-        <span className="truncate text-right font-semibold text-exp/70">{pct >= 0 ? '+' : ''}{formatPercent(pct)}%</span>
-        <span className="truncate text-right font-semibold text-frags">{formatSignedGain(session.fragsGained)}</span>
-        <span className="truncate text-right font-semibold text-nodes">{formatSignedGain(session.nodesGained)}</span>
-        <span className="truncate text-right font-semibold text-mesos">{formatSignedGain(session.mesosGained, formatExp)}</span>
-        <span className="truncate text-right font-semibold text-common">{formatSignedGain(session.commonFamiliarsGained)}</span>
-        <span className="truncate text-right font-semibold text-rare">{formatSignedGain(session.rareFamiliarsGained)}</span>
+        <span className="min-w-0 truncate text-text-faint">{formatDateShortEs(session.date)}</span>
+        <span className="min-w-0 truncate font-bold text-text">{session.lvEnd}</span>
+        <span className="min-w-0 truncate text-right font-black text-exp">{formatExp(session.expGainedActual)}</span>
+        <span className="min-w-0 truncate text-right font-semibold text-exp/70">{pct >= 0 ? '+' : ''}{formatPercent(pct)}%</span>
+        <span className="min-w-0 truncate text-right font-semibold text-frags">{formatSignedGain(session.fragsGained)}</span>
+        <span className="min-w-0 truncate text-right font-semibold text-nodes">{formatSignedGain(session.nodesGained)}</span>
+        <span className="min-w-0 truncate text-right font-semibold text-mesos">{formatSignedGain(session.mesosGained, formatExp)}</span>
+        <span className="min-w-0 truncate text-right font-semibold text-common">{formatSignedGain(session.commonFamiliarsGained)}</span>
+        <span className="min-w-0 truncate text-right font-semibold text-rare">{formatSignedGain(session.rareFamiliarsGained)}</span>
       </button>
       <div className="hidden sm:block">{full}</div>
     </>
