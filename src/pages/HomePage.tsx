@@ -204,7 +204,7 @@ export default function HomePage() {
                 <p className="mt-1 text-sm text-text-muted">Iniciá tu primera sesión desde el menú lateral</p>
               </div>
             ) : (
-              <div className="overflow-x-auto [mask-image:linear-gradient(to_right,#000_88%,transparent)] sm:[mask-image:none]">
+              <div className="overflow-x-auto">
                 <SessionTableHeader compact />
                 {recentSessions.map((s) => <SessionRow key={s.id} session={s} compact />)}
               </div>

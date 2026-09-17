@@ -14,7 +14,7 @@ const COLS_WITH_DATE = 'grid-cols-[52px_64px_84px_60px_58px_58px_74px_78px_78px]
 // columns still, but tight enough (narrower widths, smaller type, 2-letter
 // headers) to fit a phone width with no side-scroll. Swaps back to the
 // roomier full table at sm: and up.
-const COLS_COMPACT = 'grid-cols-[28px_38px_52px_30px_30px_36px_40px_32px]';
+const COLS_COMPACT = 'grid-cols-[28px_38px_52px_30px_30px_46px_40px_32px]';
 
 export function SessionTableHeader({ showDate, compact }: { showDate?: boolean; compact?: boolean }) {
   const full = (
