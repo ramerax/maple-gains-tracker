@@ -10,11 +10,11 @@ import type { Session } from '@/types';
 // panel scrolls horizontally there, same trade-off any real data table makes.
 const COLS = 'grid-cols-[64px_84px_60px_58px_58px_74px_78px_78px]';
 const COLS_WITH_DATE = 'grid-cols-[52px_64px_84px_60px_58px_58px_74px_78px_78px]';
-// Compact variant (Home's "recent sessions" widget, mobile only): just the
-// headline numbers, fluid widths so it always fits with no side-scroll —
-// full per-category breakdown is one tap away on the session's own row.
-// Swaps back to the full table at sm: where there's room for it.
-const COLS_COMPACT = 'grid-cols-[1fr_auto_auto]';
+// Compact variant (Home's "recent sessions" widget, mobile only): all 8
+// columns still, but tight enough (narrower widths, smaller type, 2-letter
+// headers) to fit a phone width with no side-scroll. Swaps back to the
+// roomier full table at sm: and up.
+const COLS_COMPACT = 'grid-cols-[28px_38px_52px_30px_30px_36px_40px_32px]';
 
 export function SessionTableHeader({ showDate, compact }: { showDate?: boolean; compact?: boolean }) {
   const full = (
@@ -33,10 +33,15 @@ export function SessionTableHeader({ showDate, compact }: { showDate?: boolean; 
   if (!compact) return full;
   return (
     <>
-      <div className={`grid ${COLS_COMPACT} gap-x-3 border-b border-border px-5 py-2 text-[10px] font-bold uppercase text-text-faint sm:hidden`}>
-        <span>Nivel</span>
-        <span className="text-right">EXP</span>
+      <div className={`grid ${COLS_COMPACT} gap-x-1 border-b border-border px-2.5 py-2 text-[8px] font-bold uppercase text-text-faint sm:hidden`}>
+        <span>Nv</span>
+        <span className="text-right">Exp</span>
         <span className="text-right">%</span>
+        <span className="text-right">Fr</span>
+        <span className="text-right">No</span>
+        <span className="text-right">Me</span>
+        <span className="text-right">Co</span>
+        <span className="text-right">Ra</span>
       </div>
       <div className="hidden sm:block">{full}</div>
     </>
@@ -73,13 +78,16 @@ export function SessionRow({ session, showDate, compact }: { session: Session; s
     <>
       <button
         onClick={() => navigate(ROUTES.sessionDetail(session.id))}
-        className={`grid ${COLS_COMPACT} w-full items-center gap-x-3 border-b border-border px-5 py-3 text-left text-sm transition-colors last:border-b-0 hover:bg-white/[0.03] sm:hidden`}
+        className={`grid ${COLS_COMPACT} w-full items-center gap-x-1 border-b border-border px-2.5 py-2.5 text-left text-[10px] transition-colors last:border-b-0 hover:bg-white/[0.03] sm:hidden`}
       >
-        <span className="truncate text-xs font-bold text-text">
-          Lv {session.lvStart}{levelsGained > 0 ? ` → ${session.lvEnd}` : ''}
-        </span>
+        <span className="truncate font-bold text-text">{session.lvEnd}</span>
         <span className="truncate text-right font-black text-exp">{formatExp(session.expGainedActual)}</span>
-        <span className="truncate text-right text-xs font-semibold text-exp/70">{pct >= 0 ? '+' : ''}{formatPercent(pct)}%</span>
+        <span className="truncate text-right font-semibold text-exp/70">{pct >= 0 ? '+' : ''}{formatPercent(pct)}%</span>
+        <span className="truncate text-right font-semibold text-frags">{formatSignedGain(session.fragsGained)}</span>
+        <span className="truncate text-right font-semibold text-nodes">{formatSignedGain(session.nodesGained)}</span>
+        <span className="truncate text-right font-semibold text-mesos">{formatSignedGain(session.mesosGained, formatExp)}</span>
+        <span className="truncate text-right font-semibold text-common">{formatSignedGain(session.commonFamiliarsGained)}</span>
+        <span className="truncate text-right font-semibold text-rare">{formatSignedGain(session.rareFamiliarsGained)}</span>
       </button>
       <div className="hidden sm:block">{full}</div>
     </>
