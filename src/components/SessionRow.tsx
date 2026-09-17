@@ -14,7 +14,7 @@ const COLS_WITH_DATE = 'grid-cols-[52px_64px_84px_60px_58px_58px_74px_78px_78px]
 // columns still, but tight enough (narrower widths, smaller type, 2-letter
 // headers) to fit a phone width with no side-scroll. Swaps back to the
 // roomier full table at sm: and up.
-const COLS_COMPACT = 'grid-cols-[28px_38px_52px_30px_30px_46px_40px_32px]';
+const COLS_COMPACT = 'grid-cols-[32px_24px_36px_46px_26px_26px_44px_36px_28px]';
 
 export function SessionTableHeader({ showDate, compact }: { showDate?: boolean; compact?: boolean }) {
   const full = (
@@ -33,7 +33,8 @@ export function SessionTableHeader({ showDate, compact }: { showDate?: boolean; 
   if (!compact) return full;
   return (
     <>
-      <div className={`grid ${COLS_COMPACT} gap-x-1 border-b border-border px-2.5 py-2 text-[8px] font-bold uppercase text-text-faint sm:hidden`}>
+      <div className={`grid ${COLS_COMPACT} gap-x-[3px] border-b border-border px-2 py-2 text-[8px] font-bold uppercase text-text-faint sm:hidden`}>
+        <span>Fecha</span>
         <span>Nv</span>
         <span className="text-right">Exp</span>
         <span className="text-right">%</span>
@@ -78,8 +79,9 @@ export function SessionRow({ session, showDate, compact }: { session: Session; s
     <>
       <button
         onClick={() => navigate(ROUTES.sessionDetail(session.id))}
-        className={`grid ${COLS_COMPACT} w-full items-center gap-x-1 border-b border-border px-2.5 py-2.5 text-left text-[10px] transition-colors last:border-b-0 hover:bg-white/[0.03] sm:hidden`}
+        className={`grid ${COLS_COMPACT} w-full items-center gap-x-[3px] border-b border-border px-2 py-2.5 text-left text-[10px] transition-colors last:border-b-0 hover:bg-white/[0.03] sm:hidden`}
       >
+        <span className="truncate text-text-faint">{formatDateShortEs(session.date)}</span>
         <span className="truncate font-bold text-text">{session.lvEnd}</span>
         <span className="truncate text-right font-black text-exp">{formatExp(session.expGainedActual)}</span>
         <span className="truncate text-right font-semibold text-exp/70">{pct >= 0 ? '+' : ''}{formatPercent(pct)}%</span>
