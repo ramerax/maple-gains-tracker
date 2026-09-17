@@ -205,8 +205,8 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="overflow-x-auto [mask-image:linear-gradient(to_right,#000_88%,transparent)] sm:[mask-image:none]">
-                <SessionTableHeader />
-                {recentSessions.map((s) => <SessionRow key={s.id} session={s} />)}
+                <SessionTableHeader compact />
+                {recentSessions.map((s) => <SessionRow key={s.id} session={s} compact />)}
               </div>
             )}
           </div>
