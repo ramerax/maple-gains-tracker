@@ -30,7 +30,7 @@ function Avatar({ name, color, size = 44 }: { name: string; color: string; size?
 }
 
 export default function ProfilesPage() {
-  const { profiles, activeProfileId, setActiveProfile, refreshProfiles } = useProfile();
+  const { profiles, activeProfileId, loading, setActiveProfile, refreshProfiles } = useProfile();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Profile | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -92,13 +92,19 @@ export default function ProfilesPage() {
   return (
     <div className="mx-auto max-w-[700px] p-4 md:p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-black text-text">{profiles.length} perfil{profiles.length !== 1 ? 'es' : ''}</h1>
+        <h1 className="text-xl font-black text-text">
+          {loading ? 'Perfiles' : `${profiles.length} perfil${profiles.length !== 1 ? 'es' : ''}`}
+        </h1>
         <button onClick={openCreate} className="flex min-h-[44px] items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-bg-deep shadow-glow">
           <Plus size={14} /> Nuevo Perfil
         </button>
       </div>
 
-      {profiles.length === 0 ? (
+      {loading ? (
+        <div className="mt-4 flex flex-col gap-2">
+          {[0, 1].map((i) => <div key={i} className="h-[68px] animate-pulse rounded-xl bg-white/[0.04]" />)}
+        </div>
+      ) : profiles.length === 0 ? (
         <div className="mt-6 flex flex-col items-center rounded-2xl border border-border bg-panel px-5 py-12 text-center">
           <UserPlus size={32} className="text-text-faint" />
           <p className="mt-3 font-semibold text-text-dim">Sin perfiles todavía</p>

@@ -15,6 +15,7 @@ interface ProfileContextValue {
   activeProfile: Profile | null;
   activeProfileId: string | null;
   loadError: string | null;
+  loading: boolean;
   setActiveProfile: (id: string) => Promise<void>;
   refreshProfiles: () => Promise<void>;
 }
@@ -27,6 +28,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfileId, setActiveProfileIdState] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
   useEffect(() => () => { mountedRef.current = false; }, []);
 
@@ -44,6 +46,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     if (profilesError) {
       setLoadError(profilesError);
+      setLoading(false);
       return;
     }
 
@@ -59,12 +62,14 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       const { error: createError } = await addProfile(defaultProfile);
       if (createError) {
         setLoadError('No se pudo crear tu perfil inicial. Intenta recargar la página.');
+        setLoading(false);
         return;
       }
       await setActiveProfileId(defaultProfile.id);
       setProfiles([defaultProfile]);
       setActiveProfileIdState(defaultProfile.id);
       setLoadError(null);
+      setLoading(false);
       return;
     }
 
@@ -77,6 +82,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     setProfiles(loaded);
     setActiveProfileIdState(activeId);
     setLoadError(null);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -92,7 +98,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ProfileContext.Provider
-      value={{ profiles, activeProfile, activeProfileId, loadError, setActiveProfile, refreshProfiles }}
+      value={{ profiles, activeProfile, activeProfileId, loadError, loading, setActiveProfile, refreshProfiles }}
     >
       {children}
     </ProfileContext.Provider>
