@@ -7,6 +7,7 @@ import { useProfile } from '@/context/ProfileContext';
 import { saveOpenSession, generateId, getOpenSession } from '@/utils/storage';
 import { getTodayString, formatDateShort } from '@/utils/formatters';
 import { STAT_COLORS } from '@/constants/statColors';
+import { MAX_CHARACTER_LEVEL } from '@/constants/expTable';
 import { ROUTES } from '@/routes';
 import type { OpenSession } from '@/types';
 
@@ -56,6 +57,10 @@ export default function StartSessionPage() {
     }
     if (!lvStart || !expStart) {
       setError('Ingresa al menos el nivel y % de EXP inicial.');
+      return;
+    }
+    if (pi(lvStart) > MAX_CHARACTER_LEVEL) {
+      setError(`El nivel máximo actual es ${MAX_CHARACTER_LEVEL}.`);
       return;
     }
 
