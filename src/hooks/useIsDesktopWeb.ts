@@ -1,7 +1,18 @@
-import { Platform, useWindowDimensions } from 'react-native';
+import { useEffect, useState } from 'react';
 
-/** Returns true only on web browser at desktop widths (>= 768px). */
+const QUERY = '(min-width: 768px)';
+
 export function useIsDesktopWeb(): boolean {
-  const { width } = useWindowDimensions();
-  return Platform.OS === 'web' && width >= 768;
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(QUERY).matches
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia(QUERY);
+    const onChange = () => setIsDesktop(mql.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+
+  return isDesktop;
 }

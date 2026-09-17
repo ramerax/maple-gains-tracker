@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Structural */
+  --color-bg: 220 26% 6%;
+  --color-bg-deep: 220 33% 3%;
+
+  /* Brand / primary accent — teal-cyan "aurora" */
+  --color-primary: 172 66% 50%;
+
+  /* Text ramp */
+  --color-text: 210 40% 98%;
+  --color-text-dim: 213 27% 84%;
+  --color-text-muted: 215 20% 65%;
+  --color-text-faint: 215 16% 58%;
+
+  /* Stat category colors — one per gameplay stat, kept visually distinct */
+  --color-exp: 292 91% 73%;      /* fuchsia */
+  --color-frags: 234 89% 74%;    /* indigo */
+  --color-nodes: 199 89% 60%;    /* sky blue — separated from frags/rare */
+  --color-mesos: 43 96% 56%;     /* amber/gold */
+  --color-common: 152 47% 62%;   /* mint — was identical to text-muted */
+  --color-rare: 270 95% 78%;     /* violet — pushed away from frags */
+
+  --color-danger: 0 84% 65%;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+html {
+  /* Some mobile browsers (Firefox Android, older Safari) auto-enlarge small
+     text in narrow columns ("font boosting") to aid readability — it breaks
+     any layout that fits fixed-width columns to a specific font size, like
+     the compact session table. Opt out; our type scale is deliberate. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  background-color: hsl(var(--color-bg));
+  color: hsl(var(--color-text));
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:focus-visible {
+  outline: 2px solid hsl(var(--color-primary));
+  outline-offset: 2px;
+}

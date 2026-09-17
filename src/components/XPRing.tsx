@@ -1,78 +1,45 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
-
 interface XPRingProps {
   level: number;
-  xpPercent: number; // 0–100
+  xpPercent: number;
   size?: number;
   strokeWidth?: number;
 }
 
-export default function XPRing({ level, xpPercent, size = 150, strokeWidth = 9 }: XPRingProps) {
-  const r = (size - strokeWidth) / 2;
-  const cx = size / 2;
-  const cy = size / 2;
-  const circumference = 2 * Math.PI * r;
-  const filled = circumference * (xpPercent / 100);
-  const offset = circumference - filled;
+export function XPRing({ level, xpPercent, size = 148, strokeWidth = 8 }: XPRingProps) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const pct = Math.min(Math.max(xpPercent, 0), 100);
+  const offset = circumference - (pct / 100) * circumference;
+  const center = size / 2;
 
   return (
-    <View style={{ width: size, height: size }}>
-      <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
-        <Defs>
-          <LinearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <Stop offset="0%" stopColor="#4A0EC0" />
-            <Stop offset="100%" stopColor="#C47FFF" />
-          </LinearGradient>
-        </Defs>
-        {/* Track */}
-        <Circle
-          cx={cx} cy={cy} r={r}
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.06)"
+          stroke="rgba(255,255,255,0.08)"
           strokeWidth={strokeWidth}
         />
-        {/* Progress */}
-        <Circle
-          cx={cx} cy={cy} r={r}
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
           fill="none"
-          stroke="url(#ringGrad)"
+          stroke="hsl(var(--color-primary))"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          strokeDasharray={`${circumference}`}
+          strokeDasharray={circumference}
           strokeDashoffset={offset}
+          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
         />
-      </Svg>
-      {/* Center text */}
-      <View style={[StyleSheet.absoluteFill, styles.center]}>
-        <Text style={styles.levelNum}>{level}</Text>
-        <Text style={styles.levelLabel}>NIVEL</Text>
-      </View>
-    </View>
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="font-black text-text" style={{ fontSize: size * 0.28 }}>{level}</span>
+        <span className="font-bold tracking-widest text-text-faint" style={{ fontSize: Math.max(size * 0.068, 8) }}>NIVEL</span>
+      </div>
+    </div>
   );
 }
-
-const styles = StyleSheet.create({
-  center: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  levelNum: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#fff',
-    letterSpacing: -2,
-    lineHeight: 36,
-    textShadowColor: 'rgba(180,127,255,0.5)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 16,
-  },
-  levelLabel: {
-    fontSize: 9,
-    color: 'rgba(255,255,255,0.3)',
-    letterSpacing: 2,
-    fontWeight: '700',
-    marginTop: 2,
-  },
-});

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Profile } from '../types';
 import {
   getProfiles,
@@ -8,7 +8,6 @@ import {
   generateId,
   migrateDataToAuthUser,
 } from '../utils/storage';
-import { runMigrationIfNeeded } from '../utils/migration';
 import { supabase } from '../lib/supabase';
 
 interface ProfileContextValue {
@@ -28,17 +27,20 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfileId, setActiveProfileIdState] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+  useEffect(() => () => { mountedRef.current = false; }, []);
 
   const refreshProfiles = useCallback(async () => {
     // Snapshot session token before migrations run so auth state stays stable
     const { data: sessionSnapshot } = await supabase.auth.getSession();
     const accessToken = sessionSnapshot.session?.access_token ?? undefined;
 
-    await runMigrationIfNeeded();
-    try { await migrateDataToAuthUser(); } catch (e) { if (__DEV__) console.error('migrateDataToAuthUser:', e); }
+    try { await migrateDataToAuthUser(); } catch (e) { if (import.meta.env.DEV) console.error('migrateDataToAuthUser:', e); }
 
     const { profiles: loaded, error: profilesError } = await getProfiles(accessToken);
+    if (!mountedRef.current) return;
     let activeId = await getActiveProfileId();
+    if (!mountedRef.current) return;
 
     if (profilesError) {
       setLoadError(profilesError);

@@ -19,6 +19,14 @@ export function formatNumber(n: number): string {
 }
 
 /**
+ * Prefixes a "+" for gains, and only for non-negative values — avoids "+-500"
+ * when a value being typed/edited is momentarily negative.
+ */
+export function formatSignedGain(n: number, fmt: (n: number) => string = formatNumber): string {
+  return n >= 0 ? `+${fmt(n)}` : fmt(n);
+}
+
+/**
  * Format EXP with shorthand: 1,234,567,890 → "1.23B"
  */
 export function formatExp(n: number): string {

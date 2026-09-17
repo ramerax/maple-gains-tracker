@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { Session, PeriodStats, Profile, OpenSession } from '../types';
 
@@ -154,7 +153,7 @@ export async function getAllSessions(profileId?: string): Promise<Session[]> {
     .limit(MAX_SESSIONS);
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query;
-  if (error) { if (__DEV__) console.error('getAllSessions:', error.message); return []; }
+  if (error) { if (import.meta.env.DEV) console.error('getAllSessions:', error.message); return []; }
   return (data ?? []).map(rowToSession);
 }
 
@@ -164,7 +163,7 @@ export async function getSessionById(id: string): Promise<Session | null> {
     .select(SESSION_COLUMNS)
     .eq('id', id)
     .single();
-  if (error) { if (__DEV__) console.error('getSessionById:', error.message); return null; }
+  if (error) { if (import.meta.env.DEV) console.error('getSessionById:', error.message); return null; }
   return data ? rowToSession(data) : null;
 }
 
@@ -173,13 +172,13 @@ export async function getSessionCount(profileId?: string): Promise<number> {
   let query = supabase.from('sessions').select('*', { count: 'exact', head: true });
   if (profileId) query = query.eq('profile_id', profileId);
   const { count, error } = await query;
-  if (error) { if (__DEV__) console.error('getSessionCount:', error.message); return 0; }
+  if (error) { if (import.meta.env.DEV) console.error('getSessionCount:', error.message); return 0; }
   return count ?? 0;
 }
 
 export async function addSession(session: Session): Promise<{ error: string | null }> {
   const { error } = await supabase.from('sessions').insert(sessionToRow(session));
-  if (error) { if (__DEV__) console.error('addSession:', error.message); return { error: error.message }; }
+  if (error) { if (import.meta.env.DEV) console.error('addSession:', error.message); return { error: error.message }; }
   return { error: null };
 }
 
@@ -188,13 +187,13 @@ export async function updateSession(updated: Session): Promise<{ error: string |
     .from('sessions')
     .update(sessionToRow(updated))
     .eq('id', updated.id);
-  if (error) { if (__DEV__) console.error('updateSession:', error.message); return { error: error.message }; }
+  if (error) { if (import.meta.env.DEV) console.error('updateSession:', error.message); return { error: error.message }; }
   return { error: null };
 }
 
 export async function deleteSession(id: string): Promise<{ error: string | null }> {
   const { error } = await supabase.from('sessions').delete().eq('id', id);
-  if (error) { if (__DEV__) console.error('deleteSession:', error.message); return { error: error.message }; }
+  if (error) { if (import.meta.env.DEV) console.error('deleteSession:', error.message); return { error: error.message }; }
   return { error: null };
 }
 
@@ -206,7 +205,7 @@ export async function getSessionsByDate(date: string, profileId?: string): Promi
     .order('created_at', { ascending: true });
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query;
-  if (error) { if (__DEV__) console.error('getSessionsByDate:', error.message); return []; }
+  if (error) { if (import.meta.env.DEV) console.error('getSessionsByDate:', error.message); return []; }
   return (data ?? []).map(rowToSession);
 }
 
@@ -224,7 +223,7 @@ export async function getSessionsByDateRange(
     .order('created_at', { ascending: true });
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query;
-  if (error) { if (__DEV__) console.error('getSessionsByDateRange:', error.message); return []; }
+  if (error) { if (import.meta.env.DEV) console.error('getSessionsByDateRange:', error.message); return []; }
   return (data ?? []).map(rowToSession);
 }
 
@@ -265,8 +264,8 @@ export function generateId(): string {
 // ── Profile CRUD ───────────────────────────────────────────────────────────────
 
 export async function getProfiles(accessToken?: string): Promise<{ profiles: Profile[]; error: string | null }> {
-  const SUPABASE_URL = (process.env.EXPO_PUBLIC_SUPABASE_URL ?? '').trim();
-  const ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+  const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL ?? '').trim();
+  const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
 
   let token = accessToken;
   if (!token) {
@@ -284,20 +283,20 @@ export async function getProfiles(accessToken?: string): Promise<{ profiles: Pro
     );
     if (!r.ok) {
       const body = await r.text();
-      if (__DEV__) console.error('getProfiles HTTP error:', r.status, body);
+      if (import.meta.env.DEV) console.error('getProfiles HTTP error:', r.status, body);
       return { profiles: [], error: 'No se pudieron cargar los perfiles. Intenta de nuevo.' };
     }
     const data = await r.json();
     return { profiles: (data ?? []).map(rowToProfile), error: null };
   } catch (e: unknown) {
-    if (__DEV__) console.error('getProfiles fetch threw:', errMessage(e));
+    if (import.meta.env.DEV) console.error('getProfiles fetch threw:', errMessage(e));
     return { profiles: [], error: 'No se pudo conectar. Revisa tu conexión e intenta de nuevo.' };
   }
 }
 
 export async function addProfile(profile: Profile): Promise<{ error: string | null }> {
   const { error } = await supabase.from('profiles').insert(profileToRow(profile));
-  if (error) { if (__DEV__) console.error('addProfile:', error.message); return { error: error.message }; }
+  if (error) { if (import.meta.env.DEV) console.error('addProfile:', error.message); return { error: error.message }; }
   return { error: null };
 }
 
@@ -306,13 +305,13 @@ export async function updateProfile(profile: Profile): Promise<{ error: string |
     .from('profiles')
     .update(profileToRow(profile))
     .eq('id', profile.id);
-  if (error) { if (__DEV__) console.error('updateProfile:', error.message); return { error: error.message }; }
+  if (error) { if (import.meta.env.DEV) console.error('updateProfile:', error.message); return { error: error.message }; }
   return { error: null };
 }
 
 export async function deleteProfile(id: string): Promise<{ error: string | null }> {
   const { error } = await supabase.from('profiles').delete().eq('id', id);
-  if (error) { if (__DEV__) console.error('deleteProfile:', error.message); return { error: error.message }; }
+  if (error) { if (import.meta.env.DEV) console.error('deleteProfile:', error.message); return { error: error.message }; }
   return { error: null };
 }
 
@@ -321,12 +320,12 @@ export async function deleteProfile(id: string): Promise<{ error: string | null 
 const ACTIVE_PROFILE_KEY = '@maple_active_profile';
 
 export async function getActiveProfileId(): Promise<string | null> {
-  try { return await AsyncStorage.getItem(ACTIVE_PROFILE_KEY); }
+  try { return localStorage.getItem(ACTIVE_PROFILE_KEY); }
   catch { return null; }
 }
 
 export async function setActiveProfileId(id: string): Promise<void> {
-  await AsyncStorage.setItem(ACTIVE_PROFILE_KEY, id);
+  localStorage.setItem(ACTIVE_PROFILE_KEY, id);
 }
 
 // ── Open Session ───────────────────────────────────────────────────────────────
@@ -338,7 +337,7 @@ export async function getOpenSession(profileId?: string): Promise<OpenSession | 
     .order('started_at', { ascending: false });
   if (profileId) query = query.eq('profile_id', profileId);
   const { data, error } = await query.limit(1);
-  if (error) { if (__DEV__) console.error('getOpenSession:', error.message); return null; }
+  if (error) { if (import.meta.env.DEV) console.error('getOpenSession:', error.message); return null; }
   return data && data.length > 0 ? rowToOpenSession(data[0]) : null;
 }
 
@@ -361,7 +360,7 @@ export async function saveOpenSession(session: OpenSession): Promise<{ error: st
     .delete()
     .eq('profile_id', session.profileId)
     .neq('id', session.id);
-  if (cleanupErr && __DEV__) console.error('saveOpenSession cleanup error:', cleanupErr.message);
+  if (cleanupErr && import.meta.env.DEV) console.error('saveOpenSession cleanup error:', cleanupErr.message);
 
   return { error: null };
 }
@@ -371,7 +370,7 @@ export async function deleteOpenSession(profileId: string): Promise<{ error: str
     .from('open_sessions')
     .delete()
     .eq('profile_id', profileId);
-  if (error) { if (__DEV__) console.error('deleteOpenSession:', error.message); return { error: error.message }; }
+  if (error) { if (import.meta.env.DEV) console.error('deleteOpenSession:', error.message); return { error: error.message }; }
   return { error: null };
 }
 
@@ -381,9 +380,9 @@ const USER_ID_MIGRATION_FLAG = '@maple_user_id_migrated';
 
 export async function migrateDataToAuthUser(): Promise<void> {
   try {
-    const done = await AsyncStorage.getItem(USER_ID_MIGRATION_FLAG);
+    const done = localStorage.getItem(USER_ID_MIGRATION_FLAG);
     if (done === 'true') return;
-  } catch { /* AsyncStorage unavailable — fall through and attempt migration anyway */ }
+  } catch { /* localStorage unavailable — fall through and attempt migration anyway */ }
 
   const { data, error: authError } = await supabase.auth.getUser();
   if (authError || !data?.user) return;
@@ -394,12 +393,12 @@ export async function migrateDataToAuthUser(): Promise<void> {
     supabase.from('sessions').update({ user_id: uid }).is('user_id', null),
     supabase.from('open_sessions').update({ user_id: uid }).is('user_id', null),
   ]);
-  if (__DEV__) {
+  if (import.meta.env.DEV) {
     if (r1.error) console.error('migrateDataToAuthUser profiles:', r1.error.message);
     if (r2.error) console.error('migrateDataToAuthUser sessions:', r2.error.message);
     if (r3.error) console.error('migrateDataToAuthUser open_sessions:', r3.error.message);
   }
   if (!r1.error && !r2.error && !r3.error) {
-    try { await AsyncStorage.setItem(USER_ID_MIGRATION_FLAG, 'true'); } catch { /* non-fatal */ }
+    try { localStorage.setItem(USER_ID_MIGRATION_FLAG, 'true'); } catch { /* non-fatal */ }
   }
 }
