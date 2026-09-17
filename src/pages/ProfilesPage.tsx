@@ -165,7 +165,7 @@ export default function ProfilesPage() {
           >
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h2 className="text-base font-bold text-text">{editing ? 'Editar Perfil' : 'Nuevo Perfil'}</h2>
-              <button onClick={() => setModalOpen(false)} aria-label="Cerrar" className="flex h-9 w-9 items-center justify-center rounded-lg text-text-muted hover:bg-white/[0.06] hover:text-text-dim">
+              <button onClick={() => setModalOpen(false)} aria-label="Cerrar" className="flex h-11 w-11 items-center justify-center rounded-lg text-text-muted hover:bg-white/[0.06] hover:text-text-dim">
                 <X size={18} />
               </button>
             </div>
@@ -211,7 +211,7 @@ export default function ProfilesPage() {
                       onClick={() => setForm((f) => ({ ...f, color: c }))}
                       aria-label={`Color ${c}`}
                       aria-pressed={form.color === c}
-                      className="flex h-10 w-10 items-center justify-center rounded-full"
+                      className="flex h-11 w-11 items-center justify-center rounded-full"
                       style={{ backgroundColor: c, boxShadow: form.color === c ? '0 0 0 3px white' : undefined }}
                     >
                       {form.color === c && <Check size={16} color="#000" />}

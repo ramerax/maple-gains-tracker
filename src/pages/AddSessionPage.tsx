@@ -117,7 +117,7 @@ export default function AddSessionPage() {
     <Modal>
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <h1 className="text-lg font-bold text-text">{isEdit ? 'Editar Sesión' : 'Nueva Sesión'}</h1>
-        <button onClick={() => navigate(-1)} aria-label="Cerrar" className="-mr-2 flex h-10 w-10 items-center justify-center rounded-lg text-text-muted hover:bg-white/[0.06] hover:text-text-dim">
+        <button onClick={() => navigate(-1)} aria-label="Cerrar" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-lg text-text-muted hover:bg-white/[0.06] hover:text-text-dim">
           <X size={18} />
         </button>
       </div>
