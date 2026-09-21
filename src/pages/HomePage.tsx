@@ -217,8 +217,8 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <SessionTableHeader compact />
-                {recentSessions.map((s) => <SessionRow key={s.id} session={s} compact />)}
+                <SessionTableHeader compact showDate />
+                {recentSessions.map((s) => <SessionRow key={s.id} session={s} compact showDate />)}
               </div>
             )}
           </div>
