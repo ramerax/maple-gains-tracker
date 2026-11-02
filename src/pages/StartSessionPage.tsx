@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { StatSectionGrid } from '@/components/session-form/StatSectionGrid';
 import { useProfile } from '@/context/ProfileContext';
 import { saveOpenSession, generateId, getOpenSession } from '@/utils/storage';
-import { getTodayString, formatDateShort } from '@/utils/formatters';
+import { getTodayString, addDays } from '@/utils/formatters';
 import { STAT_COLORS } from '@/constants/statColors';
 import { MAX_CHARACTER_LEVEL } from '@/constants/expTable';
 import { ROUTES } from '@/routes';
@@ -100,9 +100,16 @@ export default function StartSessionPage() {
       </div>
 
       <div className="md:max-h-[75vh] md:overflow-y-auto pb-6">
-        <div className="flex items-center justify-between bg-panel px-5 py-3">
-          <span className="text-sm text-text-dim">Fecha</span>
-          <span className="text-sm font-bold text-primary">{formatDateShort(date)}</span>
+        <div className="flex items-center justify-between gap-3 bg-panel px-5 py-3">
+          <label htmlFor="start-date" className="text-sm text-text-dim">Fecha</label>
+          <input
+            id="start-date"
+            type="date"
+            value={date}
+            max={addDays(getTodayString(), 1)}
+            onChange={(e) => e.target.value && setDate(e.target.value)}
+            className="min-h-[44px] rounded-lg border border-border bg-white/[0.06] px-3 text-base font-bold text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50"
+          />
         </div>
 
         <StatSectionGrid

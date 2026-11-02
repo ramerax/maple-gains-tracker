@@ -7,7 +7,7 @@ import { useProfile } from '@/context/ProfileContext';
 import { calculateExpGained, calculateTotalExpPercent } from '@/utils/expCalculator';
 import { MAX_CHARACTER_LEVEL } from '@/constants/expTable';
 import { addSession, updateSession, getSessionById, generateId } from '@/utils/storage';
-import { getTodayString, formatExp, formatPercent, formatSignedGain } from '@/utils/formatters';
+import { getTodayString, addDays, formatExp, formatPercent, formatSignedGain } from '@/utils/formatters';
 import { STAT_COLORS } from '@/constants/statColors';
 import type { Session } from '@/types';
 
@@ -140,7 +140,7 @@ export default function AddSessionPage() {
             <input
               type="date"
               value={date}
-              max={today}
+              max={addDays(today, 1)}
               onChange={(e) => setDate(e.target.value)}
               className="w-full min-h-[44px] rounded-lg border border-border bg-white/[0.06] px-3.5 py-2.5 text-base text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50"
             />
