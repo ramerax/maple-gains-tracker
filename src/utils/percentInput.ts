@@ -26,3 +26,29 @@ export function formatPercentDigits(digits: string): string {
   if (digits === '') return '';
   return `${(parseInt(digits, 10) / SCALE).toFixed(3)}%`;
 }
+
+/**
+ * Next digits state after the browser reports `raw` as the input's new text.
+ * Caret position and IME quirks don't matter: only the characters that were
+ * typed/pasted are taken (diffed against the masked text) and appended to the
+ * existing digits. Returns null when the result would exceed 100%.
+ */
+export function nextPercentDigits(prevDigits: string, raw: string): string | null {
+  const prev = formatPercentDigits(prevDigits);
+  let prefix = 0;
+  while (prefix < prev.length && prefix < raw.length && prev[prefix] === raw[prefix]) prefix++;
+  let suffix = 0;
+  while (
+    suffix < prev.length - prefix &&
+    suffix < raw.length - prefix &&
+    prev[prev.length - 1 - suffix] === raw[raw.length - 1 - suffix]
+  ) suffix++;
+
+  const inserted = raw.slice(prefix, raw.length - suffix).replace(/\D/g, '');
+  const replacedAll = prev.length > 0 && prefix === 0 && suffix === 0;
+  if (!inserted && raw.length < prev.length) {
+    // Deletion that bypassed keydown (e.g. mobile keyboards): drop the last digit.
+    return replacedAll || raw === '' ? '' : sanitizePercentDigits(prevDigits.slice(0, -1));
+  }
+  return sanitizePercentDigits((replacedAll ? '' : prevDigits) + inserted);
+}

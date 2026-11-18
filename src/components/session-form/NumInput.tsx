@@ -1,4 +1,4 @@
-import { formatPercentDigits, sanitizePercentDigits } from '@/utils/percentInput';
+import { formatPercentDigits, nextPercentDigits } from '@/utils/percentInput';
 
 interface NumInputProps {
   label: string;
@@ -15,7 +15,7 @@ export function NumInput({ label, value, onChange, placeholder, decimal, percent
 
   const handleChange = (raw: string) => {
     if (!percent) return onChange(raw);
-    const next = sanitizePercentDigits(raw);
+    const next = nextPercentDigits(value, raw);
     if (next !== null) onChange(next);
   };
 
