@@ -6,6 +6,7 @@ import { StatSectionGrid } from '@/components/session-form/StatSectionGrid';
 import { useProfile } from '@/context/ProfileContext';
 import { calculateExpGained, calculateTotalExpPercent } from '@/utils/expCalculator';
 import { MAX_CHARACTER_LEVEL } from '@/constants/expTable';
+import { percentDigitsToNumber, percentNumberToDigits } from '@/utils/percentInput';
 import { addSession, updateSession, getSessionById, generateId } from '@/utils/storage';
 import { getTodayString, addDays, formatExp, formatPercent, formatSignedGain } from '@/utils/formatters';
 import { STAT_COLORS } from '@/constants/statColors';
@@ -49,9 +50,9 @@ export default function AddSessionPage() {
       originalCreatedAt.current = s.createdAt;
       setDate(s.date);
       setLvStart(String(s.lvStart));
-      setExpStart(String(s.expStart));
+      setExpStart(percentNumberToDigits(s.expStart));
       setLvEnd(String(s.lvEnd));
-      setExpEnd(String(s.expEnd));
+      setExpEnd(percentNumberToDigits(s.expEnd));
       setFragsStart(String(s.fragsStart));
       setFragsEnd(String(s.fragsEnd));
       setNodesStart(String(s.nodesStart));
@@ -67,7 +68,7 @@ export default function AddSessionPage() {
     return () => { cancelled = true; };
   }, [editId]);
 
-  const p = (v: string, fallback = 0) => parseFloat(v.replace(',', '.')) || fallback;
+  const p = percentDigitsToNumber;
   const pi = (v: string, fallback = 0) => parseInt(v) || fallback;
 
   const expGained = calculateExpGained(pi(lvStart, 260), p(expStart), pi(lvEnd, pi(lvStart, 260)), p(expEnd));
@@ -152,8 +153,8 @@ export default function AddSessionPage() {
           fields={[
             { label: 'Nivel Inicio', value: lvStart, onChange: setLvStart, placeholder: '265' },
             { label: 'Nivel Fin', value: lvEnd, onChange: setLvEnd, placeholder: '265' },
-            { label: '% EXP Inicio', value: expStart, onChange: setExpStart, placeholder: '0.00', decimal: true },
-            { label: '% EXP Fin', value: expEnd, onChange: setExpEnd, placeholder: '0.00', decimal: true },
+            { label: '% EXP Inicio', value: expStart, onChange: setExpStart, percent: true },
+            { label: '% EXP Fin', value: expEnd, onChange: setExpEnd, percent: true },
           ]}
           gains={lvEnd && expEnd ? [
             {

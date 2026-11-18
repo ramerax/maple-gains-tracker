@@ -3,19 +3,21 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { StatSectionGrid } from '@/components/session-form/StatSectionGrid';
+import { LastSessionPrompt, type PrefillKey } from '@/components/session-form/LastSessionPrompt';
 import { useProfile } from '@/context/ProfileContext';
-import { saveOpenSession, generateId, getOpenSession } from '@/utils/storage';
+import { saveOpenSession, generateId, getOpenSession, getLastSession } from '@/utils/storage';
 import { getTodayString, addDays } from '@/utils/formatters';
 import { STAT_COLORS } from '@/constants/statColors';
 import { MAX_CHARACTER_LEVEL } from '@/constants/expTable';
+import { percentDigitsToNumber, percentNumberToDigits } from '@/utils/percentInput';
 import { ROUTES } from '@/routes';
-import type { OpenSession } from '@/types';
+import type { OpenSession, Session } from '@/types';
 
 export default function StartSessionPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const editing = location.pathname === ROUTES.sessionStartEdit;
-  const { activeProfile } = useProfile();
+  const { activeProfile, loading: profileLoading } = useProfile();
 
   const [existingSession, setExistingSession] = useState<OpenSession | null>(null);
   const [date, setDate] = useState(getTodayString());
@@ -28,6 +30,39 @@ export default function StartSessionPage() {
   const [rareStart, setRareStart] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // New sessions offer to start from the previous session's final values.
+  const [lastSession, setLastSession] = useState<Session | null>(null);
+  const [prefillStatus, setPrefillStatus] = useState<'loading' | 'asking' | 'done'>(editing ? 'done' : 'loading');
+
+  useEffect(() => {
+    if (editing) return;
+    if (!activeProfile) {
+      if (!profileLoading) setPrefillStatus('done');
+      return;
+    }
+    let cancelled = false;
+    getLastSession(activeProfile.id).then(({ session }) => {
+      if (cancelled) return;
+      setLastSession(session);
+      setPrefillStatus(session ? 'asking' : 'done');
+    });
+    return () => { cancelled = true; };
+  }, [editing, activeProfile, profileLoading]);
+
+  const applyLastSession = (different: ReadonlySet<PrefillKey>) => {
+    if (lastSession) {
+      const keep = (key: PrefillKey, value: string) => (different.has(key) ? '' : value);
+      const num = (n: number) => (n > 0 ? String(n) : '');
+      setLvStart(keep('lv', String(lastSession.lvEnd)));
+      setExpStart(keep('exp', percentNumberToDigits(lastSession.expEnd)));
+      setFragsStart(keep('frags', num(lastSession.fragsEnd)));
+      setNodesStart(keep('nodes', num(lastSession.nodesEnd)));
+      setMesosStart(keep('mesos', num(lastSession.mesosEnd)));
+      setCommonStart(keep('common', num(lastSession.commonFamiliarsEnd)));
+      setRareStart(keep('rare', num(lastSession.rareFamiliarsEnd)));
+    }
+    setPrefillStatus('done');
+  };
 
   useEffect(() => {
     if (!editing) return;
@@ -37,7 +72,7 @@ export default function StartSessionPage() {
       setExistingSession(open);
       setDate(open.date);
       setLvStart(String(open.lvStart));
-      setExpStart(String(open.expStart));
+      setExpStart(percentNumberToDigits(open.expStart));
       setFragsStart(open.fragsStart > 0 ? String(open.fragsStart) : '');
       setNodesStart(open.nodesStart > 0 ? String(open.nodesStart) : '');
       setMesosStart(open.mesosStart > 0 ? String(open.mesosStart) : '');
@@ -48,7 +83,6 @@ export default function StartSessionPage() {
   }, [editing, activeProfile?.id]);
 
   const pi = (v: string) => parseInt(v) || 0;
-  const pf = (v: string) => parseFloat(v.replace(',', '.')) || 0;
 
   const handleSave = useCallback(async () => {
     if (!activeProfile) {
@@ -70,7 +104,7 @@ export default function StartSessionPage() {
       date,
       profileId: activeProfile.id,
       lvStart: pi(lvStart),
-      expStart: pf(expStart),
+      expStart: percentDigitsToNumber(expStart),
       fragsStart: pi(fragsStart),
       nodesStart: pi(nodesStart),
       mesosStart: Number(mesosStart) || 0,
@@ -99,6 +133,11 @@ export default function StartSessionPage() {
         </button>
       </div>
 
+      {prefillStatus === 'loading' ? (
+        <div className="p-8 text-center text-text-muted">Cargando…</div>
+      ) : prefillStatus === 'asking' && lastSession ? (
+        <LastSessionPrompt last={lastSession} onApply={applyLastSession} />
+      ) : (
       <div className="md:max-h-[75vh] md:overflow-y-auto pb-6">
         <div className="flex items-center justify-between gap-3 bg-panel px-5 py-3">
           <label htmlFor="start-date" className="text-sm text-text-dim">Fecha</label>
@@ -116,7 +155,7 @@ export default function StartSessionPage() {
           color={STAT_COLORS.exp} icon="⚔️" title="Nivel y EXP — Inicio"
           fields={[
             { label: 'Nivel', value: lvStart, onChange: setLvStart, placeholder: '265' },
-            { label: '% EXP', value: expStart, onChange: setExpStart, placeholder: '0.00', decimal: true },
+            { label: '% EXP', value: expStart, onChange: setExpStart, percent: true },
           ]}
         />
         <StatSectionGrid
@@ -152,6 +191,7 @@ export default function StartSessionPage() {
           </button>
         </div>
       </div>
+      )}
     </Modal>
   );
 }
