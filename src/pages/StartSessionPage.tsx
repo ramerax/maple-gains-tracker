@@ -17,7 +17,7 @@ export default function StartSessionPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const editing = location.pathname === ROUTES.sessionStartEdit;
-  const { activeProfile, loading: profileLoading } = useProfile();
+  const { activeProfile, activeProfileId, loading: profileLoading } = useProfile();
 
   const [existingSession, setExistingSession] = useState<OpenSession | null>(null);
   const [date, setDate] = useState(getTodayString());
@@ -36,25 +36,29 @@ export default function StartSessionPage() {
 
   useEffect(() => {
     if (editing) return;
-    if (!activeProfile) {
+    if (!activeProfileId) {
       if (!profileLoading) setPrefillStatus('done');
       return;
     }
     let cancelled = false;
-    getLastSession(activeProfile.id).then(({ session }) => {
-      if (cancelled) return;
-      setLastSession(session);
-      setPrefillStatus(session ? 'asking' : 'done');
-    });
+    getLastSession(activeProfileId)
+      .then(({ session }) => {
+        if (cancelled) return;
+        setLastSession(session);
+        // Only leave 'loading': a later profiles refresh must not re-open the prompt.
+        setPrefillStatus((s) => (s === 'loading' ? (session ? 'asking' : 'done') : s));
+      })
+      .catch(() => { if (!cancelled) setPrefillStatus('done'); });
     return () => { cancelled = true; };
-  }, [editing, activeProfile, profileLoading]);
+  }, [editing, activeProfileId, profileLoading]);
 
   const applyLastSession = (different: ReadonlySet<PrefillKey>) => {
     if (lastSession) {
       const keep = (key: PrefillKey, value: string) => (different.has(key) ? '' : value);
       const num = (n: number) => (n > 0 ? String(n) : '');
       setLvStart(keep('lv', String(lastSession.lvEnd)));
-      setExpStart(keep('exp', percentNumberToDigits(lastSession.expEnd)));
+      // An out-of-range legacy value (>100%) is not safe to prefill.
+      setExpStart(keep('exp', lastSession.expEnd <= 100 ? percentNumberToDigits(lastSession.expEnd) : ''));
       setFragsStart(keep('frags', num(lastSession.fragsEnd)));
       setNodesStart(keep('nodes', num(lastSession.nodesEnd)));
       setMesosStart(keep('mesos', num(lastSession.mesosEnd)));

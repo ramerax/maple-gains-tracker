@@ -6,7 +6,7 @@ const SCALE = 1000;
 const MAX_DIGITS_VALUE = 100 * SCALE;
 
 /** Keep only digits, drop leading zeros. Returns null if it would exceed 100%. */
-export function sanitizePercentDigits(raw: string): string | null {
+function sanitizePercentDigits(raw: string): string | null {
   const digits = raw.replace(/\D/g, '');
   if (!digits) return '';
   const stripped = digits.replace(/^0+/, '') || '0';
@@ -33,7 +33,9 @@ export function formatPercentDigits(digits: string): string {
  * typed/pasted are taken (diffed against the masked text) and appended to the
  * existing digits. Returns null when the result would exceed 100%.
  */
-export function nextPercentDigits(prevDigits: string, raw: string): string | null {
+export function nextPercentDigits(prevDigits: string, raw: string, selectedAll = false): string | null {
+  // Whole text was selected: what's in `raw` is exactly what was typed/pasted.
+  if (selectedAll) return sanitizePercentDigits(raw);
   const prev = formatPercentDigits(prevDigits);
   let prefix = 0;
   while (prefix < prev.length && prefix < raw.length && prev[prefix] === raw[prefix]) prefix++;

@@ -7,7 +7,7 @@ export type PrefillKey = 'lv' | 'exp' | 'frags' | 'nodes' | 'mesos' | 'common' |
 
 const FIELDS: { key: PrefillKey; label: string; show: (s: Session) => string }[] = [
   { key: 'lv', label: 'Nivel', show: (s) => String(s.lvEnd) },
-  { key: 'exp', label: '% EXP', show: (s) => formatPercentDigits(percentNumberToDigits(s.expEnd)) },
+  { key: 'exp', label: '% EXP', show: (s) => (s.expEnd <= 100 ? formatPercentDigits(percentNumberToDigits(s.expEnd)) : '—') },
   { key: 'frags', label: 'Fragmentos', show: (s) => formatNumber(s.fragsEnd) },
   { key: 'nodes', label: 'Nodos', show: (s) => formatNumber(s.nodesEnd) },
   { key: 'mesos', label: 'Mesos', show: (s) => formatExp(s.mesosEnd) },
@@ -48,6 +48,7 @@ export function LastSessionPrompt({ last, onApply }: Props) {
           <div className="mt-5 flex flex-col gap-2 sm:flex-row">
             <button
               onClick={() => onApply(new Set())}
+              autoFocus
               className="flex min-h-[52px] flex-1 items-center justify-center rounded-xl bg-primary text-base font-extrabold text-bg-deep shadow-glow"
             >
               Sí, son iguales
@@ -64,7 +65,8 @@ export function LastSessionPrompt({ last, onApply }: Props) {
         <>
           <p className="text-base font-bold text-text">Marcá los que son distintos</p>
           <p className="mt-1 text-xs text-text-muted">Los marcados quedan en 0 para anotarlos a mano; el resto se completa solo.</p>
-          <div className="mt-3 rounded-xl border border-border bg-panel">
+          <fieldset className="mt-3 rounded-xl border border-border bg-panel">
+            <legend className="sr-only">Valores distintos a la última sesión</legend>
             {FIELDS.map((f) => {
               const checked = different.has(f.key);
               return (
@@ -83,7 +85,7 @@ export function LastSessionPrompt({ last, onApply }: Props) {
                 </label>
               );
             })}
-          </div>
+          </fieldset>
           <div className="mt-5 flex flex-col gap-2 sm:flex-row">
             <button
               onClick={() => setStep('ask')}

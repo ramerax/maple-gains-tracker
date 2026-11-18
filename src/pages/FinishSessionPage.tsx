@@ -165,6 +165,11 @@ export default function FinishSessionPage() {
               ...(lvEndN > open.lvStart ? [{ label: 'Niveles', value: `+${lvEndN - open.lvStart}` }] : []),
             ]}
           />
+          {impliedLevelUp && (
+            <p className="mx-4 mt-2 rounded-lg border border-mesos/30 bg-mesos/10 px-3 py-2 text-xs text-mesos">
+              Subió a nivel {lvEndN} (el % final es menor al inicial). Si no fue así, escribí el nivel final a mano.
+            </p>
+          )}
           <StatSectionGrid
             color={STAT_COLORS.frags} icon="💎" title="Fragmentos — Fin"
             fields={[{ label: 'Fragmentos', value: fragsEnd, onChange: setFragsEnd, startValue: formatNumber(open.fragsStart) }]}

@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { formatPercentDigits, nextPercentDigits } from '@/utils/percentInput';
 
 interface NumInputProps {
@@ -5,17 +6,20 @@ interface NumInputProps {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
-  decimal?: boolean;
   /** EXP % field: value is a digits string, shown as 94432 → "94.432%". */
   percent?: boolean;
 }
 
-export function NumInput({ label, value, onChange, placeholder, decimal, percent }: NumInputProps) {
+export function NumInput({ label, value, onChange, placeholder, percent }: NumInputProps) {
   const display = percent ? formatPercentDigits(value) : value;
+  // Selection right before an edit (the diff alone can't tell "typed 9 over a
+  // selected 94.432%" from "deleted a digit").
+  const selectedAll = useRef(false);
 
   const handleChange = (raw: string) => {
     if (!percent) return onChange(raw);
-    const next = nextPercentDigits(value, raw);
+    const next = nextPercentDigits(value, raw, selectedAll.current);
+    selectedAll.current = false;
     if (next !== null) onChange(next);
   };
 
@@ -34,10 +38,14 @@ export function NumInput({ label, value, onChange, placeholder, decimal, percent
       <label className="mb-1.5 block text-xs text-text-dim">{label}</label>
       <input
         type="text"
-        inputMode={percent || !decimal ? 'numeric' : 'decimal'}
+        inputMode="numeric"
         value={display}
         onChange={(e) => handleChange(e.target.value)}
         onKeyDown={handleKeyDown}
+        onBeforeInput={(e) => {
+          const el = e.currentTarget;
+          selectedAll.current = display.length > 0 && el.selectionStart === 0 && el.selectionEnd === display.length;
+        }}
         placeholder={placeholder ?? (percent ? '0.000%' : '0')}
         onFocus={(e) => e.target.select()}
         className="w-full rounded-lg border border-border bg-white/[0.06] px-3.5 py-2.5 text-base text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50"
