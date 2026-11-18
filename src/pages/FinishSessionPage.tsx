@@ -6,6 +6,7 @@ import { StatSectionGrid } from '@/components/session-form/StatSectionGrid';
 import { useProfile } from '@/context/ProfileContext';
 import { calculateExpGained } from '@/utils/expCalculator';
 import { MAX_CHARACTER_LEVEL } from '@/constants/expTable';
+import { percentDigitsToNumber } from '@/utils/percentInput';
 import { addSession, getOpenSession, deleteOpenSession, generateId } from '@/utils/storage';
 import { formatExp, formatNumber, formatPercent, formatSignedGain } from '@/utils/formatters';
 import { STAT_COLORS } from '@/constants/statColors';
@@ -40,10 +41,11 @@ export default function FinishSessionPage() {
   }, [activeProfileId]);
 
   const pi = (v: string) => parseInt(v) || 0;
-  const pf = (v: string) => parseFloat(v.replace(',', '.')) || 0;
 
-  const lvEndN = pi(lvEnd) || open?.lvStart || 260;
-  const expEndN = pf(expEnd);
+  const expEndN = percentDigitsToNumber(expEnd);
+  // Level left empty + final % below the starting % can only mean a level-up.
+  const impliedLevelUp = !!open && !lvEnd && !!expEnd && expEndN < open.expStart && open.lvStart < MAX_CHARACTER_LEVEL;
+  const lvEndN = pi(lvEnd) || (open ? open.lvStart + (impliedLevelUp ? 1 : 0) : 260);
   const expGained = open && expEnd ? calculateExpGained(open.lvStart, open.expStart, lvEndN, expEndN) : 0;
   const fragsGained = fragsEnd ? pi(fragsEnd) - (open?.fragsStart ?? 0) : 0;
   const nodesGained = nodesEnd ? pi(nodesEnd) - (open?.nodesStart ?? 0) : 0;
@@ -152,8 +154,8 @@ export default function FinishSessionPage() {
           <StatSectionGrid
             color={STAT_COLORS.exp} icon="⚔️" title="Nivel y EXP — Fin"
             fields={[
-              { label: 'Nivel', value: lvEnd, onChange: setLvEnd, startValue: String(open.lvStart) },
-              { label: '% EXP', value: expEnd, onChange: setExpEnd, decimal: true, startValue: `${formatPercent(open.expStart)}%` },
+              { label: 'Nivel', value: lvEnd, onChange: setLvEnd, placeholder: String(lvEndN), startValue: String(open.lvStart) },
+              { label: '% EXP', value: expEnd, onChange: setExpEnd, percent: true, startValue: `${formatPercent(open.expStart)}%` },
             ]}
             gains={[
               {
@@ -163,6 +165,11 @@ export default function FinishSessionPage() {
               ...(lvEndN > open.lvStart ? [{ label: 'Niveles', value: `+${lvEndN - open.lvStart}` }] : []),
             ]}
           />
+          {impliedLevelUp && (
+            <p className="mx-4 mt-2 rounded-lg border border-mesos/30 bg-mesos/10 px-3 py-2 text-xs text-mesos">
+              Subió a nivel {lvEndN} (el % final es menor al inicial). Si no fue así, escribí el nivel final a mano.
+            </p>
+          )}
           <StatSectionGrid
             color={STAT_COLORS.frags} icon="💎" title="Fragmentos — Fin"
             fields={[{ label: 'Fragmentos', value: fragsEnd, onChange: setFragsEnd, startValue: formatNumber(open.fragsStart) }]}

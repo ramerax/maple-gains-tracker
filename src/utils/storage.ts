@@ -162,6 +162,22 @@ export async function getAllSessions(profileId?: string): Promise<{ sessions: Se
   return { sessions: (data ?? []).map(rowToSession), error: null };
 }
 
+export async function getLastSession(profileId?: string): Promise<{ session: Session | null; error: string | null }> {
+  let query = supabase
+    .from('sessions')
+    .select(SESSION_COLUMNS)
+    .order('date', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(1);
+  if (profileId) query = query.eq('profile_id', profileId);
+  const { data, error } = await query;
+  if (error) {
+    if (import.meta.env.DEV) console.error('getLastSession:', error.message);
+    return { session: null, error: SESSION_READ_ERROR };
+  }
+  return { session: data && data.length > 0 ? rowToSession(data[0]) : null, error: null };
+}
+
 export async function getSessionById(id: string): Promise<Session | null> {
   const { data, error } = await supabase
     .from('sessions')

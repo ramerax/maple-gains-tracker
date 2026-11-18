@@ -7,7 +7,8 @@ interface Field {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
-  decimal?: boolean;
+  /** EXP % field: digits-only value shown masked as 94.432%. */
+  percent?: boolean;
   /** When set, renders a read-only "Inicio" box beside the (now empty) input,
    *  so it's unambiguous which box is the starting reference and which one
    *  you type the final value into. */
@@ -52,8 +53,8 @@ export function StatSectionGrid({ color, icon, title, fields, gains }: StatSecti
                     label="Fin"
                     value={f.value}
                     onChange={f.onChange}
-                    placeholder="0"
-                    decimal={f.decimal}
+                    placeholder={f.placeholder}
+                    percent={f.percent}
                   />
                 </div>
               </div>
